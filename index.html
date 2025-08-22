@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base de Conhecimento</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bibliotecas JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --color-bg: #0a0f1f;
+            --color-surface: #10183b;
+            --color-primary: #2a3a90;
+            --color-accent: #3b82f6;
+            --color-text: #e5e7eb;
+            --color-text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            overflow-x: hidden;
+        }
+
+        #webgl-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .panel {
+            background: rgba(16, 24, 59, 0.85); /* var(--color-surface) with alpha */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(42, 58, 144, 0.3); /* var(--color-primary) with alpha */
+            box-shadow: 0 8px 32px 0 rgba(10, 15, 31, 0.37);
+            border-radius: 0.75rem;
+        }
+        
+        .subject-list {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.5s ease-in-out;
+        }
+        .subject-list > div {
+            overflow: hidden;
+        }
+        .subject-list.expanded {
+            grid-template-rows: 1fr;
+        }
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-primary);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-accent);
+        }
+
+        /* Animações e Efeitos */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        .glow-on-hover {
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        .glow-on-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px 2px var(--color-accent);
+        }
+
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <canvas id="webgl-bg"></canvas>
+
+    <!-- Conteúdo Principal -->
+    <div id="main-content" class="relative z-10 animate-fade-in">
+        <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
+            
+            <!-- Base de Conhecimento -->
+            <div>
+                <header class="mb-6">
+                    <h1 class="text-3xl font-bold text-center mb-6 text-accent">Base de Conhecimento</h1>
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Pesquisar por categorias e assuntos..." class="w-full bg-surface/80 border border-primary rounded-lg pl-10 pr-4 py-3 text-black placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                    </div>
+                    <div id="header-buttons" class="flex items-center justify-end gap-3 mt-4 relative">
+                        <div class="relative" id="export-container">
+                            <button id="exportBtn" title="Exportar dados" class="p-2 bg-surface hover:bg-primary border border-primary/50 rounded-full glow-on-hover">
+                                <svg class="w-6 h-6 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            </button>
+                            <div id="exportMenu" class="hidden absolute right-0 mt-2 w-48 panel rounded-md shadow-lg z-20 animate-fade-in">
+                                <a href="#" id="exportExcelBtn" class="block px-4 py-2 text-sm text-text-muted hover:bg-primary">Exportar para Excel (.xlsx)</a>
+                                <a href="#" id="exportMarkdownBtn" class="block px-4 py-2 text-sm text-text-muted hover:bg-primary">Exportar para Markdown (.md)</a>
+                            </div>
+                        </div>
+                        <button id="importBtn" title="Importar de arquivo .txt" class="p-2 bg-surface hover:bg-primary border border-primary/50 rounded-full glow-on-hover">
+                            <svg class="w-6 h-6 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                        </button>
+                         <button id="addCategoryBtn" title="Adicionar nova categoria" class="p-2 bg-accent hover:opacity-90 text-white rounded-full shadow-lg glow-on-hover">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        </button>
+                        <input type="file" id="fileInput" class="hidden" accept=".txt,.md">
+                    </div>
+                     <div id="addCategoryForm" class="hidden mt-4 animate-fade-in">
+                        <div class="flex gap-2">
+                            <input type="text" id="newCategoryInput" placeholder="Nome da nova categoria" class="flex-grow bg-surface border border-primary rounded-lg px-4 py-2 text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-accent">
+                            <button id="saveCategoryBtn" class="bg-accent hover:opacity-90 text-white font-bold py-2 px-4 rounded-lg glow-on-hover">Salvar</button>
+                        </div>
+                    </div>
+                </header>
+                <main id="categoriesContainer" class="space-y-3"></main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirmationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="panel w-full max-w-md p-6">
+            <h3 class="text-lg font-semibold mb-4 text-accent">Confirmação</h3>
+            <p id="confirmationMessage" class="text-text mb-6"></p>
+            <div class="flex justify-end gap-3">
+                <button id="cancelBtn" class="px-4 py-2 bg-surface border border-primary rounded-lg text-text-muted hover:bg-primary">Cancelar</button>
+                <button id="confirmBtn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="panel w-full max-w-md p-6">
+            <h3 id="editModalTitle" class="text-lg font-semibold mb-4 text-accent">Editar</h3>
+            <input type="text" id="editInput" class="w-full bg-surface border border-primary rounded-lg px-4 py-2 text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-accent mb-6">
+            <div class="flex justify-end gap-3">
+                <button id="editCancelBtn" class="px-4 py-2 bg-surface border border-primary rounded-lg text-text-muted hover:bg-primary">Cancelar</button>
+                <button id="editSaveBtn" class="px-4 py-2 bg-accent hover:opacity-90 text-white rounded-lg">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Informação -->
+    <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="panel w-full max-w-md p-6">
+            <h3 class="text-lg font-semibold mb-4 text-accent">Informação</h3>
+            <p id="infoMessage" class="text-text mb-6"></p>
+            <div class="flex justify-end">
+                <button id="infoOkBtn" class="px-4 py-2 bg-accent hover:opacity-90 text-white rounded-lg">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Elementos do DOM ---
+            const searchInput = document.getElementById('searchInput');
+            const categoriesContainer = document.getElementById('categoriesContainer');
+            const addCategoryBtn = document.getElementById('addCategoryBtn');
+            const addCategoryForm = document.getElementById('addCategoryForm');
+            const newCategoryInput = document.getElementById('newCategoryInput');
+            const saveCategoryBtn = document.getElementById('saveCategoryBtn');
+
+            const exportBtn = document.getElementById('exportBtn');
+            const exportMenu = document.getElementById('exportMenu');
+            const exportExcelBtn = document.getElementById('exportExcelBtn');
+            const exportMarkdownBtn = document.getElementById('exportMarkdownBtn');
+            const importBtn = document.getElementById('importBtn');
+            const fileInput = document.getElementById('fileInput');
+
+            // Modais
+            const confirmationModal = document.getElementById('confirmationModal');
+            const confirmationMessage = document.getElementById('confirmationMessage');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const confirmBtn = document.getElementById('confirmBtn');
+
+            const editModal = document.getElementById('editModal');
+            const editModalTitle = document.getElementById('editModalTitle');
+            const editInput = document.getElementById('editInput');
+            const editCancelBtn = document.getElementById('editCancelBtn');
+            const editSaveBtn = document.getElementById('editSaveBtn');
+
+            const infoModal = document.getElementById('infoModal');
+            const infoMessage = document.getElementById('infoMessage');
+            const infoOkBtn = document.getElementById('infoOkBtn');
+
+            // --- Variáveis Globais ---
+            let categories = [];
+            let currentEditCallback = null;
+            let currentConfirmCallback = null;
+            let nextCategoryId = 1;
+
+            // --- Funções de Modal ---
+            const showModal = (message) => {
+                infoMessage.textContent = message;
+                infoModal.classList.remove('hidden');
+            };
+
+            const hideModal = () => {
+                infoModal.classList.add('hidden');
+            };
+
+            const showConfirmationModal = (message, callback) => {
+                confirmationMessage.textContent = message;
+                currentConfirmCallback = callback;
+                confirmationModal.classList.remove('hidden');
+            };
+
+            const hideConfirmationModal = () => {
+                confirmationModal.classList.add('hidden');
+                currentConfirmCallback = null;
+            };
+
+            const showEditModal = (title, currentValue, callback) => {
+                editModalTitle.textContent = title;
+                editInput.value = currentValue;
+                currentEditCallback = callback;
+                editModal.classList.remove('hidden');
+                editInput.focus();
+            };
+
+            const hideEditModal = () => {
+                editModal.classList.add('hidden');
+                currentEditCallback = null;
+            };
+
+            // --- Event Listeners dos Modais ---
+            infoOkBtn.addEventListener('click', hideModal);
+            cancelBtn.addEventListener('click', hideConfirmationModal);
+            confirmBtn.addEventListener('click', () => {
+                if (currentConfirmCallback) {
+                    currentConfirmCallback();
+                }
+                hideConfirmationModal();
+            });
+
+            editCancelBtn.addEventListener('click', hideEditModal);
+            editSaveBtn.addEventListener('click', () => {
+                if (currentEditCallback) {
+                    const newValue = editInput.value.trim();
+                    if (newValue) {
+                        currentEditCallback(newValue);
+                    }
+                }
+                hideEditModal();
+            });
+
+            editInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    editSaveBtn.click();
+                }
+            });
+
+            // --- Funções de Animação de Fundo ---
+            const initWebGLBackground = () => {
+                const canvas = document.getElementById('webgl-bg');
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setClearColor(0x000000, 0);
+
+                const geometry = new THREE.BufferGeometry();
+                const vertices = [];
+                const colors = [];
+
+                for (let i = 0; i < 1000; i++) {
+                    vertices.push(
+                        (Math.random() - 0.5) * 2000,
+                        (Math.random() - 0.5) * 2000,
+                        (Math.random() - 0.5) * 2000
+                    );
+                    colors.push(0.2, 0.4, 0.8);
+                }
+
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+                const material = new THREE.PointsMaterial({ size: 2, vertexColors: true });
+                const points = new THREE.Points(geometry, material);
+                scene.add(points);
+
+                camera.position.z = 1000;
+
+                const animate = () => {
+                    requestAnimationFrame(animate);
+                    points.rotation.x += 0.0005;
+                    points.rotation.y += 0.001;
+                    renderer.render(scene, camera);
+                };
+
+                animate();
+
+                window.addEventListener('resize', () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            };
+
+            // --- Funções de Dados (usando localStorage) ---
+            const saveCategories = () => {
+                localStorage.setItem('categories', JSON.stringify(categories));
+            };
+
+            const loadData = () => {
+                categoriesContainer.classList.add('loading');
+                const storedCategories = localStorage.getItem('categories');
+                if (storedCategories) {
+                    categories = JSON.parse(storedCategories);
+                    // Ensure IDs are numbers and update nextCategoryId
+                    categories.forEach(cat => {
+                        cat.id = Number(cat.id);
+                        if (cat.id >= nextCategoryId) {
+                            nextCategoryId = cat.id + 1;
+                        }
+                    });
+                } else {
+                    categories = [];
+                }
+                render();
+                categoriesContainer.classList.remove('loading');
+            };
+
+            // --- Funções de Manipulação de Dados ---
+            const toggleCategoryForm = () => {
+                addCategoryForm.classList.toggle('hidden');
+                if (!addCategoryForm.classList.contains('hidden')) newCategoryInput.focus();
+            };
+
+            const addCategory = () => {
+                const name = newCategoryInput.value.trim();
+                if (!name) return;
+
+                const newCategory = {
+                    id: nextCategoryId++,
+                    name: name,
+                    subjects: [],
+                    expanded: false
+                };
+                categories.unshift(newCategory);
+                saveCategories();
+                newCategoryInput.value = '';
+                addCategoryForm.classList.add('hidden');
+                render();
+            };
+
+            const editCategory = (id) => {
+                const category = categories.find(c => c.id === id);
+                if (!category) return;
+                
+                const scrollY = window.scrollY;
+                showEditModal("Editar Categoria", category.name, (newName) => {
+                    category.name = newName;
+                    saveCategories();
+                    handleSearch(scrollY);
+                });
+            };
+
+            const deleteCategory = (id) => {
+                categories = categories.filter(c => c.id !== id);
+                saveCategories();
+                handleSearch();
+            };
+
+            const addSubject = (categoryId, subjectName) => {
+                const category = categories.find(c => c.id === categoryId);
+                if (category) {
+                    category.subjects.push(subjectName);
+                    saveCategories();
+                    handleSearch(window.scrollY);
+                }
+            };
+
+            const editSubject = (categoryId, subjectName, subjectIndex) => {
+                const category = categories.find(c => c.id === categoryId);
+                if (!category || subjectIndex >= category.subjects.length) return;
+                
+                const scrollY = window.scrollY;
+                showEditModal("Editar Assunto", subjectName, (newName) => {
+                    category.subjects[subjectIndex] = newName;
+                    saveCategories();
+                    handleSearch(scrollY);
+                });
+            };
+
+            const deleteSubject = (categoryId, subjectName) => {
+                const category = categories.find(c => c.id === categoryId);
+                if (category) {
+                    category.subjects = category.subjects.filter(s => s !== subjectName);
+                    saveCategories();
+                    handleSearch(window.scrollY);
+                }
+            };
+
+            // --- Funções de Renderização ---
+            const render = (dataToRender = null, scrollY = null) => {
+                if (!dataToRender) dataToRender = categories;
+                
+                categoriesContainer.innerHTML = '';
+                if (dataToRender.length === 0) {
+                    const searchTerm = searchInput.value.trim();
+                    const message = searchTerm ? `Nenhuma categoria encontrada para "${searchTerm}".` : "Nenhuma categoria. Clique no '+' para começar.";
+                    categoriesContainer.innerHTML = `<div class="text-center text-text-muted py-10">${message}</div>`;
+                    return;
+                }
+
+                dataToRender.forEach(category => {
+                    const isExpanded = category.expanded || false;
+                    const categoryElement = document.createElement('div');
+                    categoryElement.className = 'panel rounded-lg';
+
+                    const searchTerm = searchInput.value.toLowerCase().trim();
+                    const categoryNameMatches = category.name.toLowerCase().includes(searchTerm);
+
+                    const subjectsToDisplay = (searchTerm && !categoryNameMatches)
+                        ? category.subjects.filter(s => s.toLowerCase().includes(searchTerm))
+                        : category.subjects;
+
+                    const subjectsHTML = subjectsToDisplay.map((subject, index) => `
+                        <li class="group flex items-center justify-between text-text ml-2 p-1 rounded-md hover:bg-primary/20 transition-colors duration-200">
+                            <span class="truncate pr-2">${subject}</span>
+                            <div class="relative options-btn-container">
+                                <button class="options-btn p-1 rounded-full hover:bg-primary/50" data-type="subject" data-category-id="${category.id}" data-subject-name="${subject.replace(/"/g, '&quot;')}" data-subject-index="${index}">
+                                    <svg class="w-5 h-5 text-text-muted pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                                </button>
+                                <div class="options-menu hidden absolute right-0 mt-1 w-32 panel rounded-md shadow-lg z-10 animate-fade-in">
+                                    <a href="#" class="edit-btn block px-4 py-2 text-sm text-text-muted hover:bg-primary">Editar</a>
+                                    <a href="#" class="delete-btn block px-4 py-2 text-sm text-red-500 hover:bg-primary">Excluir</a>
+                                </div>
+                            </div>
+                        </li>`).join('');
+                    
+                    const placeholderHTML = '<li class="text-text-muted text-sm ml-2">Nenhum assunto.</li>';
+
+                    categoryElement.innerHTML = `
+                        <div class="group flex items-center justify-between p-4 cursor-pointer category-header" data-id="${category.id}">
+                            <h3 class="text-lg font-semibold truncate pr-2 text-accent">${category.name}</h3>
+                            <div class="flex items-center gap-3">
+                                <div class="relative options-btn-container">
+                                    <button class="options-btn p-1 rounded-full hover:bg-primary/50" data-type="category" data-id="${category.id}">
+                                       <svg class="w-5 h-5 text-text-muted pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                                    </button>
+                                    <div class="options-menu hidden absolute right-0 mt-1 w-32 panel rounded-md shadow-lg z-10 animate-fade-in">
+                                        <a href="#" class="edit-btn block px-4 py-2 text-sm text-text-muted hover:bg-primary">Editar</a>
+                                        <a href="#" class="delete-btn block px-4 py-2 text-sm text-red-500 hover:bg-primary">Excluir</a>
+                                    </div>
+                                </div>
+                                <svg class="w-6 h-6 text-text-muted transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                        <div class="subject-list ${isExpanded ? 'expanded' : ''}">
+                            <div>
+                                <div class="p-4 border-t" style="border-color: rgba(42, 58, 144, 0.3);">
+                                    <ul class="space-y-1 mb-4">
+                                        ${subjectsHTML || placeholderHTML}
+                                    </ul>
+                                    <div class="flex flex-col sm:flex-row gap-2 mt-2">
+                                        <input type="text" class="new-subject-input flex-grow bg-surface border border-primary rounded-lg px-3 py-1 text-sm text-text placeholder-text-muted focus:outline-none focus:ring-1 focus:ring-accent" placeholder="Novo assunto...">
+                                        <div class="flex gap-2 justify-end">
+                                            <button class="add-subject-btn bg-accent/80 hover:bg-accent text-white text-sm font-semibold py-1 px-3 rounded-lg glow-on-hover" data-id="${category.id}">Adicionar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    categoriesContainer.appendChild(categoryElement);
+                });
+
+                if (scrollY !== null) {
+                    window.scrollTo(0, scrollY);
+                }
+            };
+
+            const handleSearch = (scrollY = null) => {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                if (!searchTerm) {
+                    render(categories, scrollY);
+                    return;
+                }
+                const filtered = categories.filter(cat =>
+                    cat.name.toLowerCase().includes(searchTerm) ||
+                    cat.subjects.some(sub => sub.toLowerCase().includes(searchTerm))
+                );
+                render(filtered, scrollY);
+            };
+
+            // --- Funções de Manipulação de Eventos ---
+            const handleContainerClick = (e) => {
+                const target = e.target;
+                const optionsBtn = target.closest('.options-btn');
+                
+                if (optionsBtn) {
+                    e.stopPropagation();
+                    const menu = optionsBtn.nextElementSibling;
+                    const allMenus = document.querySelectorAll('.options-menu');
+                    allMenus.forEach(m => {
+                        if (m !== menu) m.classList.add('hidden');
+                    });
+                    menu.classList.toggle('hidden');
+                    return;
+                }
+
+                const editBtn = target.closest('.edit-btn');
+                const deleteBtn = target.closest('.delete-btn');
+                
+                if (editBtn || deleteBtn) {
+                    const parentMenu = target.closest('.options-menu');
+                    const optionsContainer = parentMenu.parentElement;
+                    const optionsButton = optionsContainer.querySelector('.options-btn');
+                    const type = optionsButton.dataset.type;
+                    
+                    if (editBtn) {
+                        e.preventDefault();
+                        if (type === 'category') {
+                            const categoryId = Number(optionsButton.dataset.id);
+                            editCategory(categoryId);
+                        } else {
+                            const categoryId = Number(optionsButton.dataset.categoryId);
+                            const subjectName = optionsButton.dataset.subjectName;
+                            const subjectIndex = Number(optionsButton.dataset.subjectIndex);
+                            editSubject(categoryId, subjectName, subjectIndex);
+                        }
+                    } else if (deleteBtn) {
+                        e.preventDefault();
+                        if (type === 'category') {
+                            const categoryId = Number(optionsButton.dataset.id);
+                            showConfirmationModal('Excluir esta categoria e todos os seus assuntos?', () => deleteCategory(categoryId));
+                        } else {
+                            const categoryId = Number(optionsButton.dataset.categoryId);
+                            const subjectName = optionsButton.dataset.subjectName;
+                            showConfirmationModal(`Excluir o assunto "${subjectName}"?`, () => deleteSubject(categoryId, subjectName));
+                        }
+                    }
+                } else if (target.closest('.category-header') && !target.closest('.options-btn-container')) {
+                    const header = target.closest('.category-header');
+                    const categoryId = Number(header.dataset.id);
+                    const category = categories.find(c => c.id === categoryId);
+                    if (category) {
+                        category.expanded = !category.expanded;
+                        saveCategories(); // Save expanded state
+                        
+                        const subjectList = header.nextElementSibling;
+                        const arrowIcon = header.querySelector('svg:last-of-type');
+                        subjectList.classList.toggle('expanded');
+                        arrowIcon.classList.toggle('rotate-180');
+                    }
+                } else if (target.closest('.add-subject-btn')) {
+                    const addBtn = target.closest('.add-subject-btn');
+                    const categoryId = Number(addBtn.dataset.id);
+                    const input = addBtn.parentElement.parentElement.querySelector('.new-subject-input');
+                    const subjectName = input.value.trim();
+                    if (subjectName) {
+                        addSubject(categoryId, subjectName);
+                        input.value = '';
+                    }
+                }
+            };
+            
+            const handleContainerKeypress = (e) => {
+                 if (e.key === 'Enter' && e.target.classList.contains('new-subject-input')) {
+                      e.target.nextElementSibling.querySelector('.add-subject-btn').click();
+                 }
+            };
+
+            // --- Funções de Exportação ---
+            const exportToExcel = () => {
+                if (categories.length === 0) {
+                    showModal("Não há dados para exportar.");
+                    return;
+                }
+                const dataForExport = [];
+                categories.forEach(category => {
+                    if (category.subjects.length > 0) {
+                        category.subjects.forEach(subject => {
+                            dataForExport.push({ "Categoria": category.name, "Assunto": subject });
+                        });
+                    } else {
+                        dataForExport.push({ "Categoria": category.name, "Assunto": "" });
+                    }
+                });
+                const worksheet = XLSX.utils.json_to_sheet(dataForExport);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Base de Conhecimento");
+                XLSX.writeFile(workbook, "base_de_conhecimento.xlsx");
+            };
+
+            const exportToMarkdown = () => {
+                if (categories.length === 0) {
+                    showModal("Não há dados para exportar.");
+                    return;
+                }
+                let markdownContent = "# Base de Conhecimento\n\n";
+                categories.forEach(category => {
+                    markdownContent += `## ${category.name}\n`;
+                    category.subjects.forEach(subject => {
+                        markdownContent += `- ${subject}\n`;
+                    });
+                    markdownContent += '\n';
+                });
+
+                const blob = new Blob([markdownContent], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'base_de_conhecimento.md';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            // --- Funções de Importação ---
+            const parseAndMergeText = (text) => {
+                const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+                if (lines.length === 0) return 0;
+                
+                const dataToImport = {};
+                const startIndex = lines[0].toLowerCase().includes('categorias de') ? 1 : 0;
+                
+                for (let i = startIndex; i < lines.length; i++) {
+                    const parts = lines[i].split('\t').map(part => part.trim());
+                    if (parts.length >= 2) {
+                        const [categoria, assunto] = parts;
+                        if (categoria && assunto) {
+                            if (!dataToImport[categoria]) {
+                                dataToImport[categoria] = [];
+                            }
+                            if (!dataToImport[categoria].includes(assunto)) {
+                                dataToImport[categoria].push(assunto);
+                            }
+                        }
+                    }
+                }
+
+                let importedCount = 0;
+                Object.keys(dataToImport).forEach(categoryName => {
+                    let existingCategory = categories.find(c => c.name === categoryName);
+                    if (!existingCategory) {
+                        existingCategory = {
+                            id: nextCategoryId++,
+                            name: categoryName,
+                            subjects: [],
+                            expanded: false
+                        };
+                        categories.push(existingCategory);
+                        importedCount++;
+                    }
+                    dataToImport[categoryName].forEach(subject => {
+                        if (!existingCategory.subjects.includes(subject)) {
+                            existingCategory.subjects.push(subject);
+                        }
+                    });
+                });
+                saveCategories();
+                loadData();
+                return importedCount;
+            };
+
+            const processFileForImport = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const importedCount = parseAndMergeText(event.target.result);
+                        showModal(`${importedCount} categorias importadas com sucesso!`);
+                    } catch (error) {
+                        showModal('Erro ao importar arquivo. Verifique o formato.');
+                    }
+                };
+                reader.readAsText(file, 'UTF-8');
+                fileInput.value = '';
+            };
+
+
+            // --- Inicialização da Aplicação ---
+            const initializeApp = () => {
+                initWebGLBackground();
+                
+                // --- Listeners de Eventos do App Principal ---
+                searchInput.addEventListener('input', () => handleSearch());
+                addCategoryBtn.addEventListener('click', toggleCategoryForm);
+                saveCategoryBtn.addEventListener('click', addCategory);
+                newCategoryInput.addEventListener('keypress', (e) => e.key === 'Enter' && addCategory());
+                
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.options-btn-container')) {
+                        document.querySelectorAll('.options-menu').forEach(m => m.classList.add('hidden'));
+                    }
+                    if (!e.target.closest('#exportBtn')) {
+                        exportMenu.classList.add('hidden');
+                    }
+                });
+
+                categoriesContainer.addEventListener('click', handleContainerClick);
+                categoriesContainer.addEventListener('keypress', handleContainerKeypress);
+                importBtn.addEventListener('click', () => fileInput.click());
+                exportBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    exportMenu.classList.toggle('hidden');
+                });
+                exportExcelBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    exportToExcel();
+                    exportMenu.classList.add('hidden');
+                });
+                exportMarkdownBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    exportToMarkdown();
+                    exportMenu.classList.add('hidden');
+                });
+
+                fileInput.addEventListener('change', processFileForImport);
+
+                loadData();
+            };
+
+            // --- Ponto de Entrada Inicial ---
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
