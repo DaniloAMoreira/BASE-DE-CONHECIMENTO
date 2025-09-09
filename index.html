@@ -4,16 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base de Conhecimento</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Bibliotecas JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
+        /* --- INÍCIO: VARIÁVEIS E ESTILOS DE TEMA --- */
         :root {
             --color-bg: #0a0f1f;
             --color-surface: #10183b;
@@ -21,6 +19,23 @@
             --color-accent: #3b82f6;
             --color-text: #e5e7eb;
             --color-text-muted: #9ca3af;
+            --panel-bg: rgba(16, 24, 59, 0.85);
+            --panel-border: rgba(42, 58, 144, 0.3);
+            /* CORRIGIDO: Cores cinza específicas para o campo de busca no tema escuro */
+            --color-search-bg: #4B5563;  /* Cinza escuro sólido */
+            --color-search-border: #6B7280; /* Cinza um pouco mais claro para a borda */
+        }
+
+        /* Tema Claro - NÃO MODIFICADO */
+        body[data-theme="light"] {
+            --color-bg: #e0f2f7;
+            --color-surface: #ffffff;
+            --color-primary: #60a5fa;
+            --color-accent: #3b82f6;
+            --color-text: #1a202c;
+            --color-text-muted: #6b7280;
+            --panel-bg: rgba(227, 242, 253, 0.9);
+            --panel-border: rgba(144, 202, 249, 0.7);
         }
 
         body {
@@ -28,8 +43,45 @@
             background-color: var(--color-bg);
             color: var(--color-text);
             overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
+        /* Estilos de Componentes - Base (Tema Escuro) */
+        /* CORRIGIDO: Campo de busca agora usa as variáveis de cor cinza */
+        #searchInput {
+            color: var(--color-text);
+            background-color: var(--color-search-bg);
+            border: 1px solid var(--color-search-border);
+        }
+        #searchInput::placeholder {
+            color: var(--color-text-muted);
+        }
+        .search-icon {
+            color: var(--color-text-muted);
+        }
+        h1.text-accent,
+        .category-header h3 {
+            color: var(--color-text);
+        }
+
+        /* Overrides para o Tema Claro */
+        body[data-theme="light"] #searchInput {
+            background-color: #FFFFFF; /* Fundo branco sólido no tema claro */
+            border: 1px solid #D1D5DB; /* Borda cinza clara no tema claro */
+            color: var(--color-text);
+        }
+        body[data-theme="light"] #searchInput::placeholder,
+        body[data-theme="light"] .search-icon {
+            color: var(--color-text-muted);
+        }
+        body[data-theme="light"] h1.text-accent,
+        body[data-theme="light"] .category-header h3 {
+            color: var(--color-accent);
+        }
+
+        /* --- FIM: VARIÁVEIS E ESTILOS DE TEMA --- */
+
+        /* INCLUÍDO: Estilo do fundo WebGL, como solicitado */
         #webgl-bg {
             position: fixed;
             top: 0;
@@ -40,83 +92,54 @@
         }
 
         .panel {
-            background: rgba(16, 24, 59, 0.85); /* var(--color-surface) with alpha */
+            background: var(--panel-bg);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(42, 58, 144, 0.3); /* var(--color-primary) with alpha */
+            border: 1px solid var(--panel-border);
             box-shadow: 0 8px 32px 0 rgba(10, 15, 31, 0.37);
             border-radius: 0.75rem;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
         
-        .subject-list {
-            display: grid;
-            grid-template-rows: 0fr;
-            transition: grid-template-rows 0.5s ease-in-out;
-        }
-        .subject-list > div {
-            overflow: hidden;
-        }
-        .subject-list.expanded {
-            grid-template-rows: 1fr;
-        }
-        .rotate-180 {
-            transform: rotate(180deg);
-        }
+        .subject-list { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.5s ease-in-out; }
+        .subject-list > div { overflow: hidden; }
+        .subject-list.expanded { grid-template-rows: 1fr; }
+        .rotate-180 { transform: rotate(180deg); }
         
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--color-bg);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--color-primary);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--color-accent);
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--color-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
 
-        /* Animações e Efeitos */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease forwards;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
         
-        .glow-on-hover {
-            transition: box-shadow 0.3s ease, transform 0.3s ease;
-        }
-        .glow-on-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 15px 2px var(--color-accent);
-        }
+        .glow-on-hover { transition: box-shadow 0.3s ease, transform 0.3s ease; }
+        .glow-on-hover:hover { transform: translateY(-2px); box-shadow: 0 0 15px 2px var(--color-accent); }
 
-        .loading {
-            opacity: 0.5;
-            pointer-events: none;
-        }
+        .loading { opacity: 0.5; pointer-events: none; }
     </style>
 </head>
 <body class="antialiased">
 
     <canvas id="webgl-bg"></canvas>
 
-    <!-- Conteúdo Principal -->
     <div id="main-content" class="relative z-10 animate-fade-in">
         <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
             
-            <!-- Base de Conhecimento -->
+            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-20">
+                <button id="theme-toggle-btn" title="Alternar Tema" class="p-2 bg-surface hover:bg-primary border border-primary/50 rounded-full glow-on-hover">
+                    <svg id="theme-icon-sun" class="w-6 h-6 hidden text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="theme-icon-moon" class="w-6 h-6 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
             <div>
                 <header class="mb-6">
                     <h1 class="text-3xl font-bold text-center mb-6 text-accent">Base de Conhecimento</h1>
                     <div class="relative">
-                        <input type="text" id="searchInput" placeholder="Pesquisar por categorias e assuntos..." class="w-full bg-surface/80 border border-primary rounded-lg pl-10 pr-4 py-3 text-black placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300">
+                        <input type="text" id="searchInput" placeholder="Pesquisar por categorias e assuntos..." class="w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <svg class="w-5 h-5 search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
                     </div>
                     <div id="header-buttons" class="flex items-center justify-end gap-3 mt-4 relative">
@@ -131,11 +154,10 @@
         </div>
     </div>
 
-    <!-- Modal de Informação -->
     <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="panel w-full max-w-md p-6">
             <h3 class="text-lg font-semibold mb-4 text-accent">Informação</h3>
-            <p id="infoMessage" class="text-text mb-6"></p>
+            <p id="infoMessage" class="mb-6"></p>
             <div class="flex justify-end">
                 <button id="infoOkBtn" class="px-4 py-2 bg-accent hover:opacity-90 text-white rounded-lg">OK</button>
             </div>
@@ -159,6 +181,39 @@
             let categories = [];
             let nextCategoryId = 1;
 
+            // --- INÍCIO: MÓDULO DE TEMA ---
+            const ThemeSwitcher = (() => {
+                const DOM = {
+                    body: document.body,
+                    themeToggleBtn: document.getElementById('theme-toggle-btn'),
+                    themeIconSun: document.getElementById('theme-icon-sun'),
+                    themeIconMoon: document.getElementById('theme-icon-moon'),
+                };
+                const STORAGE_KEY = 'themePreference';
+
+                const applyTheme = (theme) => {
+                    DOM.body.dataset.theme = theme;
+                    localStorage.setItem(STORAGE_KEY, theme);
+                    DOM.themeIconSun.classList.toggle('hidden', theme === 'dark');
+                    DOM.themeIconMoon.classList.toggle('hidden', theme === 'light');
+                };
+
+                const toggleTheme = () => {
+                    const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark';
+                    applyTheme(currentTheme);
+                };
+
+                const init = () => {
+                    const savedTheme = localStorage.getItem(STORAGE_KEY);
+                    const preferredTheme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+                    applyTheme(savedTheme || 'dark');
+                    DOM.themeToggleBtn.addEventListener('click', toggleTheme);
+                };
+                
+                return { init };
+            })();
+            // --- FIM: MÓDULO DE TEMA ---
+
             // --- Funções de Modal ---
             const showModal = (message) => {
                 infoMessage.textContent = message;
@@ -169,50 +224,34 @@
                 infoModal.classList.add('hidden');
             };
 
-            // --- Event Listeners dos Modais ---
             infoOkBtn.addEventListener('click', hideModal);
 
-            // --- Funções de Animação de Fundo ---
+            // --- INCLUÍDO: Lógica do fundo WebGL, como solicitado ---
             const initWebGLBackground = () => {
                 const canvas = document.getElementById('webgl-bg');
+                if (!canvas) return;
                 const scene = new THREE.Scene();
                 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
                 const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
-
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 renderer.setClearColor(0x000000, 0);
-
                 const geometry = new THREE.BufferGeometry();
                 const vertices = [];
-                const colors = [];
-
                 for (let i = 0; i < 1000; i++) {
-                    vertices.push(
-                        (Math.random() - 0.5) * 2000,
-                        (Math.random() - 0.5) * 2000,
-                        (Math.random() - 0.5) * 2000
-                    );
-                    colors.push(0.2, 0.4, 0.8);
+                    vertices.push((Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000);
                 }
-
                 geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-
-                const material = new THREE.PointsMaterial({ size: 2, vertexColors: true });
+                const material = new THREE.PointsMaterial({ size: 2, color: 0x06B6D4 });
                 const points = new THREE.Points(geometry, material);
                 scene.add(points);
-
                 camera.position.z = 1000;
-
                 const animate = () => {
                     requestAnimationFrame(animate);
                     points.rotation.x += 0.0005;
                     points.rotation.y += 0.001;
                     renderer.render(scene, camera);
                 };
-
                 animate();
-
                 window.addEventListener('resize', () => {
                     camera.aspect = window.innerWidth / window.innerHeight;
                     camera.updateProjectionMatrix();
@@ -230,12 +269,7 @@
                 const storedCategories = localStorage.getItem('categories');
                 if (storedCategories) {
                     categories = JSON.parse(storedCategories);
-                    categories.forEach(cat => {
-                        cat.id = Number(cat.id);
-                        if (cat.id >= nextCategoryId) {
-                            nextCategoryId = cat.id + 1;
-                        }
-                    });
+                    nextCategoryId = Math.max(0, ...categories.map(c => c.id)) + 1;
                 } else {
                     categories = [];
                 }
@@ -243,203 +277,149 @@
                 categoriesContainer.classList.remove('loading');
             };
 
-            // --- INÍCIO DA ALTERAÇÃO ---
-
-            /**
-             * Normaliza uma string, removendo acentos, hifens e convertendo para minúsculas.
-             * @param {string} str A string para normalizar.
-             * @returns {string} A string normalizada.
-             */
             const normalizeString = (str) => {
                 if (!str) return '';
-                return str
-                    .toLowerCase()
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-                    .replace(/-/g, ''); // Remove hifens
+                return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]|-/g, '');
             };
 
             // --- Funções de Renderização ---
-            const render = (dataToRender = null) => {
+            const render = (dataToRender = categories) => {
                 const isSearching = searchInput.value.trim().length > 0;
-                const sourceData = dataToRender || categories;
-
                 categoriesContainer.innerHTML = '';
-                if (sourceData.length === 0) {
+                if (dataToRender.length === 0) {
                     const searchTerm = searchInput.value.trim();
                     const message = searchTerm ? `Nenhum resultado encontrado para "${searchTerm}".` : "Nenhuma categoria. Importe um arquivo para começar.";
                     categoriesContainer.innerHTML = `<div class="text-center text-text-muted py-10">${message}</div>`;
                     return;
                 }
-
-                sourceData.forEach(category => {
+                dataToRender.forEach(category => {
                     const isExpanded = category.expanded || false;
                     const categoryElement = document.createElement('div');
                     categoryElement.className = 'panel rounded-lg';
-
-                    // Se estiver em modo de busca, usa a lista de assuntos pré-filtrada. Caso contrário, usa a lista completa.
                     const subjectsToDisplay = isSearching ? category.subjectsToDisplay : category.subjects;
-
-                    const subjectsHTML = subjectsToDisplay.map((subject) => `
-                        <li class="flex items-center justify-between text-text ml-2 p-1 rounded-md">
-                            <span class="truncate pr-2">${subject}</span>
-                        </li>`).join('');
-                    
-                    const placeholderHTML = '<li class="text-text-muted text-sm ml-2">Nenhum assunto.</li>';
-
+                    const subjectsHTML = subjectsToDisplay && subjectsToDisplay.length > 0
+                        ? subjectsToDisplay.map((subject) => `<li class="flex items-center justify-between text-text ml-2 p-1 rounded-md"><span class="truncate pr-2">${subject}</span></li>`).join('')
+                        : '<li class="text-text-muted text-sm ml-2">Nenhum assunto.</li>';
                     categoryElement.innerHTML = `
                         <div class="group flex items-center justify-between p-4 cursor-pointer category-header" data-id="${category.id}">
-                            <h3 class="text-lg font-semibold truncate pr-2 text-accent">${category.name}</h3>
+                            <h3 class="text-lg font-semibold truncate pr-2">${category.name}</h3>
                             <div class="flex items-center gap-3">
                                 <svg class="w-6 h-6 text-text-muted transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                         </div>
                         <div class="subject-list ${isExpanded ? 'expanded' : ''}">
                             <div>
-                                <div class="p-4 border-t" style="border-color: rgba(42, 58, 144, 0.3);">
-                                    <ul class="space-y-1 mb-4">
-                                        ${subjectsHTML || placeholderHTML}
-                                    </ul>
+                                <div class="p-4 border-t" style="border-color: var(--panel-border);">
+                                    <ul class="space-y-1 mb-4">${subjectsHTML}</ul>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                     categoriesContainer.appendChild(categoryElement);
                 });
             };
 
             const handleSearch = () => {
                 const searchTerm = normalizeString(searchInput.value.trim());
-                
                 if (!searchTerm) {
+                    // Restaura o estado de expansão original de todas as categorias
+                    categories.forEach(cat => cat.expanded = cat.expanded || false);
                     render(categories);
                     return;
                 }
-                
-                const searchResults = categories
-                    .map(cat => {
-                        const normalizedCatName = normalizeString(cat.name);
-                        const catNameMatches = normalizedCatName.includes(searchTerm);
 
-                        const matchingSubjects = cat.subjects.filter(sub =>
-                            normalizeString(sub).includes(searchTerm)
-                        );
+                const searchResults = categories.map(cat => {
+                    const catNameMatches = normalizeString(cat.name).includes(searchTerm);
+                    const matchingSubjects = cat.subjects.filter(sub => normalizeString(sub).includes(searchTerm));
 
-                        // Se o nome da categoria corresponder, retorna a categoria com todos os seus assuntos.
-                        if (catNameMatches) {
-                            return { ...cat, subjectsToDisplay: cat.subjects };
-                        } 
-                        // Se o nome da categoria não corresponder, mas alguns assuntos sim, retorna a categoria apenas com os assuntos correspondentes.
-                        else if (matchingSubjects.length > 0) {
-                            return { ...cat, subjectsToDisplay: matchingSubjects };
-                        }
+                    // Se a categoria corresponde, exibe todos os seus assuntos
+                    if (catNameMatches) {
+                        return { ...cat, subjectsToDisplay: cat.subjects }; // REMOVIDO: expanded: true
+                    }
+                    // Se algum assunto corresponde, exibe apenas os assuntos correspondentes
+                    if (matchingSubjects.length > 0) {
+                        return { ...cat, subjectsToDisplay: matchingSubjects }; // REMOVIDO: expanded: true
+                    }
 
-                        return null; // Nenhuma correspondência para esta categoria
-                    })
-                    .filter(cat => cat !== null); // Remove categorias que não tiveram correspondência
-
+                    return null;
+                }).filter(Boolean);
                 render(searchResults);
             };
 
-            // --- FIM DA ALTERAÇÃO ---
-
-            // --- Funções de Manipulação de Eventos ---
-            const handleContainerClick = (e) => {
-                const target = e.target;
-                if (target.closest('.category-header')) {
-                    const header = target.closest('.category-header');
+            categoriesContainer.addEventListener('click', (e) => {
+                const header = e.target.closest('.category-header');
+                if (header) {
                     const categoryId = Number(header.dataset.id);
                     const category = categories.find(c => c.id === categoryId);
                     if (category) {
                         category.expanded = !category.expanded;
                         saveCategories();
-                        
                         const subjectList = header.nextElementSibling;
                         const arrowIcon = header.querySelector('svg:last-of-type');
                         subjectList.classList.toggle('expanded');
                         arrowIcon.classList.toggle('rotate-180');
                     }
                 }
-            };
+            });
 
-            // --- Funções de Importação ---
             const parseAndMergeText = (text) => {
                 const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
                 if (lines.length === 0) return 0;
-                
                 const dataToImport = {};
-                const startIndex = lines[0].toLowerCase().includes('categorias de') ? 1 : 0;
-                
-                for (let i = startIndex; i < lines.length; i++) {
-                    const parts = lines[i].split('\t').map(part => part.trim());
-                    if (parts.length >= 2) {
-                        const [categoria, assunto] = parts;
-                        if (categoria && assunto) {
-                            if (!dataToImport[categoria]) {
-                                dataToImport[categoria] = [];
-                            }
-                            if (!dataToImport[categoria].includes(assunto)) {
-                                dataToImport[categoria].push(assunto);
-                            }
-                        }
+                lines.slice(lines[0].toLowerCase().includes('categorias de') ? 1 : 0).forEach(line => {
+                    const [categoria, assunto] = line.split('\t').map(part => part.trim());
+                    if (categoria && assunto) {
+                        if (!dataToImport[categoria]) dataToImport[categoria] = new Set();
+                        dataToImport[categoria].add(assunto);
                     }
-                }
+                });
 
                 let importedCount = 0;
                 Object.keys(dataToImport).forEach(categoryName => {
                     let existingCategory = categories.find(c => c.name === categoryName);
                     if (!existingCategory) {
-                        existingCategory = {
-                            id: nextCategoryId++,
-                            name: categoryName,
-                            subjects: [],
-                            expanded: false
-                        };
+                        existingCategory = { id: nextCategoryId++, name: categoryName, subjects: [], expanded: false };
                         categories.push(existingCategory);
                         importedCount++;
                     }
+                    const subjectSet = new Set(existingCategory.subjects);
                     dataToImport[categoryName].forEach(subject => {
-                        if (!existingCategory.subjects.includes(subject)) {
-                            existingCategory.subjects.push(subject);
-                        }
+                        subjectSet.add(subject);
                     });
+                    existingCategory.subjects = Array.from(subjectSet);
                 });
-                saveCategories();
-                loadData();
+                if (importedCount > 0 || Object.keys(dataToImport).length > 0) {
+                    saveCategories();
+                    loadData();
+                }
                 return importedCount;
             };
 
             const processFileForImport = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     try {
                         const importedCount = parseAndMergeText(event.target.result);
-                        showModal(`${importedCount > 0 ? importedCount + ' novas categorias importadas' : 'Dados atualizados'} com sucesso!`);
+                        showModal(`${importedCount > 0 ? importedCount + ' nova(s) categoria(s) importada(s)' : 'Dados atualizados'} com sucesso!`);
                     } catch (error) {
                         showModal('Erro ao importar arquivo. Verifique o formato.');
                     }
                 };
                 reader.readAsText(file, 'UTF-8');
-                fileInput.value = '';
+                e.target.value = '';
             };
 
             // --- Inicialização da Aplicação ---
             const initializeApp = () => {
-                initWebGLBackground();
-                
-                // --- Listeners de Eventos do App Principal ---
+                ThemeSwitcher.init(); 
+                initWebGLBackground(); // Chamada da função WebGL
                 searchInput.addEventListener('input', handleSearch);
-                categoriesContainer.addEventListener('click', handleContainerClick);
                 importBtn.addEventListener('click', () => fileInput.click());
                 fileInput.addEventListener('change', processFileForImport);
-
                 loadData();
             };
 
-            // --- Ponto de Entrada Inicial ---
             initializeApp();
         });
     </script>
