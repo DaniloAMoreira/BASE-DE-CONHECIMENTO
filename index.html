@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <link rel="icon" type="image/png" href="./favicon.png">
+    <title>Base de Conhecimento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --color-bg: #0a0f1f;
+            --color-surface: #10183b;
+            --color-primary: #2a3a90;
+            --color-accent: #3b82f6;
+            --color-text: #e5e7eb;
+            --color-text-muted: #9ca3af;
+            --panel-bg: rgba(16, 24, 59, 0.85);
+            --panel-border: rgba(42, 58, 144, 0.3);
+            --color-search-bg: #4B5563;
+            --color-search-border: #6B7280;
+        }
+        body[data-theme="light"] {
+            --color-bg: #e0f2f7;
+            --color-surface: #ffffff;
+            --color-primary: #60a5fa;
+            --color-accent: #3b82f6;
+            --color-text: #1a202c;
+            --color-text-muted: #6b7280;
+            --panel-bg: rgba(227, 242, 253, 0.9);
+            --panel-border: rgba(144, 202, 249, 0.7);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        #searchInput { color: var(--color-text); background-color: var(--color-search-bg); border: 1px solid var(--color-search-border); }
+        #searchInput::placeholder { color: var(--color-text-muted); }
+        .search-icon { color: var(--color-text-muted); }
+        h1.text-accent, .category-header h3 { color: var(--color-text); }
+        body[data-theme="light"] #searchInput { background-color: #FFFFFF; border: 1px solid #D1D5DB; color: var(--color-text); }
+        body[data-theme="light"] #searchInput::placeholder, body[data-theme="light"] .search-icon { color: var(--color-text-muted); }
+        body[data-theme="light"] h1.text-accent, body[data-theme="light"] .category-header h3 { color: var(--color-accent); }
+        #webgl-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        .panel { background: var(--panel-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--panel-border); box-shadow: 0 8px 32px 0 rgba(10, 15, 31, 0.37); border-radius: 0.75rem; transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .subject-list { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.5s ease-in-out; }
+        .subject-list > div { overflow: hidden; }
+        .subject-list.expanded { grid-template-rows: 1fr; }
+        .rotate-180 { transform: rotate(180deg); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--color-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
+        .glow-on-hover { transition: box-shadow 0.3s ease, transform 0.3s ease; }
+        .glow-on-hover:hover { transform: translateY(-2px); box-shadow: 0 0 15px 2px var(--color-accent); }
+        .loading { opacity: 0.5; pointer-events: none; }
+        
+        /* ESTILOS PARA SUGESTÕES QUE EMPURRAM O CONTEÚDO */
+        #suggestionsContainer {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s ease-in-out;
+            background: var(--color-surface);
+            border: 1px solid var(--panel-border);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        #suggestionsContainer.expanded {
+            grid-template-rows: 1fr;
+        }
+        #suggestionsContainer > div {
+            min-height: 0;
+        }
+        .suggestion-item {
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .suggestion-item:not(:last-child) {
+            border-bottom: 1px solid var(--panel-border);
+        }
+        .suggestion-item:hover, .suggestion-item.active {
+            background-color: var(--color-search-bg);
+            color: var(--color-text);
+        }
+
+        /* ANIMAÇÃO PARA ÍCONE NEURAL */
+        @keyframes pulse {
+          0%, 100% {
+            transform: scale(0.9);
+            opacity: 0.7;
+          }
+          50% {
+            transform: scale(1.1);
+            opacity: 1;
+          }
+        }
+        .neural-dot {
+          transform-origin: center;
+          animation: pulse 2s infinite ease-in-out;
+        }
+        .neural-dot-1 { animation-delay: 0s; }
+        .neural-dot-2 { animation-delay: 0.3s; }
+        .neural-dot-3 { animation-delay: 0.6s; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <canvas id="webgl-bg"></canvas>
+
+    <div id="main-content" class="relative z-10 animate-fade-in">
+        <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
+            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-20">
+                <button id="theme-toggle-btn" title="Alternar Tema" class="p-2 bg-surface hover:bg-primary border border-primary/50 rounded-full glow-on-hover">
+                    <svg id="theme-icon-sun" class="w-6 h-6 hidden text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="theme-icon-moon" class="w-6 h-6 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
+            <div>
+                <header class="mb-6">
+                    <h1 class="text-3xl font-bold text-center mb-6 text-accent">Base de Conhecimento</h1>
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Pesquisar por categorias e assuntos..." class="w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300" autocomplete="off">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                    </div>
+                    <div id="suggestionsContainer" class="mt-1"></div>
+                </header>
+                <main id="categoriesContainer" class="space-y-3"></main>
+            </div>
+        </div>
+    </div>
+
+    <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="panel w-full max-w-md p-6">
+            <h3 class="text-lg font-semibold mb-4 text-accent">Informação</h3>
+            <p id="infoMessage" class="mb-6"></p>
+            <div class="flex justify-end">
+                <button id="infoOkBtn" class="px-4 py-2 bg-accent hover:opacity-90 text-white rounded-lg">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Elementos do DOM ---
+            const searchInput = document.getElementById('searchInput');
+            const categoriesContainer = document.getElementById('categoriesContainer');
+            const suggestionsContainer = document.getElementById('suggestionsContainer');
+            const infoModal = document.getElementById('infoModal');
+            const infoMessage = document.getElementById('infoMessage');
+            const infoOkBtn = document.getElementById('infoOkBtn');
+
+            // --- Variáveis de Estado ---
+            let categories = [];
+            let allSuggestions = [];
+            let activeSuggestionIndex = -1;
+            let isDataLoaded = false;
+
+            // --- MÓDULOS (Tema, Modal, WebGL) ---
+            const ThemeSwitcher = (() => { const DOM = { body: document.body, themeToggleBtn: document.getElementById('theme-toggle-btn'), themeIconSun: document.getElementById('theme-icon-sun'), themeIconMoon: document.getElementById('theme-icon-moon') }; const STORAGE_KEY = 'themePreference'; const applyTheme = (theme) => { DOM.body.dataset.theme = theme; localStorage.setItem(STORAGE_KEY, theme); DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); }; const toggleTheme = () => { const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(currentTheme); }; const init = () => { const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; applyTheme(savedTheme); DOM.themeToggleBtn.addEventListener('click', toggleTheme); }; return { init }; })();
+            const showModal = (message) => { infoMessage.textContent = message; infoModal.classList.remove('hidden'); }; const hideModal = () => infoModal.classList.add('hidden'); infoOkBtn.addEventListener('click', hideModal);
+            const initWebGLBackground = () => { const canvas = document.getElementById('webgl-bg'); if (!canvas) return; const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setClearColor(0x000000, 0); const geometry = new THREE.BufferGeometry(); const vertices = []; for (let i = 0; i < 1000; i++) { vertices.push((Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000); } geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); const material = new THREE.PointsMaterial({ size: 2, color: 0x06B6D4 }); const points = new THREE.Points(geometry, material); scene.add(points); camera.position.z = 1000; const animate = () => { requestAnimationFrame(animate); points.rotation.x += 0.0005; points.rotation.y += 0.001; renderer.render(scene, camera); }; animate(); window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }); };
+
+            // --- LÓGICA DE DADOS ---
+            const loadData = async () => {
+                categoriesContainer.classList.add('loading');
+                try {
+                    const response = await fetch('./database.json');
+                    if (!response.ok) throw new Error(`HTTP error!`);
+                    const data = await response.json();
+                    categories = data;
+                    const suggestionSet = new Set();
+                    categories.forEach(cat => { suggestionSet.add(cat.name); cat.subjects.forEach(sub => suggestionSet.add(sub.name)); });
+                    allSuggestions = [...suggestionSet];
+                    render(categories);
+                    isDataLoaded = true;
+                } catch (error) {
+                    console.error("Erro ao carregar dados", error);
+                    showModal('Não foi possível carregar a base de conhecimento.');
+                } finally {
+                    categoriesContainer.classList.remove('loading');
+                }
+            };
+
+            const normalizeString = (str) => {
+                if (!str) return '';
+                return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]|-/g, '');
+            };
+
+            const highlightMatch = (text, searchTerm) => {
+                if (!searchTerm || !text) return text;
+                const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(escapedTerm, 'gi');
+                return text.replace(regex, (match) => `<mark class="bg-transparent text-blue-400 font-semibold not-italic">${match}</mark>`);
+            };
+
+            // --- LÓGICA DE SUGESTÕES (AUTOCOMPLETE) ---
+            const renderSuggestions = (suggestions) => {
+                suggestionsContainer.innerHTML = '<div></div>';
+                if (suggestions.length === 0) {
+                    suggestionsContainer.classList.remove('expanded');
+                    return;
+                }
+                const wrapper = suggestionsContainer.querySelector('div');
+                suggestions.forEach((suggestionText) => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item flex items-center gap-x-3';
+                    const neuralIconSVG = `
+                        <svg class="w-5 h-5 text-blue-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <circle class="neural-dot neural-dot-1" cx="4" cy="12" r="3"/>
+                            <circle class="neural-dot neural-dot-2" cx="12" cy="12" r="3"/>
+                            <circle class="neural-dot neural-dot-3" cx="20" cy="12" r="3"/>
+                        </svg>
+                    `;
+                    item.innerHTML = `${neuralIconSVG}<span>${suggestionText}</span>`;
+                    item.addEventListener('click', () => {
+                        searchInput.value = suggestionText;
+                        suggestionsContainer.classList.remove('expanded');
+                        handleSearch();
+                    });
+                    wrapper.appendChild(item);
+                });
+                suggestionsContainer.classList.add('expanded');
+                activeSuggestionIndex = -1;
+            };
+
+            const handleAutocomplete = () => {
+                if (!isDataLoaded) return;
+                handleSearch();
+                const searchTerm = searchInput.value.trim();
+                if (searchTerm.length < 1) {
+                    suggestionsContainer.classList.remove('expanded');
+                    return;
+                }
+                const normalizedSearchTerm = normalizeString(searchTerm);
+                const filteredSuggestions = allSuggestions.filter(s => normalizeString(s).includes(normalizedSearchTerm)).slice(0, 4);
+                renderSuggestions(filteredSuggestions);
+            };
+
+            // --- FUNÇÕES DE RENDERIZAÇÃO E BUSCA PRINCIPAL ---
+            const render = (dataToRender = []) => {
+                const searchTerm = searchInput.value.trim();
+                categoriesContainer.innerHTML = '';
+                if (dataToRender.length === 0) {
+                    const message = searchTerm ? `Nenhum resultado encontrado para "${searchTerm}".` : "A base de conhecimento está vazia.";
+                    categoriesContainer.innerHTML = `<div class="text-center text-text-muted py-10">${message}</div>`;
+                    return;
+                }
+                dataToRender.forEach(category => {
+                    const isExpanded = category.expanded || false;
+                    const categoryElement = document.createElement('div');
+                    categoryElement.className = 'panel rounded-lg';
+                    const subjectsToDisplay = category.subjectsToDisplay || category.subjects;
+                    const subjectsHTML = subjectsToDisplay.length > 0
+                        ? subjectsToDisplay.map((subject) => `<li class="flex items-center justify-between text-text ml-2 p-1 rounded-md"><span class="truncate pr-2">${highlightMatch(subject.name, searchTerm)}</span></li>`).join('')
+                        : '<li class="text-text-muted text-sm ml-2">Nenhum assunto nesta categoria.</li>';
+
+                    categoryElement.innerHTML = `
+                        <div class="group flex items-center justify-between p-4 cursor-pointer category-header" data-id="${category.id}">
+                            <h3 class="text-lg font-semibold truncate pr-2">${highlightMatch(category.name, searchTerm)}</h3>
+                            <div class="flex items-center gap-3">
+                                <svg class="w-6 h-6 text-text-muted transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                        <div class="subject-list ${isExpanded ? 'expanded' : ''}">
+                            <div><div class="p-4 border-t" style="border-color: var(--panel-border);"><ul class="space-y-1 mb-4">${subjectsHTML}</ul></div></div>
+                        </div>`;
+                    categoriesContainer.appendChild(categoryElement);
+                });
+            };
+
+            const handleSearch = () => {
+                if (!isDataLoaded) return;
+                const searchTerm = normalizeString(searchInput.value.trim());
+                if (!searchTerm) {
+                    const resetData = categories.map(cat => ({...cat, subjectsToDisplay: cat.subjects }));
+                    render(resetData);
+                    return;
+                }
+                const searchResults = categories.map(cat => {
+                    const catNameMatches = normalizeString(cat.name).includes(searchTerm);
+                    const matchingSubjects = cat.subjects.filter(sub => normalizeString(sub.name).includes(searchTerm));
+                    if (catNameMatches) return { ...cat, subjectsToDisplay: cat.subjects };
+                    if (matchingSubjects.length > 0) return { ...cat, subjectsToDisplay: matchingSubjects };
+                    return null;
+                }).filter(Boolean);
+                render(searchResults);
+            };
+
+            categoriesContainer.addEventListener('click', (e) => {
+                const header = e.target.closest('.category-header');
+                if (header) {
+                    const categoryId = Number(header.dataset.id);
+                    const category = categories.find(c => c.id === categoryId);
+                    if (category) {
+                        category.expanded = !category.expanded;
+                        handleSearch();
+                    }
+                }
+            });
+            
+            // --- INICIALIZAÇÃO DA APLICAÇÃO ---
+            const initializeApp = () => {
+                ThemeSwitcher.init();
+                initWebGLBackground();
+                
+                searchInput.addEventListener('input', handleAutocomplete);
+
+                searchInput.addEventListener('keydown', (e) => {
+                    const items = suggestionsContainer.querySelectorAll('.suggestion-item');
+                    if (!suggestionsContainer.classList.contains('expanded') || items.length === 0) return;
+                    
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
+                    }
+                    items.forEach((item, index) => item.classList.toggle('active', index === activeSuggestionIndex));
+                    
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (activeSuggestionIndex > -1 && items[activeSuggestionIndex]) {
+                            items[activeSuggestionIndex].click();
+                        } else {
+                            suggestionsContainer.classList.remove('expanded');
+                            handleSearch();
+                        }
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('header')) {
+                        suggestionsContainer.classList.remove('expanded');
+                    }
+                });
+
+                loadData();
+            };
+
+            initializeApp();
+        });
+    </script>
+</body>
+</html>

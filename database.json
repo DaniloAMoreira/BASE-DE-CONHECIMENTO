@@ -1,0 +1,2447 @@
+[
+  {
+    "id": 1,
+    "name": "(SUP) Ajuste de estoque",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Ajus. de estoque - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Inventário de estoque - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Contagem de estoque - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Inven. de estoque - Dúvida - Como zerar estoque"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "(SUP) Aplicativos",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(Sup) App lc gourmet - outro (Descreva)"
+      },
+      {
+        "name": "(Sup) App lc força de vendas - outro (Descreva)"
+      },
+      {
+        "name": "(Sup) App lc Dashboard - outro (Descreva)"
+      },
+      {
+        "name": "(Sup) App lc coletor de dados - outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Balcão Mobile - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Gourmet Mobile - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Gourmet Mobile - Configuração"
+      },
+      {
+        "name": "(SUP) Gourmet Mobile - Atalização"
+      },
+      {
+        "name": "(SUP) Gourmet Mobile - Instalação"
+      },
+      {
+        "name": "(SUP) Coletor de dados - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Gourmet Mobile - Dúvida - Como funciona"
+      },
+      {
+        "name": "(SUP) Balcão Mobile - Atualização"
+      },
+      {
+        "name": "(SUP) Balcão Mobile - Dúvida - Como funciona"
+      },
+      {
+        "name": "(SUP) Balcão Mobile - Instalação"
+      },
+      {
+        "name": "(SUP) Balcão Mobile - Configuração"
+      },
+      {
+        "name": "(SUP) Balcão Mobile - Comunicação"
+      },
+      {
+        "name": "(SUP) F. Vendas - Atualização"
+      },
+      {
+        "name": "(SUP) F. Vendas - Instalação"
+      },
+      {
+        "name": "(SUP) F. Vendas - Resetar banco na AWS"
+      },
+      {
+        "name": "(SUP) F. Vendas - Erro ao sincronizar cliente - Data do RG"
+      },
+      {
+        "name": "(SUP) Gourmet Mobile - Comunicação"
+      },
+      {
+        "name": "(SUP) F. Vendas - Erro ao sincronizar (Outro - Descreva)"
+      },
+      {
+        "name": "(SUP) Dash Mobile/WEB - Data/hora incorreta"
+      },
+      {
+        "name": "(SUP) Dash Mobile/WEB - Dúvida - Como funciona"
+      },
+      {
+        "name": "(SUP) F. Vendas - Configuração"
+      },
+      {
+        "name": "(SUP) Dash Mobile/WEB - Valores divergentes"
+      },
+      {
+        "name": "(SUP) Dash Mobile/WEB - Retorno - Token inválido"
+      },
+      {
+        "name": "(SUP) Dash Mobile/WEB - Sincronizador não abre (aberto várias vezes)"
+      },
+      {
+        "name": "(SUP) Dash Mobile/WEB - Sincronismo bloqueado pelo Radmin VPN"
+      },
+      {
+        "name": "(SUP) Dash Mobile/WEB - Configuração"
+      },
+      {
+        "name": "(SUP) F. Vendas - Dúvida - Como trabalhar com kit de produto"
+      },
+      {
+        "name": "(SUP) F. Vendas - Erro ao sincronizar cadastros - 400 Query did not return a unique result"
+      },
+      {
+        "name": "(SUP) Dashboard Mobile/WEB - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Cole. de dados - Dúvida - Como funciona"
+      },
+      {
+        "name": "(SUP) Dash Mobile/WEB - Erro - Unable to find Produto with \"id'' of entity estoquesaldo"
+      },
+      {
+        "name": "(SUP) Dash Mobile/WEB - Atualização"
+      },
+      {
+        "name": "(SUP) Dash Mobile/WEB - Instalação"
+      },
+      {
+        "name": "(SUP) F. Vendas - App fechando ao consultar pedido"
+      },
+      {
+        "name": "(SUP) Dash Mobile/WEB - Servidor offline"
+      },
+      {
+        "name": "(SUP) Dash Mobile/WEB - Sincronismos parados após instabilidade no Dash"
+      },
+      {
+        "name": "(SUP) F. Vendas - Dúvida - Como funciona"
+      },
+      {
+        "name": "(SUP) Força de Vendas - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Cole. de dados - Dúvida - Como utlizar o coletor de dados"
+      },
+      {
+        "name": "(SUP) LC Sincronizador - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) LC Sincronizador - Sincronismo completo"
+      },
+      {
+        "name": "(SUP) Dash Mobile/WEB - Dúvida - Configuração"
+      },
+      {
+        "name": "(SUP) Gourmet Mobile - Erro - O caminho da rede não foi encontrado (Imprimir pedido)"
+      },
+      {
+        "name": "(SUP) Aplicativos - Dúvida - Maquininhas homologadas com LC Balcão/LC Gourmet"
+      },
+      {
+        "name": "(SUP) Força de Vendas - Dúvida - Funcionamento da rota"
+      },
+      {
+        "name": "(Sup) Dash Mobile/WEB - Dúvida - Como alterar a senha do dashboard"
+      },
+      {
+        "name": "(SUP) LC Sincronizador - Erro - Unable to find Produto with id ' ' of entify Estoquesaldo"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "(SUP) Atendimento adiado",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Atendimento adiado - outro"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "(SUP) Balcão",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Balcão - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Balcão - Dúvida - Como imprimir mais vias do orçamento"
+      },
+      {
+        "name": "(SUP) Balcão - Erro - Null Null Clientes padrão com dados nulos"
+      },
+      {
+        "name": "(SUP) Balcão - Dúvida - Como excluir item"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "(SUP) Banco de dados",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) BD - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) BD - Reconfiguração da instância"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Remover códigos repetidos"
+      },
+      {
+        "name": "(SUP) BD - Dúvida - Como instalar"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Alterar status de NFC-e em massa (Inutilizada)"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Remover notas antigas do MD-e da entrada de estoque"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Alterar série/numeração de NFC-e com duplicidade"
+      },
+      {
+        "name": "(SUP) BD - Hackeado"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Alterar status de NFC-e em massa (Duplicidade)"
+      },
+      {
+        "name": "(SUP) BD - Exportar/Importar tabelas"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Iniciar ID do produto com 1"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Alterar CNPJ/CPF do cliente na NFC-e"
+      },
+      {
+        "name": "(SUP) BD - Banco corrompido"
+      },
+      {
+        "name": "(SUP) BD - Instalação"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Adicionar permissões para usuário"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Saltar número da NFC-e"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Replicar código de barras para o código"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Inativar clientes em massa"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Adicionar zeros no código de balança"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Inverter código de referência e código do produto"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Alterar status do orçamento (Excluído para salvo)"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Alterar tributação em massa"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Iniciar ID do produto com 100000"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Remover caracteres especiais"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Alterar CNPJ/CPF do cadastro do cliente"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Inativar produtos em massa"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Replicar código de barras para a referencia"
+      },
+      {
+        "name": "(SUP) BD - Dúvida - Como fazer backup pelo QueryBrowser"
+      },
+      {
+        "name": "(SUP) BD - Dúvida - Como restaurar backup pelo QueryBrowser"
+      },
+      {
+        "name": "(SUP) BD - Dúvida - Como restaurar backup pela pasta data"
+      },
+      {
+        "name": "(SUP) BD - Dúvida - Como fazer backup pela pasta data"
+      },
+      {
+        "name": "(SUP) BD - Dúvida - Como importar migração"
+      },
+      {
+        "name": "(SUP) BD - Análise (descreva)"
+      },
+      {
+        "name": "(SUP) BD - Análise - Valores do caixa incompatíveis"
+      },
+      {
+        "name": "(SUP) BD - Troca de CNPJ da empresa"
+      },
+      {
+        "name": "(SUP) BD - Dúvida - Qual a senha do banco de dados"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Relatório (Descreva)"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Desmarcar pode ler peso em massa"
+      },
+      {
+        "name": "(SUP) BD - Análise - Estoque negativo"
+      },
+      {
+        "name": "(SUP) BD - Correção - Registros de estoquesaldo duplicados ao fazer ajuste de estoque"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Alterar tipo de produto (Materia prima)"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Desmarcar pode ir para balança peso em massa"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Zerar preço de venda em massa"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Ativar de produtos em massa"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Aplicar/Remover pode fracionado para produtos em massa"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Alterar CEST em massa"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Como acessar banco de dados através do terminal"
+      },
+      {
+        "name": "(SUP) BD - Restauração de backup pela pasta data"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Remover unidade de atacado em massa"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Alterar estoque mínimo em massa"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Aplicar estoque mínimo em massa"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Desmarcar pode controlar lote em massa"
+      },
+      {
+        "name": "(SUP) BD - Dúvida - Como desinstalar"
+      },
+      {
+        "name": "(SUP) BD - Cmd - Habilitar pode controlar lote em massa"
+      },
+      {
+        "name": "(SUP) BD - Dúvida - Quais Informações que podem ser migradas"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "(SUP) Cliente Final",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Cliente Final - outro"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "(SUP) Contr. de entrega",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Contr. de entrega - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Contr. de entrega - Dúvida - Como funciona"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "(SUP) CT-e - Rejeição",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) CT-e - Rejeição (Outro - Descreva)"
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "(SUP) Devolução/troca",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Devolução/troca - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Devolução/troca - Dúvida - Como fazer devolução"
+      },
+      {
+        "name": "(SUP) Devolução/troca - Dúvida - Como fazer troca"
+      },
+      {
+        "name": "(SUP) Devolução/troca - Dúvida - Como cancelar carta de credito"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "(SUP) Encaminhado - outro setores",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Encaminhado - Migração"
+      },
+      {
+        "name": "(SUP) Encaminhado - Financeiro"
+      },
+      {
+        "name": "(SUP) Encaminhado - Comercial"
+      },
+      {
+        "name": "(SUP) Encaminhado - Gerente de contas"
+      },
+      {
+        "name": "(SUP) Encaminhado - Relatórios"
+      },
+      {
+        "name": "(SUP) Encaminhado - solicitação desenvolvimento"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "(SUP) Ent. de estoque",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Ent. de estoque - Outro (Descreva)"
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "name": "(SUP) Entrada de estoque",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Ent. de estoque - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Ent. de estoque - Retorno - Verificar quantidade de lote"
+      },
+      {
+        "name": "(SUP) Ent. de estoque - Dúvida - Custo diferente do valor de compra"
+      },
+      {
+        "name": "(SUP) Ent. de estoque - Dúvida - Como funciona a conversão de unidade"
+      },
+      {
+        "name": "(SUP) Ent. de estoque - Dúvida - Como fazer entrada de estoque para uso e consumo"
+      },
+      {
+        "name": "(SUP) Ent. de estoque - Dúvida - Como fazer conversão de caixa para unidade"
+      },
+      {
+        "name": "(SUP) Ent. de estoque - Dúvida - Como fazer entrada de estoque via XML"
+      },
+      {
+        "name": "(SUP) Ent. de estoque - Dúvida - Como desassociar produto"
+      },
+      {
+        "name": "(SUP) Ent. de estoque - Dúvida - Como pesquisar entradas realizadas"
+      },
+      {
+        "name": "(SUP) Ent. de estoque - Dúvida - Como lançar no contas a pagar"
+      },
+      {
+        "name": "(SUP) Ent. de estoque - Dúvida - Como cancelar entrada de estoque"
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "name": "(SUP) Equipamentos",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Impressoras- outro"
+      },
+      {
+        "name": "(SUP) Impressoras - instalação"
+      },
+      {
+        "name": "(SUP) Impressoras - Acesso negado"
+      },
+      {
+        "name": "(SUP) Impressoras - compartilhamento em rede"
+      },
+      {
+        "name": "(SUP) Impressoras - layout fora de padrão"
+      },
+      {
+        "name": "(SUP) B. etiquetadora - Configuração MGV5"
+      },
+      {
+        "name": "(SUP) B. checkout - Configuração Prix 8217"
+      },
+      {
+        "name": "(SUP) B. etiquetadora - Configuração Smart Editor"
+      },
+      {
+        "name": "(SUP) B. etiquetadora - Configuração Ramuza Atena II"
+      },
+      {
+        "name": "(SUP) Term. de consulta - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) B. etiquetadora - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) B. checkout - Configuração UPX Wind d3"
+      },
+      {
+        "name": "(SUP) Leitor de código de barras - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) B. checkout - Configuração Urano POP S"
+      },
+      {
+        "name": "(SUP) Term. de consulta - Comunicação com o banco de dados"
+      },
+      {
+        "name": "(SUP) B. etiquetadora - Configuração Urano Connect"
+      },
+      {
+        "name": "(SUP) B. etiquetadora - Configuração Prix 4 Uno"
+      },
+      {
+        "name": "(SUP) B. checkout - Configuração Prix 3 Fit"
+      },
+      {
+        "name": "(SUP) B. checkout - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) B. etiquetadora - Configuração MGV6"
+      },
+      {
+        "name": "(SUP) Equipamentos - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) B. checkout - Configuração Urano UDC - CO 30/5e"
+      },
+      {
+        "name": "(SUP) B. etiquetadora - Configuração MGV7"
+      },
+      {
+        "name": "(SUP) TEF - Dúvida - Quem deve fornecer a maquininha e instalação"
+      },
+      {
+        "name": "(SUP) SmartTEF - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) B. etiquetadora - Erro - Balança não está autorizada a operar no idioma configurado no MGV6"
+      },
+      {
+        "name": "(SUP) Term. de consulta - Dúvida - Terminais de consulta homologados"
+      },
+      {
+        "name": "(SUP) B. etiquetadora - Erro no MGV6 - A balança não respondeu ao pedido de conexão"
+      },
+      {
+        "name": "(SUP) TEF - Dúvida - Quais os TEFs homologados"
+      },
+      {
+        "name": "(SUP) Impressoras - Impressão de NFC-e sem QR Code"
+      },
+      {
+        "name": "(SUP) SmartTEF - Dúvida - Maquinas homologadas"
+      },
+      {
+        "name": "(SUP) SmartTEF - Dúvida - Funcionamento"
+      },
+      {
+        "name": "(SUP) B. checkout - Dúvida - Balanças checkout homologadas"
+      },
+      {
+        "name": "(SUP) Impressoras- Dúvida - Impressoras homologadas"
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "name": "(SUP) ERP",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) ERP - Dúvida - Como instalar"
+      },
+      {
+        "name": "(SUP) ERP - Instalação"
+      },
+      {
+        "name": "(SUP) ERP - Servidor não se comunica com o banco de dados"
+      },
+      {
+        "name": "(SUP) ERP - Erro - Null null na primeira instalação"
+      },
+      {
+        "name": "(SUP) ERP - Duas instalações"
+      },
+      {
+        "name": "(SUP) ERP - Erro ao carregar logo da softhouse"
+      },
+      {
+        "name": "(SUP) ERP - Servidor de registro offline"
+      },
+      {
+        "name": "(SUP) ERP - Troca de servidor"
+      },
+      {
+        "name": "(SUP) ERP - Falha na conexão com o servidor de registro"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Como atualizar com o setup"
+      },
+      {
+        "name": "(SUP) ERP - Atualização com KIT PI"
+      },
+      {
+        "name": "(SUP) ERP - Unknow column - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) ERP - Comunicação Terminal x Servidor"
+      },
+      {
+        "name": "(SUP) ERP - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Como ter duas instalações"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Como atualizar com KIT PI"
+      },
+      {
+        "name": "(SUP) ERP - Atualização por setup"
+      },
+      {
+        "name": "(SUP) ERP - Retorno - PI Data/Hora"
+      },
+      {
+        "name": "(SUP) ERP - Dúvidas - Teclas de atalho do sistema"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Comunicação via VPN"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Processo para troca de CNPJ"
+      },
+      {
+        "name": "(SUP) ERP - Sistema travado na tela \"ID padrão produtos 100000\" na primeira instalação"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Como funciona o multi empresa"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Data de expiração do sistema"
+      },
+      {
+        "name": "(SUP) ERP - Erro - ConnectException. Connection timed out connect (Falha na comunicação com servidor de registro)"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Compatibilidade do sistema com MACBOOK"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Localização da pasta de fotos"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Qual código de revenda utilizar"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Possibilidades de backup em nuvem nativo no sistema"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Funcionamento da precificação margem de lucro/markup"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Possibilidade de conciliação bancaria no sistema"
+      },
+      {
+        "name": "(SUP) ERP - Ajuste de resolução de tela (Windows)"
+      },
+      {
+        "name": "(SUP) ERP - Retorno - Cliente Bloqueado, entre em contato com sua revenda"
+      },
+      {
+        "name": "(SUP) PDV - Erro - Column 'os_dias_validade_atendimento' not found (Atualização de Kit PI em Setup antigo)"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Como fazer compartilhamento de fotos de produto/cliente"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Onde encontrar pasta de XMLs emitidos no sistema"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Como definir empresa padrão para abrir o sistema"
+      },
+      {
+        "name": "(SUP) ERP - Retorno - 0_Null ao registrar sistema (Não configurado data de recebimento no portal)"
+      },
+      {
+        "name": "(SUP) ERP - Looping de registro (Data de recebimento menor que a data de pagamento)"
+      },
+      {
+        "name": "(SUP) ERP - Dúvida - Funcionamento do novo registro mensal"
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "name": "(SUP) ERP Ajuste de tributação",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Ajus. de tributação - Alterar tributação em massa"
+      },
+      {
+        "name": "(SUP) Ajus. de tributação - Outro (Descreva)"
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "name": "(SUP) ERP Atualização de preço",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Atualização de preço - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Atualização de preço - Dúvida - Como utilizar"
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "name": "(SUP) ERP Boleto",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Boleto - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Boleto - Dúvida - Bancos homologados"
+      },
+      {
+        "name": "(SUP) Boleto - Dúvida - Como emitir"
+      },
+      {
+        "name": "(SUP) Boleto - Dúvida - Tipo de instalação (Modular)"
+      },
+      {
+        "name": "(SUP) Boleto - Dúvida - Como aplicar juros e multa"
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "name": "(SUP) ERP Cadastro",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Cad. produto - Código de barras já existe no sistema (código de barras com 0 na frente)"
+      },
+      {
+        "name": "(SUP) ERP Cadastro - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Cad. Cliente - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Cad. Usuário - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Cad. Forma de Pagamento - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Cad. Usuario - Dúvida - Qual a permissão para cancelar venda em tela"
+      },
+      {
+        "name": "(SUP) Cad. Cliente - Dúvida - Como inativar cliente"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Dúvida - Como usar tabela de unidade de atacado"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Dúvida - Como usar tabela de preço"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Dúvida - Como usar Leve X Pague Y"
+      },
+      {
+        "name": "(SUP) Cad. Forma de pagamento - Como adicionar taxa por parcela"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Dúvida - Como alterar NCM e CEST ao mudar o G. tributação"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Dúvida - Como cadastrar validade para produto"
+      },
+      {
+        "name": "(SUP) Cad. grupo tributação - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Retorno - 429 Limite de request excedido (Cosmos)"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Retorno - Nome do produto já em uso no sistema"
+      },
+      {
+        "name": "(SUP) Cad. Comanda/Mesa - Dúvida - Como inativar comandas"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Retorno - Local do repositório de fotos não encontrado"
+      },
+      {
+        "name": "(SUP) Cad. Cliente - Retorno - 404 not found (Consultar de CEP)"
+      },
+      {
+        "name": "(SUP) Cad. Cliente - Dúvida - Como cadastrar cliente sem informar CPF"
+      },
+      {
+        "name": "(SUP) Cad. Forma de Pagamento - Erro - Null Null ao abrir forma de pagamento ('Null' coluna 'cartao_tpintegra' 'F.popular')"
+      },
+      {
+        "name": "(SUP) Cad. Forma de Pagamento - Erro - Null Null ao salvar forma de pagamento (coluna 'lcpix_psp')"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Dúvida - Cadastrar produto para venda em caixa e unidade"
+      },
+      {
+        "name": "(SUP) ERP Cadastro - Retorno - Digite uma quantidade válida para a unidade tributável selecionada"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Erro - Table \"lc_sistemas.nutricional\" doesn't exist"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Dúvida - Novo sistema de pesquisa de produto"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Dúvida - Como aplicar preço promocional"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Dúvida - Permissão para consulta no força de vendas"
+      },
+      {
+        "name": "(SUP) Cad. grupo tributação - Dúvida - Funcionamento"
+      },
+      {
+        "name": "(SUP) Cad. Usuario - Dúvida - Permissão para alteração de preço no balcão"
+      },
+      {
+        "name": "(SUP) Cad. Cliente - Erro - Null Data too long for column 'obs' at row 1 (Campo 'obs' do cadastro excedendo limite máximo)"
+      },
+      {
+        "name": "(SUP) Cad. Natureza de operação - Dúvida - Funcionamento"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Dúvida - Funcionamento da pesquisa ampla"
+      },
+      {
+        "name": "(SUP) Cadastro - Dúvida - Forma de pagamento crediário gerando títulos em aberto"
+      },
+      {
+        "name": "(SUP) Cad. Cliente - Erro - Null ArrayindexOutOfBoundsException -1 (Campo de cidade não preenchido no end. entrega)"
+      },
+      {
+        "name": "(SUP) Cad. Forma de pagamento - Dúvida - Funcionamento da fidelidade"
+      },
+      {
+        "name": "(SUP) Cad. Usuário - Dúvida - Permissão de limite de crédito para o cliente"
+      },
+      {
+        "name": "(SUP) Cad. Produto - Dúvida - Como inativar/ativar produto"
+      },
+      {
+        "name": "(SUP) Cad. Kit Produto - Dúvida - Como utilizar"
+      },
+      {
+        "name": "(SUP) Cad. Voucher - Como utilizar"
+      },
+      {
+        "name": "(SUP) Cad. Natureza de operação - Dúvida - Como cadastrar nova natureza de operação"
+      },
+      {
+        "name": "(SUP) Cad. Natureza de operação - Outro (Descreva)"
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "name": "(SUP) ERP Configuração",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Configuração - Dúvida - Como configurar impressora local no PDV"
+      },
+      {
+        "name": "(SUP) Configuração - Dúvida - Como configurar modo fiscal e gerencial no PDV"
+      },
+      {
+        "name": "(SUP) Configuração - Dúvida - Como deixar o PDV só no modo fiscal"
+      },
+      {
+        "name": "(SUP) Configuração - Dúvida - Como deixar o PDV só no modo gerencial"
+      },
+      {
+        "name": "(SUP) Configuração - Dúvida - Como habilitar tela PDV"
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "name": "(SUP) ERP Contas a pagar",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) C. pagar - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) C. pagar - Dúvida - Como pesquisar títulos pagos"
+      },
+      {
+        "name": "(SUP) C. pagar - Dúvida - Como duplicar títulos"
+      },
+      {
+        "name": "(SUP) C. pagar - Retorno - Plano de contas não pode ser uma conta SINTÉTICA"
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "name": "(SUP) ERP Contas a receber",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) C. receber - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) C. receber - Dúvida - Como pesquisar títulos"
+      },
+      {
+        "name": "(SUP) C. receber - Erro - O código de cadastro [\"\"] não está em um formato válido (Boleto)"
+      },
+      {
+        "name": "(SUP) C. receber - Retorno - O ususário não tem permissão para aplicar esse desconto"
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "name": "(SUP) ERP Controle de Caixa",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Flu. Caixa Anual - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) DRE - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Controle de Caixa - Dúvida - Funcionamento"
+      },
+      {
+        "name": "(SUP) Controle de Caixa - Outro (Descreva)"
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "name": "(SUP) ERP Dashboard",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Dashboard - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Dashboard - Lucro negativo (Preço de custo maior do que o preço de venda)"
+      }
+    ]
+  },
+  {
+    "id": 24,
+    "name": "(SUP) ERP Desk - MD-e- Rejeições",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) ERP Desk MD-e - Rej. Outra (Coloque na descrição)"
+      },
+      {
+        "name": "(SUP) ERP Desk MD-e - Rej. 137 - Nenhum documento localizado"
+      },
+      {
+        "name": "(SUP) ERP Desk MD-e - Rej. 589-Numero do NSU informado superior ao maior NSU da base de dados do Ambiente Nacional"
+      },
+      {
+        "name": "(SUP) ERP Desk MD-e - Rej. 656: Consumo Indevido"
+      },
+      {
+        "name": "(SUP) ERP Desk MD-e - Rej. 573: Duplicidade de Evento"
+      },
+      {
+        "name": "(SUP) ERP Desk MD-e - Rej. 596: Evento apresentado após o prazo permitido para o evento: [10 dias]"
+      },
+      {
+        "name": "(SUP) ERP Desk MD-e - Rej. 296: Certificado Assinatura erro no acesso a LCR"
+      },
+      {
+        "name": "(SUP) ERP Desk MD-e - Rej. 2238: Falha ao gerar o numero de protocolo"
+      }
+    ]
+  },
+  {
+    "id": 25,
+    "name": "(SUP) ERP Desk - MDF-e- Rejeições",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) ERP Desk - MDF-e- Rej. Outra (Coloque na descrição)"
+      },
+      {
+        "name": "(SUP) ERP Desk - MDF-e- Rej. 580: Falha no Schema XML específico para o modal"
+      },
+      {
+        "name": "(SUP) ERP Desk - MDF-e- Rej. 611: Existe MDF-e não encerrado para esta placa, tipo de emitente e UF descarregamento"
+      }
+    ]
+  },
+  {
+    "id": 26,
+    "name": "(SUP) ERP Desk - PDV- Rejeições",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) ERP Desk PDV -Rej. 205: NF-e está denegada na base de dados da SEFAZ"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV -Rej. 999: Instabilidade na SEFAZ, nota será emitida em contingência"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rejeição Outra(descreva)"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 204: Duplicidade de NF-e"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 539: Duplicidade de NF-e, com diferença na Chave de Acesso"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 241: Um número da faixa já foi utilizado"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 391 não informado dados do cartão de credito"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 464: Código de Hash no QR-Code difere do calculado"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 590: Informado CST para emissor do Simples Nacional"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 604: Total do vOutro difere do somatório do"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 383: Item com CSOSN indevido"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 395: Endereço do site da UF da Consulta via QR-Code diverge do previsto"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 928: Informado código de benefício fiscal para CST sem benefício fiscal"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 462: Código Identificador do CSC no QR-Code não cadastrado na SEFAZ"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 301: Uso Denegado: Irregularidade fiscal do emitente"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 410: UF informada no campo CUF não é atendida pelo Web Service"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 704: NFC-e com Data-Hora de emissão atrasada"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 373: Descrição do primeiro item diferente de NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 108: Serviço Paralisado Momentaneamente (curto prazo)"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 781: Emissor não habilitado para emissão da NFC-e"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 660: CFOP de Combustível e não informado grupo de combustível"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 213 : CNPJ-Base do Emitente difere do CNPJ-Base do Certificado Digital"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 960: Obrigatório o preenchimento de Grupo de Tributação do ICMS monofásica sobre combustíveis"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 778: Informado NCM inexistente"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 959: NF-e não pode ter preenchimento de Grupo de Tributação do ICMS monofásica sobre combustíveis"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 703: Data-Hora de Emissão posterior ao horário de recebimento"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 378: Grupo de Combustível sem a informação de Encerrante"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 463: Código Identificador do CSC no QR-Code foi revogado pela empresa"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 218: NF-e já está cancelada na base de dados da Sefaz"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 854: Unidade Tributável (tag: uTrib) incompatível com produto informado"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 578: A data do evento não pode ser maior que a data do processamento"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 591: Informado CSOSN para emissor que não é do Simples Nacional (CRT diferente de 1)"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 502: Erro na Chave de Acesso - Campo Id não corresponde à concatenação dos campos correspondentes."
+      },
+      {
+        "name": "(SUP) ERP Desk PDV - Rej. 481: Código Regime Tributário do emitente diverge do cadastro na SEFAZ"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV -Rej. 963: Tipo de pagamento não aceita o grupo de cartões ou boletos"
+      },
+      {
+        "name": "(SUP) ERP Desk PDV -Rej. 882: GTIN (cEAN) com prefixo inválido [nItem: ]"
+      }
+    ]
+  },
+  {
+    "id": 27,
+    "name": "(SUP) ERP Desk - Rejeições - Emissor NF-e",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 203: Emitente não habilitado para emissão de NF-e"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 206: NF-e já está inutilizada na Base de dad"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. outra (Descreva)"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 204: Duplicidade de NF-e"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 207: CNPJ do emitente inválido"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 221: Confirmado o recebimento da NF-e pelo destinatário"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 539: Duplicidade de NF-e, com diferença na Chave de Acesso"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 600: CSOSN incompatível na operação com Não Contribuinte"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 694: Não informado o grupo de ICMS para a UF de destino"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 798: Valor total do ICMS relativo Fundo de Combate à Pobreza (FCP) da UF de destino difere do somatório do valor dos itens"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 699: Percentual do ICMS Interestadual para a UF de destino difere do previsto para o ano da Data de Emissão [nItem:999]"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 696: Operação com não contribuinte deve indicar operação com consumidor final"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 695: Informado indevidamente o grupo de ICMS para a UF de destino"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 795: Total do ICMS desonerado difere do somatório dos itens"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 793: Valor do ICMS relativo ao Fundo de Combate à Pobreza na UF de destino difere do calculado"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 817: Unidade Tributável incompatível com o NCM informado na operação com Comércio Exterio"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 817: Unidade Tributável incompatível com o NCM informado na operação com Comércio Exterior"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 883: GTIN (cEAN) sem informação"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 302: Uso Denegado: Irregularidade fiscal do destinatário"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 537: Total do Desconto difere do somatório dos itens"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 733: CFOP de operação interna e idDest diferente de 1"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 232: IE do destinatário não informada"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 720: Na operação com Exterior deve ser informada tag idEstrangeiro"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 855: Somatório percentuais de GLP derivado do petróleo, GLGNn e GLGNi diferente de 100"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 904: Informado indevidamente campo valor de pagamento"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 629: Valor do Produto difere do produto Valor Unitário de Comercialização e Quantidade Comercial"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 521: Operação Interna e UF do emitente difere da UF do destinatário/remetente contribuinte do ICMS"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej.  591: Informado CSOSN para emissor que não é do Simples Nacional (CRT diferente de 1)"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 291: Certificado Assinatura Data Validade"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 501: Prazo de cancelamento superior ao previsto na Legislação"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 854: Unidade Tributável (tag: uTrib) incompatível com produto informado"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 678: NF referenciada com UF diferente da NF-e complementar"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 926: Operação com Exterior e país de destino igual a Brasil"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 997: série já vinculada a outra inscrição estadual deste CNPJ"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 296: Certificado Assinatura erro no acesso a LCR"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 249: UF da Chave de Acesso diverge da UF autorizadora"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 506 - Data de Saída menor que a Data de Emissão"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 693: Alíquota de ICMS superior a definida para a operação interestadual"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 799: Valor total do ICMS Interestadual da UF de destino difere do somatório dos itens"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 590: Informado CST para emissor do Simples Nacional (CRT=1)"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 868: Grupos Veículo Transporte e Reboque não devem ser informados"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 960: Obrigatório o preenchimento de Grupo de Tributação do ICMS monofásica sobre combustíveis"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 375: NF-e com lançamento relativo a Cupom Fiscal referencia uma NFC-e"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 531: NF-e - Total da BC ICMS difere do somatório dos itens"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 508: CST incompatível na operação com Não Contribuinte"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 511: Não é de Operação com Exterior e Código País destinatário difere de 1058 (Brasil)"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 805: A SEFAZ do destinatário não permite Contribuinte Isento de Inscrição Estadual"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 324: CNPJ do destinatário já autorizado para download"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 486: Não informado o Grupo de Autorização para UF que exige a identificação do Escritório de Contabilidade na Nota Fiscal"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 545: NF-e de devolução com valor total superior a NF-e devolvida"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 362: Venda de combustível sem informação do Transportador"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 863: Total do IPI devolvido difere do somatório dos itens"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 528: Valor do ICMS difere do produto BC e Alíquota"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 848: Transporte próprio por conta do Destinatário e CNPJ Base ou CPF do Transportador difere do CNPJ Base ou CPF do Destinatário"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 354: Informado grupo de devolução de tributos para NF-e que não tem finalidade de devolução de mercadoria"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 105 - Lote em processamento"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 698: Alíquota interestadual do ICMS incompatível com as UF envolvidas na operação"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 732: CFOP de operação interestadual e idDest diferente de 2"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 208: CNPJ do destinatário inválido"
+      },
+      {
+        "name": "(SUP) ERP Desk - NF-e - Rejeição 325: CPF autorizado para download inválido"
+      },
+      {
+        "name": "(SUP) ERP Desk - NF-e - Rejeição - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) NF-e - Rej. 391: Não informados os dados do cartão de crédito/débito nas Formas de Pagamento da Nota Fiscal"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 300: Tipo da IE do Destinatário difere de Não Contribuinte no cadastro da UF"
+      },
+      {
+        "name": "(SUP) ERP Desk - NF-e - Rej. 627: O valor do ICMS desonerado deve ser informado"
+      },
+      {
+        "name": "(SUP) ERP Desk - NF-e - Rej. 387: Codigo de enquadramento legal do IPI invalido"
+      },
+      {
+        "name": "(SUP) ERP Desk - NF-e - Rej. 610: Total da NF difere do somatório dos Valores compõe o valor Total da NF"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 214: Tamanho da mensagem excedeu o limite estabelecido"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 853: Dados de cobrança não devem ser informados para pagamento a vista"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 772: Operação interestadual e UF destinatário igual a UF de origem"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 518: CFOP de entrada para NF-e de saída"
+      },
+      {
+        "name": "(SUP) ERP Desk - NF-e - Rej. 267: NF Complementar referencia uma NF-e inexistente"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 328: CFOP de devolução para NF-e que não tem finalidade de devolução de mercadoria"
+      },
+      {
+        "name": "(SUP) ERP Desk -NF-e - Rej. 902: Valor Líquido da Fatura difere do Valor Original menos o Valor do Desconto"
+      }
+    ]
+  },
+  {
+    "id": 28,
+    "name": "(SUP) ERP Desk -T.faturamento- Rejeições",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) ERP Desk Fatur. - Rej. Outra (Coloque na descrição)"
+      },
+      {
+        "name": "(SUP) ERP Desk Fatur. - Rej. 778: Informado NCM inexistente"
+      },
+      {
+        "name": "(SUP) ERP Desk Fatur. - Rej. 629: Valor do Produto difere do produto Valor Unitário de Comercialização e Quantidade Comercial"
+      },
+      {
+        "name": "(SUP) Faturamento - Rejeição 391: Não informados os dados do cartão de crédito/débito nas Formas de Pagamento da Nota Fiscal"
+      }
+    ]
+  },
+  {
+    "id": 29,
+    "name": "(SUP) ERP Etiquetas",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Etiqueta - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Etiqueta - Personalização de etiqueta"
+      },
+      {
+        "name": "(SUP) Etiqueta - Dúvida - Como personalizar etiqueta"
+      },
+      {
+        "name": "(SUP) Etiqueta - Dúvida - Como imprimir etiqueta"
+      }
+    ]
+  },
+  {
+    "id": 30,
+    "name": "(SUP) ERP Farma",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Farma - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Farma - Dúvida - Como fazer inventário no SNGPC"
+      },
+      {
+        "name": "(SUP) Farma - Dúvida - Credenciais  do Pharmacos"
+      },
+      {
+        "name": "(SUP) F. popular - Retorno 52S: solicitação não autorizada, o login ou senha do vendedor não é valido"
+      },
+      {
+        "name": "(SUP) Farma - Dúvida - Como importar arquivo farmacia"
+      },
+      {
+        "name": "(SUP) PBM - Como configurar/utilizar Funcional Card"
+      },
+      {
+        "name": "(SUP) PBM - Como configurar/utilizar Portal da Drogaria (TRN Centre)"
+      },
+      {
+        "name": "(SUP) Farma - Dúvida - Funcionamento do SNGPC"
+      }
+    ]
+  },
+  {
+    "id": 31,
+    "name": "(SUP) ERP Fiscal",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) NF-e - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) NFC-e - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) MD-e - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) MDF-e - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) CT-e - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) SPED - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Sintegra - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Fiscal - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - Como fazer nota para o exterior"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - Como fazer nota de devolução"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - Como emitir NF-e"
+      },
+      {
+        "name": "(SUP) Geren. NF-e - Retorno - Foi detectado um conteúdo inválido começando com o elemento 'vIPI'. Era esperado um dos 'vBC, qUnid'"
+      },
+      {
+        "name": "(SUP) NFC-e - Dúvida - Prazo de cancelamento de NFC-e"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - O sistema não pode encontrar o caminho especificado (Pasta de XML)"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Cannot produce CertificateVerify signature (Pasta Java)"
+      },
+      {
+        "name": "(SUP) MD-e - Retorno - Para evitar consumo indevido, tente novamente após 1 hora"
+      },
+      {
+        "name": "(SUP) MD-e - Erro - Forbidden (Instabilidade na SEFAZ)"
+      },
+      {
+        "name": "(SUP) CD - Como instalar certificado A3"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - Como enviar XML da NF-e para o cliente"
+      },
+      {
+        "name": "(SUP) SPED - Dúvida - Como gerar SPED"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Forbidden (Instabilidade na SEFAZ)"
+      },
+      {
+        "name": "(SUP) NFC-e - Dúvida - Configuração série e número do série PDV"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - Envio de E-mail para a contabilidade"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - No enum constant br.inf.portalfiscal.nfe.TUF. (UF do consumidor na nota de combustivel)"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Connection or outbound has closed (Configuração do certificado A3)"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Connect time out (Instabilidade na rede)"
+      },
+      {
+        "name": "(SUP) MD-e - Dúvida - Como realizar download de XML"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - 403 Forbidden (Certificado vencido)"
+      },
+      {
+        "name": "(SUP) Fiscal - Dúvida - Andamento de implementação da nova reforma tributaria"
+      },
+      {
+        "name": "(SUP) NFC-e - Dúvida - Possibilidade de transformar venda gerencial em NFC-e"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - CST com origem na frente"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - Como cancelar NF-e fora do prazo"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - Como destacar frete na nota"
+      },
+      {
+        "name": "(SUP) NFC-e - Retorno - Falha na comunicação com a internet"
+      },
+      {
+        "name": "(SUP) NFC-e - Dúvida - Configuração 'online e contingencia' e 'contingencia'"
+      },
+      {
+        "name": "(SUP) NF-e - BUG - Sistema não pegou retorno de autorização da nota"
+      },
+      {
+        "name": "(SUP) NF-e - Retorno - O valor '' do elemento 'xProd' não é válido"
+      },
+      {
+        "name": "(SUP) NF-e - Retorno - O valor '' do elemento 'cEnq' não é válido"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - nfe.svrs.rs.gov.br (Falha de conexão)"
+      },
+      {
+        "name": "(SUP) MD-e - Erro - 403 Forbidden (Instabilidade na rede)"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Name is null (Informações de combustível não preenchidas corretamente)"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - Como aplicar informações adicionais na nota"
+      },
+      {
+        "name": "(SUP) NF-e - Retorno - O valor '' do elemento 'uTrib' não é válido"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - Como preencher tributação da nota"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Retorno - O conteúdo do elemento 'pag' não está completo. Era esperado um dos 'detPag'"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Byte inválido 1 da sequência UTF-8 do Byte 1"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Null null por caracteres especiais"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - Como fazer nota a partir de uma venda PDV"
+      },
+      {
+        "name": "(SUP) MDF-e - Erro - Byte inválido 2 da sequência UTF-8 do Byte 2"
+      },
+      {
+        "name": "(SUP) SPED - Retorno - É necessário uma única empresa matriz no grupo para geração do arquivo"
+      },
+      {
+        "name": "(SUP) MD-e - Dúvida - Como configurar"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - Como inutilizar NF-e"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Null null (Destinatario sem IE)"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Rollback Ativado Unknow colum 'unitrib' in 'field list'"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - Como emitir nota em Homologação"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Table 'nutricional' doens't exist (Ao selecionar produtos para adicionar em uma NF-e)"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Salvar nota (Não foi possível carregar o certificado digital)"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Retorno -O valor ' ' do elemento  'intCpf' não é válido"
+      },
+      {
+        "name": "(SUP) SPED - Análise - Análise de arquivos"
+      },
+      {
+        "name": "(SUP) NF-e - Dúvida - Configuração série e número"
+      },
+      {
+        "name": "(SUP) NFC-e - Dúvida - Configuração idToken e CSC"
+      },
+      {
+        "name": "(SUP) MD-e - Erro - 404 Not Found (Configurado como Homologação)"
+      },
+      {
+        "name": "(SUP) Geren. NF-e - Retorno - Foi detectado um conteúdo inválido começando com o elemento 'vBCST'. Era esperado um dos 'modBCST'"
+      },
+      {
+        "name": "(SUP) Geren. NF-e - Retorno - Status 150 Autorizado o uso da NF-e, autorização fora de prazo"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Retorno - Erro a assinar NFC-e (Certificado digital incorreto)"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Read time out (instabilidade na SEFAZ)"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Connect time out (instabilidade na SEFAZ)"
+      },
+      {
+        "name": "(SUP) NF-e - Erro -503 Service Unavailable (Instabilidade na SEFAZ)"
+      },
+      {
+        "name": "(SUP) CD - Como instalar certificado A1"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - O sistema não recebeu retorno de autorizada da nota"
+      },
+      {
+        "name": "(SUP) MDF-e - Dúvida - Como utilizar"
+      },
+      {
+        "name": "(SUP) NF-e - Retorno - Não é possível gerar o DANFE de uma NF-e não autorizada"
+      },
+      {
+        "name": "(SUP) NF-e - Retorno - O valor '' do elemento 'xNome' não é válido"
+      },
+      {
+        "name": "(SUP) NF-e - Retorno - O valor '' do elemento 'refNFe' não é válido"
+      },
+      {
+        "name": "(SUP) NF-e - Retorno - O valor '' do elemento 'xJust' não é válido"
+      },
+      {
+        "name": "(SUP) MD-e - Erro - Connect time out (Instabilidade na SEFAZ)"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Can't find resource for bundle java (Nota com mais de 990 itens)"
+      },
+      {
+        "name": "(SUP) NF-e - Retorno - O valor '' do elemento 'IE' não é válido"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - Data truncation: Truncated incorrect DOUBLE value: ' ' (Documento do contas a receber com letras)"
+      },
+      {
+        "name": "(SUP) Fiscal - Dúvida - Como fazer venda PDV em modo contingencia"
+      },
+      {
+        "name": "(SUP) NF-e - Retorno - A NF-e está em uma situação inválida para pré-visualização (Pré-Danfe em nota autorizada)"
+      }
+    ]
+  },
+  {
+    "id": 32,
+    "name": "(SUP) ERP Força de vendas",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) ERP Força de vendas - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) ERP Força de Vendas - Retorno - 101 Token não encontrado"
+      },
+      {
+        "name": "(SUP) ERP Força de Vendas - Retoro - 500 - Unable to find Categoria with id '' of Produto entity"
+      }
+    ]
+  },
+  {
+    "id": 33,
+    "name": "(SUP) ERP Imendes",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Imendes - Dúvida - Configuração"
+      },
+      {
+        "name": "(SUP) Imendes - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Imendes - Análise - Produtos sendo tributados com id_cst 0"
+      },
+      {
+        "name": "(SUP) Imendes - Dúvida - Como utilizar o Imendes"
+      },
+      {
+        "name": "(SUP) Imendes - Retorno - 400 Bad Request (Campo de quantidade de produtos por consulta configurado de forma incorreta)"
+      }
+    ]
+  },
+  {
+    "id": 34,
+    "name": "(SUP) ERP LC Pay",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) LC Pay - Outro (Descreva"
+      },
+      {
+        "name": "(SUP) Shipay - Pix com LC Pay no recebimento de título"
+      }
+    ]
+  },
+  {
+    "id": 35,
+    "name": "(SUP) ERP Lote e vencimento",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Lote/vencimento - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Lote/vencimento - Dúvida - Como controlar lote/vencimento"
+      }
+    ]
+  },
+  {
+    "id": 36,
+    "name": "(SUP) ERP Parâmetros",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Parâmetros - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Parâmetros - Dúvida - Como aumentar o prazo de devolução"
+      },
+      {
+        "name": "(SUP) Parâmetros - Dúvida - Como vender sem estoque"
+      },
+      {
+        "name": "(SUP) Parâmetros - Dúvida - Como remover obrigatoriedade de informar CPF"
+      },
+      {
+        "name": "(SUP) Parâmetros - Dúvida - Como alterar nome de tabela de preços"
+      }
+    ]
+  },
+  {
+    "id": 37,
+    "name": "(SUP) ERP Relatórios",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Relatórios - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Rel. - Dúvida - Qual usuário fez recebimento em determinado caixa"
+      },
+      {
+        "name": "(SUP) Relatórios - Dúvida - Relatório de produtos mais vendidos"
+      },
+      {
+        "name": "(SUP) Rel. - Retorno - Exception reading response (Configuração de E-mail errada)"
+      },
+      {
+        "name": "(SUP) XML para contabilidade - Dúvida - Possibilidade de gerar arquivo de um grande período"
+      },
+      {
+        "name": "(SUP) Relatórios - Dúvida - Relatório de comissão por produto vendido"
+      },
+      {
+        "name": "(SUP) Relatórios - Dúvida - Relatório de NF-e Emitidas"
+      },
+      {
+        "name": "(SUP) Relatórios - Dúvida - Funcionamento do movimento de caixa PDV"
+      },
+      {
+        "name": "(SUP) XML para contabilidade - Retorno - Existe NFC-e pendentes (efetue transmissão das mesmas para gerar o arquivo fiscal)"
+      },
+      {
+        "name": "(SUP) XML para contabilidade - Retorno - Can't send command to SMTP host"
+      },
+      {
+        "name": "(SUP) Relatórios - Dúvida - Lucro negativo no relatório de vendas (Venda de produto com custo superior ao preço de venda)"
+      },
+      {
+        "name": "(SUP) XML para contabilidade - Dúvida - Como enviar XML para contabilidade"
+      },
+      {
+        "name": "(SUP) XML para contabilidade - Analise - Divergência de quantidade entre arquivo PDF com o arquivo de XMLs gerado (Notas duplicadas)"
+      }
+    ]
+  },
+  {
+    "id": 38,
+    "name": "(SUP) ERP Shipay",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Shipay - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Shipay - Dúvida - Como configurar"
+      },
+      {
+        "name": "(SUP) Shipay - Pix com Shipay no recebimento de título"
+      }
+    ]
+  },
+  {
+    "id": 39,
+    "name": "(SUP) Geren. NFC-e - Rejeições",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Geren. NFC-e - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 539: Duplicidade de NF-e, com diferença na Chave de Acesso"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 205: NF-e está denegada na base de dados da Sefaz"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 213: CNPJ-Base do Autor difere do CNPJ-Base do Certificado Digital"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 383: Item com CSOSN indevido"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 537: Total do Desconto difere do somatório dos itens"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 865: Total dos pagamentos menor que o total da nota"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 611: GTIN (cEAN) inválido"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 866: Ausência de troco quando o valor dos pagamentos informados for maior que o total da nota"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 391: Não informados os dados do cartão de crédito/débito nas Formas de Pagamento da Nota Fiscal"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 297: Assinatura difere do calculado"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 999: Instabilidade na SEFAZ"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 725: NFC-e com CFOP inválido"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 237: CPF do destinatário inválido"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 629: Valor do Produto difere do produto Valor Unitário de Comercialização e Quantidade Comercial"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 854: Unidade Tributável (tag: uTrib) incompatível com produto informado"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 610: Total da NF difere do somatório dos Valores compõe o valor Total da NF"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 531: Total da BC ICMS difere do somatório dos itens"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 779: NFC-e com NCM incompatível"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rej. 392: Não informados os dados da operação de pagamento por cartão de crédito/débito"
+      },
+      {
+        "name": "(SUP) Geren. NFC-e - Rejeição 386: CFOP não permitido para o CSOSN informado"
+      }
+    ]
+  },
+  {
+    "id": 40,
+    "name": "(SUP) Gernérico",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) (SUP) Gernérico - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) (SUP) Gernérico - Dúvida - Horário de expediente dos setores"
+      }
+    ]
+  },
+  {
+    "id": 41,
+    "name": "(SUP) Gourmet",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Gourmet - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Gourmet - Dúvida - Como utilizar o gourmet no desktop"
+      }
+    ]
+  },
+  {
+    "id": 42,
+    "name": "(SUP) Inatividade",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Inatividade da revenda"
+      }
+    ]
+  },
+  {
+    "id": 43,
+    "name": "(SUP) LC Academy",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) LC Academy - cadastro"
+      }
+    ]
+  },
+  {
+    "id": 44,
+    "name": "(SUP) LC Auto Backup",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) LC Auto Backup - outro"
+      },
+      {
+        "name": "(SUP) LC Auto Backup - Backup em outra unidade do Win."
+      },
+      {
+        "name": "(SUP) LC Auto Backup - Erro - 'Erro, não restaurada' - Caractere especial no caminho"
+      },
+      {
+        "name": "(SUP) LC Auto Backup - MySQL em variáveis de ambente do Windows (não configurado)"
+      },
+      {
+        "name": "(SUP) LC Auto Backup - Realização de backup"
+      },
+      {
+        "name": "(SUP) LC Auto Backup - Dúvida - Como configurar"
+      },
+      {
+        "name": "(SUP) LC Auto Backup - Dúvida - Como fazer backup automático"
+      },
+      {
+        "name": "(SUP) LC Auto Backup - Dúvida - Como restaurar backup automático"
+      },
+      {
+        "name": "(SUP) LC Auto Backup - Erro - Erro ao distribuir backup (Caractere especial no caminho do arquivo)"
+      }
+    ]
+  },
+  {
+    "id": 45,
+    "name": "(SUP) LC Monitor",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) LC Monitor - Erro - Null null \"Caminho do certificado não encontrado\""
+      },
+      {
+        "name": "(SUP) LC Monitor - Erro - Null null por caracteres especiais"
+      },
+      {
+        "name": "(SUP) LC Monitor - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) LC Monitor - Erro - Null Null \"Atenção, verifique o certificado digital\""
+      },
+      {
+        "name": "(SUP) LC Monitor - Erro - Null null \"Verifique seu certificado\""
+      },
+      {
+        "name": "(SUP) LC Monitor - Erro - Forbidden"
+      },
+      {
+        "name": "(SUP) LC Monitor - Notas não transmitem e não é apresentado erro (Certificado configurado errado)"
+      },
+      {
+        "name": "(SUP) LC Monitor - Notas não transmitem (Monitor não aberto no Servidor)"
+      }
+    ]
+  },
+  {
+    "id": 46,
+    "name": "(SUP) LC WEB",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) LC WEB - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) LC WEB - Dúvida - Funcionamento"
+      }
+    ]
+  },
+  {
+    "id": 47,
+    "name": "(SUP) Mercado pago point",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Mercado Pago Point - Dúvida - Como configurar"
+      },
+      {
+        "name": "(SUP) Mercado Pago Point - Outro (Descreva"
+      }
+    ]
+  },
+  {
+    "id": 48,
+    "name": "(SUP) Ordem de Serviço",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) OS - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) OS - Dúvida - Como solicitar vendedor"
+      },
+      {
+        "name": "(SUP) OS - Dúvida - Como utilizar Ordem de serviço"
+      }
+    ]
+  },
+  {
+    "id": 49,
+    "name": "(SUP) PDV Tela",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) PDV - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - Certificado vencido"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - Não foi possível carregar certificado digital"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O conteúdo do elemento 'cEAN' não é válido"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O valor do elemento 'xLgr' não é valido"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O valor do elemento 'infCpl' não é valido"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O valor do elemento 'xProd' não é valido"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O valor do elemento 'CEP' não é valido"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O valor do elemento 'IE' não é valido"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - UTF-8 caracteres especiais"
+      },
+      {
+        "name": "(SUP) PDV - Erro - Rollback infinity acréscimo/desconto"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O valor 'Unidade' do elemento 'uCom' não é válido"
+      },
+      {
+        "name": "(SUP) PDV - Erro - Null Null - Sem certificado"
+      },
+      {
+        "name": "(SUP) PDV - Erro - Null Null na abertura do caixa"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O valor do elemento 'xJust' não é válido"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O valor do elemento 'xfone' não é válido"
+      },
+      {
+        "name": "(SUP) PDV - Erro - Null Null - Impressora não configurada"
+      },
+      {
+        "name": "(SUP) PDV - Dúvida - Como vender produto fracionado sem balança"
+      },
+      {
+        "name": "(SUP) PDV - Dúvida - Funcionamento da pesquisa sem porcentagem no F7"
+      },
+      {
+        "name": "(SUP) PDV - Dúvida - Como vender produto composto no sistema"
+      },
+      {
+        "name": "(SUP) PDV - Dúvida - Como fazer vendas gerencias"
+      },
+      {
+        "name": "(SUP) PDV - Erro - (Banco de dados atualizado em setup antigo) Field 'id_naturezaoperacao' doesn't have a default value"
+      },
+      {
+        "name": "(SUP) PDV - Erro - Column 'preco_pmc' not found (Migração importada no PI)"
+      },
+      {
+        "name": "(SUP) PDV - Caixa com data de fechamento posterior ao dia da abertura"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O conteúdo do elemento 'PIS' não está completo. Era esperado um dos 'PISAliq, PISQtde, PISNT,PISOutr'"
+      },
+      {
+        "name": "(SUP) PDV - Dúvida - Como fazer sangria"
+      },
+      {
+        "name": "(SUP) PDV - Dúvida - Forma de pagamento não lista ao finalizar venda (RPT)"
+      },
+      {
+        "name": "(SUP) PDV - Dúvida - Como alterar preço de produto"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O valor do elemento 'pCOFINS' não é valido"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O valor ' ' do elemento 'CEST' não é valido"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - Forma de pagamento configurada para finalização somente via integração"
+      },
+      {
+        "name": "(SUP) PDV - Erro - Null null - Erro ao  verificar data de validade CD"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - Forma de pagamento invalida  para cliente final"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - 401 Falha na autenticação da venda na shipay"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O conteúdo do elemento 'ICMS' não está completo"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O conteúdo do elemento 'COFINS' não está completo"
+      },
+      {
+        "name": "(SUP) PDV - Erro - Got error 28 from storage engine ao pesquisar produto (Armazenamento cheio)"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - Contate a central do seu cartão (Instabilidade no TEF)"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O valor 'URL' do elemento 'QRCode' não é válido"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - 400 BAD Request (Instabilidade serviços Shipay)"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - Sem conexão com o servidor (Problema de conexão no TEF)"
+      },
+      {
+        "name": "(SUP) PDV - Erro - Null - O nome da rede não foi encontrado (Abertura do caixa)"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - Não foi possível assinar XML (configurações de certificado)"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - Foi detectado um conteúdo invalido começando pelo elemento 'total'. Era esperado um dos 'avulsa, dest, retirada, entrega, autoXML, det'"
+      },
+      {
+        "name": "(SUP) PDV - Dúvida - Como adicionar CPF/CNPJ na nota"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - O valor do elemento 'CNPJ' não é válido"
+      },
+      {
+        "name": "(SUP) PDV - Dúvida - Conflito entre id/código/referencia"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - Série deste PDV não configurada, você deve configura-la antes"
+      },
+      {
+        "name": "(SUP) PDV - Erro - Rollback field 'id_naturezaoperacao' (Máquinas com versões diferente)"
+      },
+      {
+        "name": "(SUP) PDV - Dúvida - Como emitir extrato de recebimento de títulos"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - Tef 31 (Erro Pinpad)"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - Tef (Transação Invalida)"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - Não foi possível assinar XML (O sistema não pode encontrar o caminho especificado)"
+      },
+      {
+        "name": "(SUP) PDV - Leitura de etiqueta de balança com valor errado"
+      },
+      {
+        "name": "(SUP) PDV - Retorno - Shipay (Serviço adicional cancelado, esta operação não pode ser realizada)"
+      },
+      {
+        "name": "(SUP) PDV - Dúvida - Valores do relatório de fechamento de caixa"
+      },
+      {
+        "name": "(SUP) PDV - Dúvida - Como adicionar logo da empresa no PDV"
+      }
+    ]
+  },
+  {
+    "id": 50,
+    "name": "(SUP) Pedido de venda",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Pedido de venda - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Pedido de venda - Dúvida - Impressão de bobina no pedido de venda"
+      },
+      {
+        "name": "(SUP) Pedido de venda - Dúvida - Como consultar pedidos de venda"
+      }
+    ]
+  },
+  {
+    "id": 51,
+    "name": "(SUP) Portal da revenda",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) P. da revenda - Dúvida - Como solicitar migração"
+      },
+      {
+        "name": "(SUP) P. da revenda - Outro"
+      },
+      {
+        "name": "(SUP) P. da Revenda - Dúvida - Como renovar contrato"
+      },
+      {
+        "name": "(SUP) P. da Revenda - Como adicionar nova máquina no contrato"
+      },
+      {
+        "name": "(SUP) P. da revenda - Dúvida - Como bloquear sistema remotamente no portal"
+      },
+      {
+        "name": "(SUP) P. da revenda - Dúvida - Como cadastrar cliente no portal"
+      },
+      {
+        "name": "(SUP) P. da revenda - Dúvida - Como cancelar contrato"
+      }
+    ]
+  },
+  {
+    "id": 52,
+    "name": "(SUP) Problema de Infraestrutura",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Prob. de infraestrutura - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Prob. de infraestrutura - PC do cliente"
+      },
+      {
+        "name": "(SUP) Prob. de infraestrutura - Rede do cliente"
+      }
+    ]
+  },
+  {
+    "id": 53,
+    "name": "(SUP) Retaguarda",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Retaguarda - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Retaguarda - Dúvida - Como gerar PDF da NFC-e"
+      },
+      {
+        "name": "(SUP) Retaguarda - Dúvida - Como reimprimir venda gerencial"
+      },
+      {
+        "name": "(SUP) Retaguarda - Dúvida - Como cancelar venda"
+      }
+    ]
+  },
+  {
+    "id": 54,
+    "name": "(SUP) Retorno de pendência",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) (Informe ticket/protocolo na descrição) Retorno sobre atendimento anterior"
+      }
+    ]
+  },
+  {
+    "id": 55,
+    "name": "(SUP) Saida de estoque",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Saida de estoque - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Saida de estoque - Dúvida - Como fazer saida de estoque para uso e consumo"
+      }
+    ]
+  },
+  {
+    "id": 56,
+    "name": "(SUP) Solicitação - Rel ou desenvolvimento",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Solicitação - Rel ou desenvolvimento - outra"
+      },
+      {
+        "name": "(SUP) Solicitação - Personalização de etiqueta"
+      }
+    ]
+  },
+  {
+    "id": 57,
+    "name": "(SUP) Solucionado pela revenda",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Solucionado pela revenda"
+      }
+    ]
+  },
+  {
+    "id": 58,
+    "name": "(SUP) Teste da plataforma",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Teste da plataforma"
+      }
+    ]
+  },
+  {
+    "id": 59,
+    "name": "(SUP) Transferencia de estoque",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) T. entre empresas - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) T. entre local de estoque - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) T. entre empresas - Dúvida - Como utilizar transferência de estoque entre empresas"
+      },
+      {
+        "name": "(SUP) T. entre empresas - Dúvida - Como utilizar transferência entre local de estoque"
+      }
+    ]
+  },
+  {
+    "id": 60,
+    "name": "(SUP) Windows",
+    "expanded": false,
+    "subjects": [
+      {
+        "name": "(SUP) Windows - Dúvida - Como Desabilitar/Habilitar impressora como padrão do Windows"
+      },
+      {
+        "name": "(SUP) Windows - Outro (Descreva)"
+      },
+      {
+        "name": "(SUP) Windows - Erro - C:\\LC Sistemas - Softwarehouse\\jre\\bin\\javaw.exe O caminho especificado  não existe"
+      }
+    ]
+  }
+]
