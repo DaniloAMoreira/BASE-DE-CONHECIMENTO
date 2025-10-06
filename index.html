@@ -11,12 +11,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        /* Paleta de Cores Original (Preservada) */
         :root {
             --color-bg: #0a0f1f;
             --color-surface: #10183b;
             --color-primary: #2a3a90;
-            --color-accent: #3b82f6; /* Usando o azul primário do Tailwind */
+            --color-accent: #3b82f6;
             --color-text: #e5e7eb;
             --color-text-muted: #9ca3af;
             --panel-bg: rgba(16, 24, 59, 0.85);
@@ -34,8 +33,6 @@
             --panel-bg: rgba(227, 242, 253, 0.9);
             --panel-border: rgba(144, 202, 249, 0.7);
         }
-        
-        /* ESTILOS BASE */
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--color-bg);
@@ -46,69 +43,27 @@
         #searchInput { color: var(--color-text); background-color: var(--color-search-bg); border: 1px solid var(--color-search-border); }
         #searchInput::placeholder { color: var(--color-text-muted); }
         .search-icon { color: var(--color-text-muted); }
-        /* CORRIGIDO: Voltando h1 e h3 para a cor padrão do texto (--color-text) */
-        h1.site-title, .category-header h3 { color: var(--color-text); }
+        h1.text-accent, .category-header h3 { color: var(--color-text); }
         body[data-theme="light"] #searchInput { background-color: #FFFFFF; border: 1px solid #D1D5DB; color: var(--color-text); }
         body[data-theme="light"] #searchInput::placeholder, body[data-theme="light"] .search-icon { color: var(--color-text-muted); }
-        body[data-theme="light"] h1.site-title, body[data-theme="light"] .category-header h3 { color: var(--color-text); }
+        body[data-theme="light"] h1.text-accent, body[data-theme="light"] .category-header h3 { color: var(--color-accent); }
         #webgl-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-        
-        /* ESTILOS DE PAINEL COM 3D TILT */
-        .panel { 
-            background: var(--panel-bg); 
-            /* backdrop-filter: blur(0); para evitar desfoque no texto, conforme solicitado */
-            backdrop-filter: blur(0);
-            -webkit-backdrop-filter: blur(0);
-            border: 1px solid var(--panel-border); 
-            box-shadow: 0 8px 32px 0 rgba(10, 15, 31, 0.37); 
-            border-radius: 0.75rem; 
-            
-            /* Configurações para 3D Tilt */
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Transição mais suave */
-            transform-style: preserve-3d;
-            perspective: 1000px;
-            /* Adicionado z-index para garantir que o texto não fique atrás do background */
-            position: relative; 
-            z-index: 5; 
-        }
-        
-        /* ESTILOS DE LISTA E EXPANSÃO */
+        .panel { background: var(--panel-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--panel-border); box-shadow: 0 8px 32px 0 rgba(10, 15, 31, 0.37); border-radius: 0.75rem; transition: background-color 0.3s ease, border-color 0.3s ease; }
         .subject-list { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.5s ease-in-out; }
         .subject-list > div { overflow: hidden; }
         .subject-list.expanded { grid-template-rows: 1fr; }
         .rotate-180 { transform: rotate(180deg); }
-        
-        /* SCROLLBAR */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--color-bg); }
         ::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
-        
-        /* ANIMAÇÕES BASE */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
         .glow-on-hover { transition: box-shadow 0.3s ease, transform 0.3s ease; }
         .glow-on-hover:hover { transform: translateY(-2px); box-shadow: 0 0 15px 2px var(--color-accent); }
+        .loading { opacity: 0.5; pointer-events: none; }
         
-        /* ANIMAÇÃO AVANÇADA: SHIMMER LOADING (Substitui o .loading simples) */
-        @keyframes shimmer {
-          0% { background-position: -1000px 0; }
-          100% { background-position: 1000px 0; }
-        }
-        .shimmer-loading {
-            background: linear-gradient(to right, var(--color-surface) 0%, var(--panel-border) 20%, var(--color-surface) 40%, var(--color-surface) 100%);
-            background-repeat: no-repeat;
-            background-size: 1000px 100%;
-            animation: shimmer 1.5s infinite linear;
-            border-color: transparent !important;
-            opacity: 0.8;
-            pointer-events: none;
-        }
-        body[data-theme="light"] .shimmer-loading {
-            background: linear-gradient(to right, var(--color-surface) 0%, #D1D5DB 20%, var(--color-surface) 40%, var(--color-surface) 100%);
-        }
-        
-        /* ESTILOS PARA SUGESTÕES */
+        /* ESTILOS PARA SUGESTÕES QUE EMPURRAM O CONTEÚDO */
         #suggestionsContainer {
             display: grid;
             grid-template-rows: 0fr;
@@ -157,24 +112,6 @@
         .neural-dot-1 { animation-delay: 0s; }
         .neural-dot-2 { animation-delay: 0.3s; }
         .neural-dot-3 { animation-delay: 0.6s; }
-
-        /* NOVO ESTILO: Feedback de Clique para Assuntos */
-        .subject-item-list {
-            transition: all 0.2s ease;
-            display: flex; /* Garante que o texto se alinhe corretamente sem o ícone */
-            justify-content: flex-start; /* Alinha o conteúdo à esquerda */
-        }
-        .subject-item-list:hover {
-            background-color: rgba(59, 130, 246, 0.1); /* Cor sutil ao passar o mouse */
-            transform: translateX(2px); /* Leve movimento para a direita */
-        }
-        .subject-item-list.clicked-feedback {
-             background-color: var(--color-accent);
-             color: var(--color-bg); /* Inverte a cor do texto para alto contraste */
-             transform: scale(1.02);
-             opacity: 0.9;
-             box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); /* Sombra suave */
-        }
     </style>
 </head>
 <body class="antialiased">
@@ -191,8 +128,7 @@
             </div>
             <div>
                 <header class="mb-6">
-                    <!-- Alterada a classe para 'site-title' para aplicar a cor do CSS -->
-                    <h1 class="text-3xl font-bold text-center mb-6 site-title">Base de Conhecimento</h1>
+                    <h1 class="text-3xl font-bold text-center mb-6 text-accent">Base de Conhecimento</h1>
                     <div class="relative">
                         <input type="text" id="searchInput" placeholder="Pesquisar por categorias e assuntos..." class="w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300" autocomplete="off">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -206,9 +142,8 @@
         </div>
     </div>
 
-    <!-- Modal com ID de conteúdo para animação -->
     <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="panel w-full max-w-md p-6 transform transition-all duration-300 scale-95 opacity-0" id="infoModalContent">
+        <div class="panel w-full max-w-md p-6">
             <h3 class="text-lg font-semibold mb-4 text-accent">Informação</h3>
             <p id="infoMessage" class="mb-6"></p>
             <div class="flex justify-end">
@@ -224,7 +159,6 @@
             const categoriesContainer = document.getElementById('categoriesContainer');
             const suggestionsContainer = document.getElementById('suggestionsContainer');
             const infoModal = document.getElementById('infoModal');
-            const infoModalContent = document.getElementById('infoModalContent'); // Novo ID
             const infoMessage = document.getElementById('infoMessage');
             const infoOkBtn = document.getElementById('infoOkBtn');
 
@@ -235,100 +169,13 @@
             let isDataLoaded = false;
 
             // --- MÓDULOS (Tema, Modal, WebGL) ---
-            const ThemeSwitcher = (() => { 
-                const DOM = { 
-                    body: document.body, 
-                    themeToggleBtn: document.getElementById('theme-toggle-btn'), 
-                    themeIconSun: document.getElementById('theme-icon-sun'), 
-                    themeIconMoon: document.getElementById('theme-icon-moon') 
-                }; 
-                const STORAGE_KEY = 'themePreference'; 
-                const applyTheme = (theme) => { 
-                    DOM.body.dataset.theme = theme; 
-                    localStorage.setItem(STORAGE_KEY, theme); 
-                    DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); 
-                    DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); 
-                }; 
-                const toggleTheme = () => { 
-                    const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; 
-                    applyTheme(currentTheme); 
-                }; 
-                const init = () => { 
-                    const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; 
-                    applyTheme(savedTheme); 
-                    DOM.themeToggleBtn.addEventListener('click', toggleTheme); 
-                }; 
-                return { init }; 
-            })();
-            
-            // Lógica do Modal com animação de entrada/saída
-            const showModal = (message) => { 
-                infoMessage.textContent = message; 
-                infoModal.classList.remove('hidden'); 
-                setTimeout(() => {
-                    infoModalContent.classList.remove('scale-95', 'opacity-0');
-                    infoModalContent.classList.add('scale-100', 'opacity-100');
-                }, 10);
-            }; 
-            const hideModal = () => {
-                infoModalContent.classList.remove('scale-100', 'opacity-100');
-                infoModalContent.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => {
-                    infoModal.classList.add('hidden');
-                }, 300);
-            };
-            infoOkBtn.addEventListener('click', hideModal);
-
-            // WebGL Aprimorado (apenas para garantir que a cor seja a original)
-            const initWebGLBackground = () => { 
-                const canvas = document.getElementById('webgl-bg'); 
-                if (!canvas) return; 
-                const scene = new THREE.Scene(); 
-                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); 
-                const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); 
-                renderer.setSize(window.innerWidth, window.innerHeight); 
-                renderer.setClearColor(0x000000, 0); 
-                const geometry = new THREE.BufferGeometry(); 
-                const vertices = []; 
-                for (let i = 0; i < 1000; i++) { 
-                    vertices.push((Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000); 
-                } 
-                geometry.setAttribute('position', new THREE.Float32Array(vertices), 3); 
-                
-                // Cor original da estrela
-                const darkThemeColor = new THREE.Color(0x3b82f6); 
-                const lightThemeColor = new THREE.Color(0x3b82f6);
-                
-                const material = new THREE.PointsMaterial({ size: 2, color: darkThemeColor }); 
-                const points = new THREE.Points(geometry, material); 
-                scene.add(points); 
-                camera.position.z = 1000; 
-                
-                const animate = () => { 
-                    requestAnimationFrame(animate); 
-                    points.rotation.x += 0.0005; 
-                    points.rotation.y += 0.001; 
-                    renderer.render(scene, camera); 
-                }; 
-                animate(); 
-
-                window.addEventListener('resize', () => { 
-                    camera.aspect = window.innerWidth / window.innerHeight; 
-                    camera.updateProjectionMatrix(); 
-                    renderer.setSize(window.innerWidth, window.innerHeight); 
-                }); 
-                
-                // Mantém o observer para trocar a cor, caso o tema mude
-                const observer = new MutationObserver(() => {
-                    const newColor = document.body.dataset.theme === 'light' ? lightThemeColor : darkThemeColor;
-                    material.color.set(newColor);
-                });
-                observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
-            };
+            const ThemeSwitcher = (() => { const DOM = { body: document.body, themeToggleBtn: document.getElementById('theme-toggle-btn'), themeIconSun: document.getElementById('theme-icon-sun'), themeIconMoon: document.getElementById('theme-icon-moon') }; const STORAGE_KEY = 'themePreference'; const applyTheme = (theme) => { DOM.body.dataset.theme = theme; localStorage.setItem(STORAGE_KEY, theme); DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); }; const toggleTheme = () => { const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(currentTheme); }; const init = () => { const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; applyTheme(savedTheme); DOM.themeToggleBtn.addEventListener('click', toggleTheme); }; return { init }; })();
+            const showModal = (message) => { infoMessage.textContent = message; infoModal.classList.remove('hidden'); }; const hideModal = () => infoModal.classList.add('hidden'); infoOkBtn.addEventListener('click', hideModal);
+            const initWebGLBackground = () => { const canvas = document.getElementById('webgl-bg'); if (!canvas) return; const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setClearColor(0x000000, 0); const geometry = new THREE.BufferGeometry(); const vertices = []; for (let i = 0; i < 1000; i++) { vertices.push((Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000); } geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); const material = new THREE.PointsMaterial({ size: 2, color: 0x06B6D4 }); const points = new THREE.Points(geometry, material); scene.add(points); camera.position.z = 1000; const animate = () => { requestAnimationFrame(animate); points.rotation.x += 0.0005; points.rotation.y += 0.001; renderer.render(scene, camera); }; animate(); window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }); };
 
             // --- LÓGICA DE DADOS ---
             const loadData = async () => {
-                categoriesContainer.classList.add('shimmer-loading'); // Usa shimmer no lugar do 'loading' simples
+                categoriesContainer.classList.add('loading');
                 try {
                     const response = await fetch('./database.json');
                     if (!response.ok) throw new Error(`HTTP error!`);
@@ -343,7 +190,7 @@
                     console.error("Erro ao carregar dados", error);
                     showModal('Não foi possível carregar a base de conhecimento.');
                 } finally {
-                    categoriesContainer.classList.remove('shimmer-loading'); // Remove o shimmer
+                    categoriesContainer.classList.remove('loading');
                 }
             };
 
@@ -356,7 +203,6 @@
                 if (!searchTerm || !text) return text;
                 const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const regex = new RegExp(escapedTerm, 'gi');
-                // Mantém a classe original para destaque, mas usa <mark> para o motor de busca
                 return text.replace(regex, (match) => `<mark class="bg-transparent text-blue-400 font-semibold not-italic">${match}</mark>`);
             };
 
@@ -378,8 +224,7 @@
                             <circle class="neural-dot neural-dot-3" cx="20" cy="12" r="3"/>
                         </svg>
                     `;
-                    // Destaque na sugestão também
-                    item.innerHTML = `${neuralIconSVG}<span>${highlightMatch(suggestionText, searchInput.value.trim())}</span>`; 
+                    item.innerHTML = `${neuralIconSVG}<span>${suggestionText}</span>`;
                     item.addEventListener('click', () => {
                         searchInput.value = suggestionText;
                         suggestionsContainer.classList.remove('expanded');
@@ -416,26 +261,16 @@
                 dataToRender.forEach(category => {
                     const isExpanded = category.expanded || false;
                     const categoryElement = document.createElement('div');
-                    // Adiciona classe 'panel' para o estilo base do painel
-                    categoryElement.className = 'panel rounded-lg'; 
-                    
+                    categoryElement.className = 'panel rounded-lg';
                     const subjectsToDisplay = category.subjectsToDisplay || category.subjects;
-                    
-                    // Removido o ícone SVG de link
                     const subjectsHTML = subjectsToDisplay.length > 0
-                        ? subjectsToDisplay.map((subject) => `
-                            <li class="subject-item-list flex items-center justify-between text-text ml-2 p-1 rounded-md cursor-pointer">
-                                <span class="truncate pr-2">${highlightMatch(subject.name, searchTerm)}</span>
-                                <!-- Ícone de Link Removido -->
-                            </li>`).join('')
+                        ? subjectsToDisplay.map((subject) => `<li class="flex items-center justify-between text-text ml-2 p-1 rounded-md"><span class="truncate pr-2">${highlightMatch(subject.name, searchTerm)}</span></li>`).join('')
                         : '<li class="text-text-muted text-sm ml-2">Nenhum assunto nesta categoria.</li>';
 
                     categoryElement.innerHTML = `
                         <div class="group flex items-center justify-between p-4 cursor-pointer category-header" data-id="${category.id}">
                             <h3 class="text-lg font-semibold truncate pr-2">${highlightMatch(category.name, searchTerm)}</h3>
                             <div class="flex items-center gap-3">
-                                <!-- Adiciona a contagem de assuntos para densidade de informação -->
-                                <span class="text-sm font-semibold text-accent/90 bg-primary/20 px-2 py-0.5 rounded-full">${subjectsToDisplay.length}</span>
                                 <svg class="w-6 h-6 text-text-muted transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                         </div>
@@ -443,67 +278,26 @@
                             <div><div class="p-4 border-t" style="border-color: var(--panel-border);"><ul class="space-y-1 mb-4">${subjectsHTML}</ul></div></div>
                         </div>`;
                     categoriesContainer.appendChild(categoryElement);
-
-                    // --- Animação Avançada: 3D Tilt/Parallax no Hover ---
-                    const maxTilt = 2; // 2 graus
-                    categoryElement.addEventListener('mousemove', (e) => {
-                        const rect = categoryElement.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const y = e.clientY - rect.top;
-                        const centerX = rect.width / 2;
-                        const centerY = rect.height / 2;
-                        
-                        // Cálculo da rotação (inverter Y para efeito natural)
-                        const rotateX = ((y - centerY) / centerY) * maxTilt;
-                        const rotateY = ((x - centerX) / centerX) * -maxTilt; 
-                        
-                        categoryElement.style.transform = `scale(1.01) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
-                        categoryElement.style.boxShadow = `0 15px 40px rgba(0, 0, 0, 0.4)`; // Sombra mais intensa no hover
-                    });
-                    
-                    categoryElement.addEventListener('mouseleave', () => {
-                        categoryElement.style.transform = 'none';
-                        categoryElement.style.boxShadow = '0 8px 32px 0 rgba(10, 15, 31, 0.37)'; // Volta à sombra original
-                    });
                 });
             };
 
             const handleSearch = () => {
                 if (!isDataLoaded) return;
-                
-                categoriesContainer.classList.add('shimmer-loading'); // Feedback de filtro
-                
-                // Pequeno delay para a animação de shimmer ser visível e não travar a UI em updates rápidos
-                setTimeout(() => {
-                    const searchTerm = normalizeString(searchInput.value.trim());
-                    
-                    const searchResults = categories.map(cat => {
-                        const catNameMatches = normalizeString(cat.name).includes(searchTerm);
-                        const matchingSubjects = cat.subjects.filter(sub => normalizeString(sub.name).includes(searchTerm));
-                        
-                        // Expande se houver termo de busca E houver match, ou se já estava expandido.
-                        const newExpandedState = searchTerm ? (catNameMatches || matchingSubjects.length > 0) : cat.expanded;
-                        
-                        if (catNameMatches || matchingSubjects.length > 0) {
-                            return { 
-                                ...cat, 
-                                expanded: newExpandedState,
-                                subjectsToDisplay: searchTerm && !catNameMatches ? matchingSubjects : cat.subjects 
-                            };
-                        }
-                        return null;
-                    }).filter(Boolean);
-
-                    if (!searchTerm) {
-                        render(categories.map(cat => ({...cat, subjectsToDisplay: cat.subjects})));
-                    } else {
-                        render(searchResults);
-                    }
-                    
-                    categoriesContainer.classList.remove('shimmer-loading');
-                }, 100); 
+                const searchTerm = normalizeString(searchInput.value.trim());
+                if (!searchTerm) {
+                    const resetData = categories.map(cat => ({...cat, subjectsToDisplay: cat.subjects }));
+                    render(resetData);
+                    return;
+                }
+                const searchResults = categories.map(cat => {
+                    const catNameMatches = normalizeString(cat.name).includes(searchTerm);
+                    const matchingSubjects = cat.subjects.filter(sub => normalizeString(sub.name).includes(searchTerm));
+                    if (catNameMatches) return { ...cat, subjectsToDisplay: cat.subjects };
+                    if (matchingSubjects.length > 0) return { ...cat, subjectsToDisplay: matchingSubjects };
+                    return null;
+                }).filter(Boolean);
+                render(searchResults);
             };
-
 
             categoriesContainer.addEventListener('click', (e) => {
                 const header = e.target.closest('.category-header');
@@ -514,21 +308,6 @@
                         category.expanded = !category.expanded;
                         handleSearch();
                     }
-                }
-                
-                const subjectItem = e.target.closest('.subject-item-list');
-                if (subjectItem) {
-                    const subjectName = subjectItem.querySelector('span').textContent.trim();
-                    
-                    // --- Animação Avançada: Feedback de Clique ---
-                    subjectItem.classList.add('clicked-feedback');
-                    
-                    console.log(`Assunto clicado: ${subjectName}`);
-                    // Abre o modal após um pequeno delay para a animação ser vista
-                    setTimeout(() => {
-                        showModal(`Você clicou no assunto: **${subjectName}**. Aqui seria o local para exibir o conteúdo detalhado da base de conhecimento.`);
-                        subjectItem.classList.remove('clicked-feedback');
-                    }, 350); 
                 }
             });
             
