@@ -8,102 +8,192 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Adicionando ícones heroicons para um visual mais limpo -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
+        /*
+         * TEMA ESCURO (Padrão)
+         * Usamos uma paleta de cores mais escura, profunda e com um azul mais vibrante
+         */
         :root {
-            --color-bg: #0a0f1f;
-            --color-surface: #10183b;
-            --color-primary: #2a3a90;
-            --color-accent: #3b82f6;
-            --color-text: #e5e7eb;
-            --color-text-muted: #9ca3af;
-            --panel-bg: rgba(16, 24, 59, 0.85);
-            --panel-border: rgba(42, 58, 144, 0.3);
-            --color-search-bg: #4B5563;
-            --color-search-border: #6B7280;
+            --color-bg: #0C101A; /* Fundo mais escuro */
+            --color-surface: #1E253B; /* Superfície profunda para painéis */
+            --color-primary: #3B82F6; /* Azul primário (o mesmo do Tailwind blue-500) */
+            --color-accent: #06B6D4; /* Ciano para destaque e interatividade */
+            --color-text: #E5E7EB; /* Texto claro */
+            --color-text-muted: #9CA3AF; /* Texto sutil */
+            --panel-bg: rgba(30, 37, 59, 0.95); /* Superfície translúcida e opaca */
+            --panel-border: rgba(59, 130, 246, 0.2); /* Borda sutil de Primary */
+            --color-search-bg: #2D3748; /* Fundo da busca um pouco mais claro que a superfície */
+            --color-search-border: #4A5568;
+            --color-header-bg: rgba(30, 37, 59, 0.7); /* Fundo sutil para o cabeçalho fixo */
         }
+        /*
+         * TEMA CLARO
+         * Mantemos o tema claro, ajustando as superfícies para alto contraste
+         */
         body[data-theme="light"] {
-            --color-bg: #e0f2f7;
-            --color-surface: #ffffff;
-            --color-primary: #60a5fa;
-            --color-accent: #3b82f6;
-            --color-text: #1a202c;
-            --color-text-muted: #6b7280;
-            --panel-bg: rgba(227, 242, 253, 0.9);
-            --panel-border: rgba(144, 202, 249, 0.7);
+            --color-bg: #F8FAFC;
+            --color-surface: #FFFFFF;
+            --color-primary: #2563EB;
+            --color-accent: #10B981; /* Verde esmeralda para o tema claro */
+            --color-text: #1F2937;
+            --color-text-muted: #6B7280;
+            --panel-bg: rgba(255, 255, 255, 0.95);
+            --panel-border: rgba(59, 130, 246, 0.3);
+            --color-search-bg: #F3F4F6;
+            --color-search-border: #D1D5DB;
+            --color-header-bg: rgba(255, 255, 255, 0.7);
         }
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--color-bg);
             color: var(--color-text);
             overflow-x: hidden;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
-        #searchInput { color: var(--color-text); background-color: var(--color-search-bg); border: 1px solid var(--color-search-border); }
-        #searchInput::placeholder { color: var(--color-text-muted); }
-        .search-icon { color: var(--color-text-muted); }
-        h1.text-accent, .category-header h3 { color: var(--color-text); }
-        body[data-theme="light"] #searchInput { background-color: #FFFFFF; border: 1px solid #D1D5DB; color: var(--color-text); }
-        body[data-theme="light"] #searchInput::placeholder, body[data-theme="light"] .search-icon { color: var(--color-text-muted); }
-        body[data-theme="light"] h1.text-accent, body[data-theme="light"] .category-header h3 { color: var(--color-accent); }
-        #webgl-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-        .panel { background: var(--panel-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--panel-border); box-shadow: 0 8px 32px 0 rgba(10, 15, 31, 0.37); border-radius: 0.75rem; transition: background-color 0.3s ease, border-color 0.3s ease; }
-        .subject-list { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.5s ease-in-out; }
-        .subject-list > div { overflow: hidden; }
-        .subject-list.expanded { grid-template-rows: 1fr; }
-        .rotate-180 { transform: rotate(180deg); }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--color-bg); }
-        ::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
-        .glow-on-hover { transition: box-shadow 0.3s ease, transform 0.3s ease; }
-        .glow-on-hover:hover { transform: translateY(-2px); box-shadow: 0 0 15px 2px var(--color-accent); }
-        .loading { opacity: 0.5; pointer-events: none; }
+        #searchInput { 
+            color: var(--color-text); 
+            background-color: var(--color-search-bg); 
+            border: 1px solid var(--color-search-border); 
+        }
+        #searchInput:focus {
+             box-shadow: 0 0 0 2px var(--color-accent);
+             border-color: transparent;
+        }
+        #searchInput::placeholder { 
+            color: var(--color-text-muted); 
+            opacity: 0.7;
+        }
+        .search-icon { 
+            color: var(--color-text-muted); 
+        }
+        h1.site-title { 
+            color: var(--color-accent); 
+            font-weight: 800; /* Extra bold */
+            letter-spacing: -0.05em; /* Tracking apertado */
+        }
+        .category-header h3 { 
+            color: var(--color-text); 
+        }
+        #webgl-bg { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: -1; 
+            opacity: 0.6; /* Tornar o fundo WebGL mais sutil */
+        }
+        /* Painéis com sombra mais proeminente e cantos mais arredondados */
+        .panel { 
+            background: var(--panel-bg); 
+            backdrop-filter: blur(15px); 
+            -webkit-backdrop-filter: blur(15px); 
+            border: 1px solid var(--panel-border); 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); 
+            border-radius: 1rem; /* Mais arredondado */
+            transition: all 0.3s ease; 
+            
+            /* Melhoria UX: Configurações para efeito 3D Tilt */
+            transform-style: preserve-3d;
+            perspective: 1000px; 
+        }
+        .subject-list { 
+            display: grid; 
+            grid-template-rows: 0fr; 
+            transition: grid-template-rows 0.5s ease-in-out; 
+        }
+        .subject-list > div { 
+            overflow: hidden; 
+        }
+        .subject-list.expanded { 
+            grid-template-rows: 1fr; 
+        }
+        .rotate-180 { 
+            transform: rotate(180deg); 
+        }
         
-        /* ESTILOS PARA SUGESTÕES QUE EMPURRAM O CONTEÚDO */
+        /* SCROLLBAR APRIMORADO */
+        ::-webkit-scrollbar { 
+            width: 10px; 
+        }
+        ::-webkit-scrollbar-track { 
+            background: var(--color-bg); 
+        }
+        ::-webkit-scrollbar-thumb { 
+            background: var(--color-primary); 
+            border-radius: 5px; 
+            border: 2px solid var(--color-bg);
+        }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: var(--color-accent); 
+        }
+        
+        /* ANIMAÇÕES GERAIS */
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(-15px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .animate-fade-in { 
+            animation: fadeIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; /* Curva de animação mais suave */
+        }
+        .glow-on-hover { 
+            transition: box-shadow 0.3s ease, transform 0.3s ease, background-color 0.3s ease; 
+        }
+        .glow-on-hover:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 0 20px 3px var(--color-accent); /* Brilho mais intenso */
+        }
+        
+        /* ANIMAÇÃO AVANÇADA: SHIMMER LOADING para feedback de busca/carregamento */
+        @keyframes shimmer {
+          0% { background-position: -1000px 0; }
+          100% { background-position: 1000px 0; }
+        }
+        .shimmer-loading {
+            background: linear-gradient(to right, var(--color-surface) 0%, var(--panel-border) 20%, var(--color-surface) 40%, var(--color-surface) 100%);
+            background-repeat: no-repeat;
+            background-size: 1000px 100%;
+            animation: shimmer 1.5s infinite linear;
+            border-color: transparent !important;
+            opacity: 0.8;
+            pointer-events: none; /* Impede cliques durante o loading */
+        }
+
+        /* Ajuste shimmer para o tema claro */
+        body[data-theme="light"] .shimmer-loading {
+            background: linear-gradient(to right, var(--color-surface) 0%, #E0E0E0 20%, var(--color-surface) 40%, var(--color-surface) 100%);
+        }
+        
+        /* ESTILOS PARA SUGESTÕES */
         #suggestionsContainer {
-            display: grid;
-            grid-template-rows: 0fr;
-            transition: grid-template-rows 0.3s ease-in-out;
             background: var(--color-surface);
             border: 1px solid var(--panel-border);
-            border-radius: 0.5rem;
-            overflow: hidden;
-        }
-        #suggestionsContainer.expanded {
-            grid-template-rows: 1fr;
-        }
-        #suggestionsContainer > div {
-            min-height: 0;
+            border-radius: 0.75rem; /* Um pouco mais arredondado que o original */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
         .suggestion-item {
-            padding: 0.6rem 1rem;
+            padding: 0.75rem 1rem; /* Aumentar o padding */
             cursor: pointer;
             color: var(--color-text-muted);
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
+            font-size: 1rem;
         }
         .suggestion-item:not(:last-child) {
             border-bottom: 1px solid var(--panel-border);
         }
         .suggestion-item:hover, .suggestion-item.active {
-            background-color: var(--color-search-bg);
-            color: var(--color-text);
+            background-color: var(--color-primary); /* Fundo mais primário */
+            color: white;
         }
+        .suggestion-item:first-child { border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; }
+        .suggestion-item:last-child { border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
 
-        /* ANIMAÇÃO PARA ÍCONE NEURAL */
+        /* ANIMAÇÃO PARA ÍCONE NEURAL APRIMORADO */
         @keyframes pulse {
-          0%, 100% {
-            transform: scale(0.9);
-            opacity: 0.7;
-          }
-          50% {
-            transform: scale(1.1);
-            opacity: 1;
-          }
+          0%, 100% { transform: scale(0.9); opacity: 0.7; }
+          50% { transform: scale(1.1); opacity: 1; }
         }
         .neural-dot {
           transform-origin: center;
@@ -112,42 +202,90 @@
         .neural-dot-1 { animation-delay: 0s; }
         .neural-dot-2 { animation-delay: 0.3s; }
         .neural-dot-3 { animation-delay: 0.6s; }
+
+        /* DESTAQUE DE MATCH (MARK) */
+        mark {
+            background-color: transparent !important; 
+            color: var(--color-accent) !important;
+            font-weight: 700 !important;
+            padding: 0 !important;
+        }
+        
+        /* NOVA CLASSE PARA DESTAQUE DE ASSUNTO e FEEDBACK DE CLIQUE */
+        .subject-item-list {
+            transition: all 0.2s ease;
+        }
+        .subject-item-list:hover {
+            background-color: rgba(60, 130, 246, 0.1); /* Cor sutil ao passar o mouse */
+            transform: translateX(3px); /* Leve movimento para a direita */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .subject-item-list.clicked-feedback {
+             background-color: var(--color-accent);
+             color: var(--color-bg); /* Inverte a cor do texto para alto contraste */
+             transform: scale(1.02);
+             opacity: 0.9;
+             box-shadow: 0 0 10px rgba(6, 182, 212, 0.5); /* Sombra suave */
+        }
+        
+        /* HEADER FIXO E FLUTUANTE */
+        .header-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: var(--color-header-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding-top: 1.5rem; /* Ajuste para compensar o blur */
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--panel-border);
+            transition: all 0.3s ease;
+        }
+
     </style>
 </head>
 <body class="antialiased">
 
     <canvas id="webgl-bg"></canvas>
 
-    <div id="main-content" class="relative z-10 animate-fade-in">
+    <div id="main-content" class="relative z-10">
         <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
-            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-20">
-                <button id="theme-toggle-btn" title="Alternar Tema" class="p-2 bg-surface hover:bg-primary border border-primary/50 rounded-full glow-on-hover">
-                    <svg id="theme-icon-sun" class="w-6 h-6 hidden text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    <svg id="theme-icon-moon" class="w-6 h-6 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            
+            <!-- Botão de Tema no Canto Superior Direito Aprimorado -->
+            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-30">
+                <button id="theme-toggle-btn" title="Alternar Tema" class="p-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full glow-on-hover backdrop-blur-sm shadow-lg text-white">
+                    <!-- Ícones com cores invertidas para contraste -->
+                    <svg id="theme-icon-sun" class="w-6 h-6 hidden text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="theme-icon-moon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 </button>
             </div>
-            <div>
-                <header class="mb-6">
-                    <h1 class="text-3xl font-bold text-center mb-6 text-accent">Base de Conhecimento</h1>
-                    <div class="relative">
-                        <input type="text" id="searchInput" placeholder="Pesquisar por categorias e assuntos..." class="w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300" autocomplete="off">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </div>
+            
+            <header class="header-sticky">
+                <h1 class="text-4xl sm:text-5xl font-extrabold text-center mb-6 site-title animate-fade-in">
+                    Base de Conhecimento
+                </h1>
+                <div class="relative max-w-2xl mx-auto">
+                    <!-- Campo de Busca com Sombra/Focus Aprimorado -->
+                    <input type="text" id="searchInput" placeholder="Pesquisar por categorias e assuntos..." class="w-full rounded-xl pl-12 pr-4 py-4 text-lg transition-all duration-300 shadow-xl focus:shadow-2xl" autocomplete="off">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="w-6 h-6 search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
-                    <div id="suggestionsContainer" class="mt-1"></div>
-                </header>
-                <main id="categoriesContainer" class="space-y-3"></main>
-            </div>
+                </div>
+                <div id="suggestionsContainer" class="mt-2 max-w-2xl mx-auto relative z-10"></div>
+            </header>
+            
+            <main id="categoriesContainer" class="space-y-6 animate-fade-in"></main>
         </div>
     </div>
 
-    <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="panel w-full max-w-md p-6">
-            <h3 class="text-lg font-semibold mb-4 text-accent">Informação</h3>
-            <p id="infoMessage" class="mb-6"></p>
+    <!-- Modal de Informação com Estilo Refinado -->
+    <div id="infoModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden p-4">
+        <div class="panel w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0" id="infoModalContent">
+            <h3 class="text-2xl font-bold mb-4 text-accent">Atenção!</h3>
+            <p id="infoMessage" class="mb-6 text-base"></p>
             <div class="flex justify-end">
-                <button id="infoOkBtn" class="px-4 py-2 bg-accent hover:opacity-90 text-white rounded-lg">OK</button>
+                <button id="infoOkBtn" class="px-6 py-2 bg-primary hover:bg-accent text-white font-semibold rounded-lg transition duration-200 shadow-md glow-on-hover">Entendi</button>
             </div>
         </div>
     </div>
@@ -159,6 +297,7 @@
             const categoriesContainer = document.getElementById('categoriesContainer');
             const suggestionsContainer = document.getElementById('suggestionsContainer');
             const infoModal = document.getElementById('infoModal');
+            const infoModalContent = document.getElementById('infoModalContent');
             const infoMessage = document.getElementById('infoMessage');
             const infoOkBtn = document.getElementById('infoOkBtn');
 
@@ -169,28 +308,147 @@
             let isDataLoaded = false;
 
             // --- MÓDULOS (Tema, Modal, WebGL) ---
-            const ThemeSwitcher = (() => { const DOM = { body: document.body, themeToggleBtn: document.getElementById('theme-toggle-btn'), themeIconSun: document.getElementById('theme-icon-sun'), themeIconMoon: document.getElementById('theme-icon-moon') }; const STORAGE_KEY = 'themePreference'; const applyTheme = (theme) => { DOM.body.dataset.theme = theme; localStorage.setItem(STORAGE_KEY, theme); DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); }; const toggleTheme = () => { const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(currentTheme); }; const init = () => { const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; applyTheme(savedTheme); DOM.themeToggleBtn.addEventListener('click', toggleTheme); }; return { init }; })();
-            const showModal = (message) => { infoMessage.textContent = message; infoModal.classList.remove('hidden'); }; const hideModal = () => infoModal.classList.add('hidden'); infoOkBtn.addEventListener('click', hideModal);
-            const initWebGLBackground = () => { const canvas = document.getElementById('webgl-bg'); if (!canvas) return; const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setClearColor(0x000000, 0); const geometry = new THREE.BufferGeometry(); const vertices = []; for (let i = 0; i < 1000; i++) { vertices.push((Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000); } geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); const material = new THREE.PointsMaterial({ size: 2, color: 0x06B6D4 }); const points = new THREE.Points(geometry, material); scene.add(points); camera.position.z = 1000; const animate = () => { requestAnimationFrame(animate); points.rotation.x += 0.0005; points.rotation.y += 0.001; renderer.render(scene, camera); }; animate(); window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }); };
+            const ThemeSwitcher = (() => { 
+                const DOM = { 
+                    body: document.body, 
+                    themeToggleBtn: document.getElementById('theme-toggle-btn'), 
+                    themeIconSun: document.getElementById('theme-icon-sun'), 
+                    themeIconMoon: document.getElementById('theme-icon-moon') 
+                }; 
+                const STORAGE_KEY = 'themePreference'; 
+                const applyTheme = (theme) => { 
+                    DOM.body.dataset.theme = theme; 
+                    localStorage.setItem(STORAGE_KEY, theme); 
+                    // Ajuste de classes para garantir que o ícone correto esteja visível
+                    DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); 
+                    DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); 
+                }; 
+                const toggleTheme = () => { 
+                    const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; 
+                    applyTheme(currentTheme); 
+                }; 
+                const init = () => { 
+                    const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; 
+                    applyTheme(savedTheme); 
+                    DOM.themeToggleBtn.addEventListener('click', toggleTheme); 
+                }; 
+                return { init }; 
+            })();
+            
+            const showModal = (message) => { 
+                infoMessage.textContent = message; 
+                infoModal.classList.remove('hidden'); 
+                // Animação de entrada
+                setTimeout(() => {
+                    infoModalContent.classList.remove('scale-95', 'opacity-0');
+                    infoModalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }; 
+            const hideModal = () => {
+                // Animação de saída
+                infoModalContent.classList.remove('scale-100', 'opacity-100');
+                infoModalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    infoModal.classList.add('hidden');
+                }, 300); // Tempo da transição CSS
+            };
+            infoOkBtn.addEventListener('click', hideModal);
+            
+            // WebGL Aprimorado: Adicionando rotação da câmera e cor dinâmica
+            const initWebGLBackground = () => { 
+                const canvas = document.getElementById('webgl-bg'); 
+                if (!canvas) return; 
+                const scene = new THREE.Scene(); 
+                const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000); 
+                const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); 
+                renderer.setSize(window.innerWidth, window.innerHeight); 
+                renderer.setClearColor(0x000000, 0); 
+                
+                const geometry = new THREE.BufferGeometry(); 
+                const numParticles = 1500; // Mais partículas para um efeito de "campo estelar"
+                const vertices = []; 
+                for (let i = 0; i < numParticles; i++) { 
+                    vertices.push((Math.random() - 0.5) * 4000); // Espaço maior
+                    vertices.push((Math.random() - 0.5) * 4000); 
+                    vertices.push((Math.random() - 0.5) * 4000); 
+                } 
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); 
+                
+                // Usando THREE.Color para fácil mudança de tema
+                const darkThemeColor = new THREE.Color(0x3B82F6); // Azul
+                const lightThemeColor = new THREE.Color(0x10B981); // Verde
+                
+                const material = new THREE.PointsMaterial({ 
+                    size: 1.5, // Partículas menores
+                    color: document.body.dataset.theme === 'light' ? lightThemeColor : darkThemeColor,
+                    blending: THREE.AdditiveBlending, // Efeito de brilho
+                    transparent: true,
+                    opacity: 0.8
+                }); 
+                const points = new THREE.Points(geometry, material); 
+                scene.add(points); 
+                camera.position.z = 1000; 
+                
+                let mouseX = 0, mouseY = 0;
+                let windowHalfX = window.innerWidth / 2;
+                let windowHalfY = window.innerHeight / 2;
+
+                document.addEventListener('mousemove', (event) => {
+                    mouseX = (event.clientX - windowHalfX) * 0.5;
+                    mouseY = (event.clientY - windowHalfY) * 0.5;
+                }, false);
+
+                const animate = () => { 
+                    requestAnimationFrame(animate); 
+
+                    // Movimento sutil da câmera baseado no mouse
+                    camera.position.x += (mouseX * 0.05 - camera.position.x) * 0.05;
+                    camera.position.y += (-mouseY * 0.05 - camera.position.y) * 0.05;
+                    camera.lookAt(scene.position);
+
+                    points.rotation.y += 0.0002; // Rotação ainda mais sutil
+                    
+                    renderer.render(scene, camera); 
+                }; 
+                animate(); 
+
+                window.addEventListener('resize', () => { 
+                    windowHalfX = window.innerWidth / 2;
+                    windowHalfY = window.innerHeight / 2;
+                    camera.aspect = window.innerWidth / window.innerHeight; 
+                    camera.updateProjectionMatrix(); 
+                    renderer.setSize(window.innerWidth, window.innerHeight); 
+                }); 
+
+                // Listener para mudar a cor das partículas ao trocar o tema
+                const observer = new MutationObserver(() => {
+                    const newColor = document.body.dataset.theme === 'light' ? lightThemeColor : darkThemeColor;
+                    material.color.set(newColor);
+                });
+                observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+            };
 
             // --- LÓGICA DE DADOS ---
             const loadData = async () => {
-                categoriesContainer.classList.add('loading');
+                categoriesContainer.classList.add('shimmer-loading'); // Usa shimmer para carregamento inicial
                 try {
-                    const response = await fetch('./database.json');
+                    const response = await fetch('./database.json'); 
                     if (!response.ok) throw new Error(`HTTP error!`);
                     const data = await response.json();
                     categories = data;
                     const suggestionSet = new Set();
-                    categories.forEach(cat => { suggestionSet.add(cat.name); cat.subjects.forEach(sub => suggestionSet.add(sub.name)); });
-                    allSuggestions = [...suggestionSet];
+                    categories.forEach(cat => { 
+                        suggestionSet.add(cat.name); 
+                        cat.subjects.forEach(sub => suggestionSet.add(sub.name)); 
+                    });
+                    allSuggestions = [...suggestionSet].sort((a, b) => a.localeCompare(b));
                     render(categories);
                     isDataLoaded = true;
                 } catch (error) {
                     console.error("Erro ao carregar dados", error);
-                    showModal('Não foi possível carregar a base de conhecimento.');
+                    showModal('Não foi possível carregar a base de conhecimento. Verifique o arquivo `database.json`.');
                 } finally {
-                    categoriesContainer.classList.remove('loading');
+                    categoriesContainer.classList.remove('shimmer-loading'); // Remove o shimmer
                 }
             };
 
@@ -203,7 +461,8 @@
                 if (!searchTerm || !text) return text;
                 const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const regex = new RegExp(escapedTerm, 'gi');
-                return text.replace(regex, (match) => `<mark class="bg-transparent text-blue-400 font-semibold not-italic">${match}</mark>`);
+                // Usamos <mark> para o destaque, que é estilizado no CSS para ser a cor de destaque (accent)
+                return text.replace(regex, (match) => `<mark>${match}</mark>`);
             };
 
             // --- LÓGICA DE SUGESTÕES (AUTOCOMPLETE) ---
@@ -216,15 +475,19 @@
                 const wrapper = suggestionsContainer.querySelector('div');
                 suggestions.forEach((suggestionText) => {
                     const item = document.createElement('div');
-                    item.className = 'suggestion-item flex items-center gap-x-3';
+                    // Usamos a classe 'suggestion-item' para aplicar o novo estilo hover e active
+                    item.className = 'suggestion-item flex items-center gap-x-3 transition duration-150 ease-in-out';
+                    
+                    // Ícone Neural Aprimorado
                     const neuralIconSVG = `
-                        <svg class="w-5 h-5 text-blue-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                            <circle class="neural-dot neural-dot-1" cx="4" cy="12" r="3"/>
-                            <circle class="neural-dot neural-dot-2" cx="12" cy="12" r="3"/>
-                            <circle class="neural-dot neural-dot-3" cx="20" cy="12" r="3"/>
+                        <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <circle class="neural-dot neural-dot-1" cx="4" cy="12" r="2.5"/>
+                            <circle class="neural-dot neural-dot-2" cx="12" cy="12" r="2.5"/>
+                            <circle class="neural-dot neural-dot-3" cx="20" cy="12" r="2.5"/>
                         </svg>
                     `;
-                    item.innerHTML = `${neuralIconSVG}<span>${suggestionText}</span>`;
+                    item.innerHTML = `${neuralIconSVG}<span>${highlightMatch(suggestionText, searchInput.value.trim())}</span>`;
+
                     item.addEventListener('click', () => {
                         searchInput.value = suggestionText;
                         suggestionsContainer.classList.remove('expanded');
@@ -233,19 +496,27 @@
                     wrapper.appendChild(item);
                 });
                 suggestionsContainer.classList.add('expanded');
+                // Adicionamos a classe 'expanded' no wrapper para controlar a visibilidade e transição
+                wrapper.parentNode.classList.add('expanded');
                 activeSuggestionIndex = -1;
             };
 
             const handleAutocomplete = () => {
                 if (!isDataLoaded) return;
-                handleSearch();
+                
                 const searchTerm = searchInput.value.trim();
+                
                 if (searchTerm.length < 1) {
-                    suggestionsContainer.classList.remove('expanded');
+                    suggestionsContainer.querySelector('div').parentNode.classList.remove('expanded');
+                    handleSearch(); // Para restaurar a lista completa ao limpar
                     return;
                 }
+                
+                // Chamamos a busca principal a cada input para o filtro principal ser reativo
+                handleSearch();
+                
                 const normalizedSearchTerm = normalizeString(searchTerm);
-                const filteredSuggestions = allSuggestions.filter(s => normalizeString(s).includes(normalizedSearchTerm)).slice(0, 4);
+                const filteredSuggestions = allSuggestions.filter(s => normalizeString(s).includes(normalizedSearchTerm)).slice(0, 5); // 5 sugestões
                 renderSuggestions(filteredSuggestions);
             };
 
@@ -253,50 +524,113 @@
             const render = (dataToRender = []) => {
                 const searchTerm = searchInput.value.trim();
                 categoriesContainer.innerHTML = '';
+                
                 if (dataToRender.length === 0) {
-                    const message = searchTerm ? `Nenhum resultado encontrado para "${searchTerm}".` : "A base de conhecimento está vazia.";
-                    categoriesContainer.innerHTML = `<div class="text-center text-text-muted py-10">${message}</div>`;
+                    const message = searchTerm ? 
+                        `<div class="text-center text-text-muted py-16 text-xl">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-primary/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <p>Nenhum resultado encontrado para **"${searchTerm}"**.</p>
+                            <p class="text-sm mt-2">Tente termos mais genéricos.</p>
+                        </div>` 
+                        : `<div class="text-center text-text-muted py-10">A base de conhecimento está vazia.</div>`;
+                    categoriesContainer.innerHTML = message;
                     return;
                 }
+                
                 dataToRender.forEach(category => {
-                    const isExpanded = category.expanded || false;
+                    const isExpanded = category.expanded || (searchTerm.length > 0); // Expande se estiver pesquisando
                     const categoryElement = document.createElement('div');
-                    categoryElement.className = 'panel rounded-lg';
+                    categoryElement.className = 'panel'; // Removido rounded-lg pois já está no CSS
+
                     const subjectsToDisplay = category.subjectsToDisplay || category.subjects;
                     const subjectsHTML = subjectsToDisplay.length > 0
-                        ? subjectsToDisplay.map((subject) => `<li class="flex items-center justify-between text-text ml-2 p-1 rounded-md"><span class="truncate pr-2">${highlightMatch(subject.name, searchTerm)}</span></li>`).join('')
-                        : '<li class="text-text-muted text-sm ml-2">Nenhum assunto nesta categoria.</li>';
+                        ? subjectsToDisplay.map((subject) => `
+                            <li class="subject-item-list flex items-center justify-between text-text ml-2 p-2 rounded-lg cursor-pointer transition duration-150 ease-in-out">
+                                <span class="truncate pr-2 text-base font-medium">${highlightMatch(subject.name, searchTerm)}</span>
+                                <!-- Adiciona um ícone sutil de "link" ou "info" -->
+                                <svg class="w-5 h-5 text-accent/70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.836a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                            </li>`).join('')
+                        : '<li class="text-text-muted text-sm ml-2 p-2">Nenhum assunto nesta categoria corresponde à busca.</li>';
 
                     categoryElement.innerHTML = `
-                        <div class="group flex items-center justify-between p-4 cursor-pointer category-header" data-id="${category.id}">
-                            <h3 class="text-lg font-semibold truncate pr-2">${highlightMatch(category.name, searchTerm)}</h3>
+                        <div class="group flex items-center justify-between p-5 cursor-pointer category-header hover:bg-white/5 transition duration-200" data-id="${category.id}">
+                            <h3 class="text-xl font-bold truncate pr-2">${highlightMatch(category.name, searchTerm)}</h3>
                             <div class="flex items-center gap-3">
-                                <svg class="w-6 h-6 text-text-muted transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                <!-- Contagem de Assuntos (Adicionado!) -->
+                                <span class="text-sm font-semibold text-accent/90 bg-primary/20 px-3 py-1 rounded-full">${subjectsToDisplay.length}</span>
+                                
+                                <svg class="w-6 h-6 text-primary transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                         </div>
                         <div class="subject-list ${isExpanded ? 'expanded' : ''}">
-                            <div><div class="p-4 border-t" style="border-color: var(--panel-border);"><ul class="space-y-1 mb-4">${subjectsHTML}</ul></div></div>
+                            <div>
+                                <div class="p-4 pt-0 border-t" style="border-color: var(--panel-border);">
+                                    <ul class="space-y-1 mb-2">${subjectsHTML}</ul>
+                                </div>
+                            </div>
                         </div>`;
                     categoriesContainer.appendChild(categoryElement);
+
+                    // --- Animação Avançada: 3D Tilt/Parallax no Hover ---
+                    const maxTilt = 2; // Graus de inclinação máxima
+                    categoryElement.addEventListener('mousemove', (e) => {
+                        const rect = categoryElement.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        
+                        // Cálculo da rotação (inverter Y para efeito natural)
+                        const rotateX = ((y - centerY) / centerY) * maxTilt;
+                        const rotateY = ((x - centerX) / centerX) * -maxTilt; 
+                        
+                        categoryElement.style.transform = `scale(1.01) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
+                        categoryElement.style.boxShadow = `0 15px 40px rgba(0, 0, 0, 0.4)`; // Sombra mais intensa no hover
+                    });
+                    
+                    categoryElement.addEventListener('mouseleave', () => {
+                        categoryElement.style.transform = 'none';
+                        categoryElement.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.2)'; // Volta à sombra original
+                    });
                 });
             };
 
             const handleSearch = () => {
                 if (!isDataLoaded) return;
-                const searchTerm = normalizeString(searchInput.value.trim());
-                if (!searchTerm) {
-                    const resetData = categories.map(cat => ({...cat, subjectsToDisplay: cat.subjects }));
-                    render(resetData);
-                    return;
-                }
-                const searchResults = categories.map(cat => {
-                    const catNameMatches = normalizeString(cat.name).includes(searchTerm);
-                    const matchingSubjects = cat.subjects.filter(sub => normalizeString(sub.name).includes(searchTerm));
-                    if (catNameMatches) return { ...cat, subjectsToDisplay: cat.subjects };
-                    if (matchingSubjects.length > 0) return { ...cat, subjectsToDisplay: matchingSubjects };
-                    return null;
-                }).filter(Boolean);
-                render(searchResults);
+                
+                categoriesContainer.classList.add('shimmer-loading'); // Feedback de filtro
+                
+                // Pequeno delay para a animação de shimmer ser visível e não travar a UI em updates rápidos
+                setTimeout(() => {
+                    const searchTerm = normalizeString(searchInput.value.trim());
+                    
+                    // Mapeia os dados e garante que as propriedades expanded sejam mantidas
+                    const searchResults = categories.map(cat => {
+                        const catNameMatches = normalizeString(cat.name).includes(searchTerm);
+                        const matchingSubjects = cat.subjects.filter(sub => normalizeString(sub.name).includes(searchTerm));
+                        
+                        // Se houver termo de busca, expande se houver match. Se não, usa o estado anterior.
+                        const newExpandedState = searchTerm ? (catNameMatches || matchingSubjects.length > 0) : cat.expanded;
+                        
+                        if (catNameMatches || matchingSubjects.length > 0) {
+                            return { 
+                                ...cat, 
+                                expanded: newExpandedState,
+                                subjectsToDisplay: searchTerm && !catNameMatches ? matchingSubjects : cat.subjects // Se a categoria não der match, mostra apenas os assuntos filtrados
+                            };
+                        }
+                        return null;
+                    }).filter(Boolean);
+                    
+                    // Se não houver termo de busca, reverte para o estado original (apenas renderiza o que está no 'categories')
+                    if (!searchTerm) {
+                        render(categories.map(cat => ({...cat, subjectsToDisplay: cat.subjects})));
+                    } else {
+                        render(searchResults);
+                    }
+                    
+                    categoriesContainer.classList.remove('shimmer-loading');
+                }, 100); // Aumento de 100ms no delay para o efeito shimmer
             };
 
             categoriesContainer.addEventListener('click', (e) => {
@@ -306,8 +640,24 @@
                     const category = categories.find(c => c.id === categoryId);
                     if (category) {
                         category.expanded = !category.expanded;
+                        // Força a re-renderização para aplicar a transição CSS
                         handleSearch();
                     }
+                }
+                
+                const subjectItem = e.target.closest('.subject-item-list');
+                if (subjectItem) {
+                    const subjectName = subjectItem.querySelector('span').textContent.trim();
+                    
+                    // --- Animação Avançada: Feedback de Clique ---
+                    subjectItem.classList.add('clicked-feedback');
+                    
+                    console.log(`Assunto clicado: ${subjectName}`);
+                    // Abre o modal após um pequeno delay para a animação ser vista
+                    setTimeout(() => {
+                        showModal(`Você clicou no assunto: **${subjectName}**. Aqui seria o local para exibir o conteúdo detalhado da base de conhecimento.`);
+                        subjectItem.classList.remove('clicked-feedback');
+                    }, 350); // Tempo para a transição do feedback de clique (0.35s)
                 }
             });
             
@@ -318,9 +668,18 @@
                 
                 searchInput.addEventListener('input', handleAutocomplete);
 
+                // Tratamento de Teclas (ENTER/UP/DOWN) para Sugestões
                 searchInput.addEventListener('keydown', (e) => {
                     const items = suggestionsContainer.querySelectorAll('.suggestion-item');
-                    if (!suggestionsContainer.classList.contains('expanded') || items.length === 0) return;
+                    const isExpanded = suggestionsContainer.querySelector('div').parentNode.classList.contains('expanded');
+
+                    if (!isExpanded || items.length === 0) {
+                        if (e.key === 'Enter') {
+                             e.preventDefault(); // Impede o envio de formulário
+                             handleSearch(); // Executa a busca se as sugestões não estiverem visíveis
+                        }
+                        return;
+                    }
                     
                     if (e.key === 'ArrowDown') {
                         e.preventDefault();
@@ -329,22 +688,24 @@
                         e.preventDefault();
                         activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
                     }
+                    
+                    // Remove 'active' de todos e adiciona no item ativo
                     items.forEach((item, index) => item.classList.toggle('active', index === activeSuggestionIndex));
                     
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         if (activeSuggestionIndex > -1 && items[activeSuggestionIndex]) {
-                            items[activeSuggestionIndex].click();
+                            items[activeSuggestionIndex].click(); // Simula o clique
                         } else {
-                            suggestionsContainer.classList.remove('expanded');
+                            suggestionsContainer.querySelector('div').parentNode.classList.remove('expanded');
                             handleSearch();
                         }
                     }
                 });
 
                 document.addEventListener('click', (e) => {
-                    if (!e.target.closest('header')) {
-                        suggestionsContainer.classList.remove('expanded');
+                    if (!e.target.closest('header') && suggestionsContainer.querySelector('div').parentNode.classList.contains('expanded')) {
+                        suggestionsContainer.querySelector('div').parentNode.classList.remove('expanded');
                     }
                 });
 
