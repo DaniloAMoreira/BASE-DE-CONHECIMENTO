@@ -244,6 +244,9 @@
         "name": "(SUP) BD - Cmd - Adicionar zeros no código de balança"
       },
       {
+        "name": "(SUP) BD - Cmd - Ajuste de tributação após atualização para 320"
+      },
+      {
         "name": "(SUP) BD - Cmd - Alterar CEST em massa"
       },
       {
@@ -643,6 +646,9 @@
         "name": "(SUP) ERP - Ajuste de resolução de tela (Windows)"
       },
       {
+        "name": "(SUP) ERP - Ajuste de tributação após atualização para 320"
+      },
+      {
         "name": "(SUP) ERP - Atualização com KIT PI"
       },
       {
@@ -815,6 +821,9 @@
       },
       {
         "name": "(SUP) Remessa/Retorno Bancário - Dúvida - Funcionamento"
+      },
+      {
+        "name": "(SUP) Remessa/Retorno Bancário - Erro - String index out of range (Informações incompletas no cadastro de cliente)"
       }
     ]
   },
@@ -849,6 +858,9 @@
       },
       {
         "name": "(SUP) Cad. Forma de pagamento - Como adicionar taxa por parcela"
+      },
+      {
+        "name": "(SUP) Cad. Forma de pagamento - Dúvida - Como cadastras forma e pagamento a vista"
       },
       {
         "name": "(SUP) Cad. Forma de pagamento - Dúvida - Funcionamento da fidelidade"
@@ -1001,6 +1013,9 @@
       },
       {
         "name": "(SUP) C. pagar - Retorno - Plano de contas não pode ser uma conta SINTÉTICA"
+      },
+      {
+        "name": "(SUP) C. receber - Dúvida - Funcionamento"
       }
     ]
   },
@@ -1449,6 +1464,9 @@
       },
       {
         "name": "(SUP) NF-e - Rej. 391: Não informados os dados do cartão de crédito/débito nas Formas de Pagamento da Nota Fiscal"
+      },
+      {
+        "name": "(SUP) RP Desk -NF-e - Rej. 452: Solicitada resposta assíncrona para lote com somente uma NFC-e"
       }
     ]
   },
@@ -1518,6 +1536,9 @@
       },
       {
         "name": "(SUP) PBM - Como configurar/utilizar Portal da Drogaria (TRN Centre)"
+      },
+      {
+        "name": "(SUP) SNGPC - Erro - O sistema não pode encontrar o caminho  especificado ao transmitir"
       }
     ]
   },
@@ -1540,6 +1561,9 @@
       },
       {
         "name": "(SUP) Fiscal - Dúvida - Como fazer venda PDV em modo contingencia"
+      },
+      {
+        "name": "(SUP) Fiscal - Dúvida - Possibilidade de NFS-e no sistema"
       },
       {
         "name": "(SUP) Fiscal - Outro (Descreva)"
@@ -1567,6 +1591,9 @@
       },
       {
         "name": "(SUP) MD-e - Dúvida - Como realizar download de XML"
+      },
+      {
+        "name": "(SUP) MD-e - Dúvida - Funcionamento"
       },
       {
         "name": "(SUP) MD-e - Erro - 403 Forbidden (Instabilidade na rede)"
@@ -1620,6 +1647,9 @@
         "name": "(SUP) NF-e - Dúvida - Como enviar XML da NF-e para o cliente"
       },
       {
+        "name": "(SUP) NF-e - Dúvida - Como fazer carta de correção"
+      },
+      {
         "name": "(SUP) NF-e - Dúvida - Como fazer nota a partir de uma venda PDV"
       },
       {
@@ -1642,6 +1672,9 @@
       },
       {
         "name": "(SUP) NF-e - Dúvida - Envio de E-mail para a contabilidade"
+      },
+      {
+        "name": "(SUP) NF-e - Erro - 'Failed to parse the xml document' ao gerar DANFE (Caractere especial)"
       },
       {
         "name": "(SUP) NF-e - Erro - 403 Forbidden (Certificado vencido)"
@@ -2471,6 +2504,9 @@
     "name": "(SUP) Teste da plataforma",
     "expanded": false,
     "subjects": [
+      {
+        "name": "(SUP) Instabilidade na plataforma"
+      },
       {
         "name": "(SUP) Teste da plataforma"
       }
