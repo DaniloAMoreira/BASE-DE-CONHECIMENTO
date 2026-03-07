@@ -1,358 +1,898 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <link rel="icon" type="image/png" href="./favicon.png">
+    <link rel="icon" type="image/png" href="./favicon.png">
     <title>Base de Conhecimento</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
-            --color-bg: #0a0f1f;
-            --color-surface: #10183b;
-            --color-primary: #2a3a90;
-            --color-accent: #3b82f6;
-            --color-text: #e5e7eb;
-            --color-text-muted: #9ca3af;
-            --panel-bg: rgba(16, 24, 59, 0.85);
-            --panel-border: rgba(42, 58, 144, 0.3);
-            --color-search-bg: #4B5563;
-            --color-search-border: #6B7280;
+            --bg: #080c14;
+            --surface: #0d1424;
+            --surface-2: #111b2e;
+            --border: rgba(99, 179, 237, 0.1);
+            --border-hover: rgba(99, 179, 237, 0.3);
+            --text: #e2eaf6;
+            --text-muted: #5a7299;
+            --text-dim: #2d4466;
+            --accent: #63b3ed;
+            --accent-2: #4fd1c5;
+            --accent-glow: rgba(99, 179, 237, 0.15);
+            --danger: #fc8181;
+            --tag-bg: rgba(99, 179, 237, 0.08);
+            --input-bg: rgba(13, 20, 36, 0.8);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        body[data-theme="light"] {
-            --color-bg: #e0f2f7;
-            --color-surface: #ffffff;
-            --color-primary: #60a5fa;
-            --color-accent: #3b82f6;
-            --color-text: #1a202c;
-            --color-text-muted: #6b7280;
-            --panel-bg: rgba(227, 242, 253, 0.9);
-            --panel-border: rgba(144, 202, 249, 0.7);
+
+        [data-theme="light"] {
+            --bg: #f0f4fa;
+            --surface: #ffffff;
+            --surface-2: #e8f0fe;
+            --border: rgba(37, 99, 235, 0.12);
+            --border-hover: rgba(37, 99, 235, 0.35);
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-dim: #cbd5e1;
+            --accent: #2563eb;
+            --accent-2: #0d9488;
+            --accent-glow: rgba(37, 99, 235, 0.1);
+            --danger: #dc2626;
+            --tag-bg: rgba(37, 99, 235, 0.07);
+            --input-bg: rgba(255, 255, 255, 0.9);
         }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--color-bg);
-            color: var(--color-text);
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
             overflow-x: hidden;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background var(--transition), color var(--transition);
         }
-        #searchInput { color: var(--color-text); background-color: var(--color-search-bg); border: 1px solid var(--color-search-border); }
-        #searchInput::placeholder { color: var(--color-text-muted); }
-        .search-icon { color: var(--color-text-muted); }
-        h1.text-accent, .category-header h3 { color: var(--color-text); }
-        body[data-theme="light"] #searchInput { background-color: #FFFFFF; border: 1px solid #D1D5DB; color: var(--color-text); }
-        body[data-theme="light"] #searchInput::placeholder, body[data-theme="light"] .search-icon { color: var(--color-text-muted); }
-        body[data-theme="light"] h1.text-accent, body[data-theme="light"] .category-header h3 { color: var(--color-accent); }
-        #webgl-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-        .panel { background: var(--panel-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--panel-border); box-shadow: 0 8px 32px 0 rgba(10, 15, 31, 0.37); border-radius: 0.75rem; transition: background-color 0.3s ease, border-color 0.3s ease; }
-        .subject-list { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.5s ease-in-out; }
-        .subject-list > div { overflow: hidden; }
-        .subject-list.expanded { grid-template-rows: 1fr; }
-        .rotate-180 { transform: rotate(180deg); }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--color-bg); }
-        ::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
-        .glow-on-hover { transition: box-shadow 0.3s ease, transform 0.3s ease; }
-        .glow-on-hover:hover { transform: translateY(-2px); box-shadow: 0 0 15px 2px var(--color-accent); }
-        .loading { opacity: 0.5; pointer-events: none; }
-        
-        /* ESTILOS PARA SUGESTÕES QUE EMPURRAM O CONTEÚDO */
-        #suggestionsContainer {
+
+        /* ── CANVAS ── */
+        #webgl-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ── LAYOUT ── */
+        #app {
+            position: relative;
+            z-index: 1;
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 2rem 1.25rem 4rem;
+        }
+
+        /* ── HEADER ── */
+        .site-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 2.5rem;
+            padding-top: 0.5rem;
+        }
+
+        .logo-block {}
+
+        .logo-eyebrow {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.35rem;
+            opacity: 0.7;
+        }
+
+        .logo-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 800;
+            line-height: 1;
+            color: var(--text);
+            letter-spacing: -0.03em;
+        }
+
+        .logo-title span {
+            color: var(--accent);
+        }
+
+        .logo-subtitle {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* ── THEME TOGGLE ── */
+        .theme-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition);
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+
+        .theme-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        /* ── SEARCH ── */
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            transition: color var(--transition);
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            display: none;
+            line-height: 0;
+        }
+
+        .search-clear:hover { color: var(--danger); }
+
+        #searchInput {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            padding: 0.85rem 2.75rem 0.85rem 2.75rem;
+            border-radius: 12px;
+            outline: none;
+            transition: all var(--transition);
+        }
+
+        #searchInput::placeholder { color: var(--text-muted); }
+
+        #searchInput:focus {
+            border-color: var(--accent);
+            background: var(--input-bg);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        #searchInput:focus ~ .search-icon { color: var(--accent); }
+
+        /* ── STATS BAR ── */
+        .stats-bar {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+            padding: 0 0.25rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+        }
+
+        .stat-item { display: flex; align-items: center; gap: 0.4rem; }
+        .stat-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.6;
+        }
+
+        /* ── SUGGESTIONS ── */
+        .suggestions-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.3s ease, opacity 0.2s ease;
+        }
+
+        .suggestions-box.open {
+            max-height: 280px;
+            opacity: 1;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.65rem 1rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            transition: all var(--transition);
+        }
+
+        .suggestion-item:last-child { border-bottom: none; }
+
+        .suggestion-item:hover, .suggestion-item.active {
+            background: var(--accent-glow);
+            color: var(--text);
+            padding-left: 1.25rem;
+        }
+
+        .suggestion-icon {
+            color: var(--accent);
+            opacity: 0.5;
+            flex-shrink: 0;
+        }
+
+        /* ── CATEGORIES ── */
+        #categoriesContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .category-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: border-color var(--transition), box-shadow var(--transition);
+            animation: slideUp 0.4s ease both;
+        }
+
+        .category-card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .category-card.is-open {
+            border-color: var(--border-hover);
+            box-shadow: 0 4px 24px rgba(99, 179, 237, 0.06);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── CATEGORY HEADER ── */
+        .cat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            gap: 1rem;
+            user-select: none;
+        }
+
+        .cat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            min-width: 0;
+        }
+
+        .cat-index {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 500;
+            color: var(--accent);
+            opacity: 0.5;
+            flex-shrink: 0;
+            letter-spacing: 0.05em;
+        }
+
+        .cat-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: -0.01em;
+        }
+
+        .cat-count {
+            font-size: 0.65rem;
+            color: var(--accent);
+            background: var(--tag-bg);
+            border: 1px solid var(--border);
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+            flex-shrink: 0;
+            font-weight: 500;
+        }
+
+        .cat-chevron {
+            color: var(--text-dim);
+            flex-shrink: 0;
+            transition: transform var(--transition), color var(--transition);
+        }
+
+        .cat-header:hover .cat-chevron { color: var(--accent); }
+
+        .category-card.is-open .cat-chevron {
+            transform: rotate(180deg);
+            color: var(--accent);
+        }
+
+        /* ── SUBJECTS LIST ── */
+        .subjects-panel {
             display: grid;
             grid-template-rows: 0fr;
-            transition: grid-template-rows 0.3s ease-in-out;
-            background: var(--color-surface);
-            border: 1px solid var(--panel-border);
-            border-radius: 0.5rem;
+            transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .subjects-panel.open { grid-template-rows: 1fr; }
+
+        .subjects-inner {
             overflow: hidden;
         }
-        #suggestionsContainer.expanded {
-            grid-template-rows: 1fr;
-        }
-        #suggestionsContainer > div {
-            min-height: 0;
-        }
-        .suggestion-item {
-            padding: 0.6rem 1rem;
-            cursor: pointer;
-            color: var(--color-text-muted);
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-        .suggestion-item:not(:last-child) {
-            border-bottom: 1px solid var(--panel-border);
-        }
-        .suggestion-item:hover, .suggestion-item.active {
-            background-color: var(--color-search-bg);
-            color: var(--color-text);
+
+        .subjects-list {
+            padding: 0 1.25rem 1rem;
+            border-top: 1px solid var(--border);
+            margin-top: 0;
         }
 
-        /* ANIMAÇÃO PARA ÍCONE NEURAL */
-        @keyframes pulse {
-          0%, 100% {
-            transform: scale(0.9);
-            opacity: 0.7;
-          }
-          50% {
-            transform: scale(1.1);
+        .subject-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+            transition: padding-left var(--transition);
+        }
+
+        .subject-item:last-child { border-bottom: none; }
+
+        .subject-item:hover { padding-left: 0.25rem; }
+
+        .subject-bullet {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.3;
+            flex-shrink: 0;
+        }
+
+        .subject-name {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .subject-name mark {
+            background: transparent;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .subjects-empty {
+            padding: 0.75rem 0;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            font-style: italic;
+        }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.4;
+        }
+
+        .empty-state p {
+            font-size: 0.85rem;
+            letter-spacing: 0.03em;
+        }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition);
+        }
+
+        .modal-overlay.open {
             opacity: 1;
-          }
+            pointer-events: all;
         }
-        .neural-dot {
-          transform-origin: center;
-          animation: pulse 2s infinite ease-in-out;
+
+        .modal-box {
+            background: var(--surface-2);
+            border: 1px solid var(--border-hover);
+            border-radius: 16px;
+            padding: 1.75rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+            transform: translateY(12px);
+            transition: transform var(--transition);
         }
-        .neural-dot-1 { animation-delay: 0s; }
-        .neural-dot-2 { animation-delay: 0.3s; }
-        .neural-dot-3 { animation-delay: 0.6s; }
+
+        .modal-overlay.open .modal-box { transform: translateY(0); }
+
+        .modal-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--accent);
+        }
+
+        .modal-msg {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .modal-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            cursor: pointer;
+            float: right;
+            transition: opacity var(--transition);
+        }
+
+        .modal-btn:hover { opacity: 0.85; }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        /* ── LOADING ── */
+        .skeleton {
+            background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 14px;
+            height: 52px;
+            margin-bottom: 0.6rem;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ── SEARCH RESULTS COUNT ── */
+        .search-result-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            padding: 0 0.25rem;
+            margin-bottom: 0.75rem;
+            display: none;
+        }
+
+        .search-result-label.visible { display: block; }
+
+        /* ── FADE IN ── */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        #app { animation: fadeIn 0.5s ease; }
+
+        /* Stagger cards */
+        .category-card:nth-child(1) { animation-delay: 0.05s; }
+        .category-card:nth-child(2) { animation-delay: 0.1s; }
+        .category-card:nth-child(3) { animation-delay: 0.15s; }
+        .category-card:nth-child(4) { animation-delay: 0.2s; }
+        .category-card:nth-child(5) { animation-delay: 0.25s; }
+        .category-card:nth-child(n+6) { animation-delay: 0.3s; }
     </style>
 </head>
-<body class="antialiased">
+<body>
+<canvas id="webgl-bg"></canvas>
 
-    <canvas id="webgl-bg"></canvas>
+<div id="app">
+    <!-- Header -->
+    <header class="site-header">
+        <div class="logo-block">
+            <p class="logo-eyebrow">// sistema</p>
+            <h1 class="logo-title">Base de <span>Conhecimento</span></h1>
+            <p class="logo-subtitle">Navegue por categorias e assuntos</p>
+        </div>
+        <button class="theme-btn" id="themeBtn" title="Alternar tema">
+            <svg id="iconSun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="hidden"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            <svg id="iconMoon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        </button>
+    </header>
 
-    <div id="main-content" class="relative z-10 animate-fade-in">
-        <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
-            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-20">
-                <button id="theme-toggle-btn" title="Alternar Tema" class="p-2 bg-surface hover:bg-primary border border-primary/50 rounded-full glow-on-hover">
-                    <svg id="theme-icon-sun" class="w-6 h-6 hidden text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    <svg id="theme-icon-moon" class="w-6 h-6 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                </button>
-            </div>
-            <div>
-                <header class="mb-6">
-                    <h1 class="text-3xl font-bold text-center mb-6 text-accent">Base de Conhecimento</h1>
-                    <div class="relative">
-                        <input type="text" id="searchInput" placeholder="Pesquisar por categorias e assuntos..." class="w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300" autocomplete="off">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </div>
-                    </div>
-                    <div id="suggestionsContainer" class="mt-1"></div>
-                </header>
-                <main id="categoriesContainer" class="space-y-3"></main>
-            </div>
+    <!-- Search -->
+    <div class="search-wrapper">
+        <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="searchInput" placeholder="Pesquisar categorias e assuntos..." autocomplete="off" spellcheck="false">
+        <button class="search-clear" id="clearBtn" title="Limpar">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+    </div>
+
+    <!-- Suggestions -->
+    <div class="suggestions-box" id="suggestionsBox"></div>
+
+    <!-- Stats -->
+    <div class="stats-bar" id="statsBar">
+        <div class="stat-item">
+            <div class="stat-dot"></div>
+            <span id="statCats">— categorias</span>
+        </div>
+        <div class="stat-item">
+            <div class="stat-dot" style="background: var(--accent-2)"></div>
+            <span id="statSubs">— assuntos</span>
         </div>
     </div>
 
-    <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="panel w-full max-w-md p-6">
-            <h3 class="text-lg font-semibold mb-4 text-accent">Informação</h3>
-            <p id="infoMessage" class="mb-6"></p>
-            <div class="flex justify-end">
-                <button id="infoOkBtn" class="px-4 py-2 bg-accent hover:opacity-90 text-white rounded-lg">OK</button>
-            </div>
-        </div>
+    <!-- Result label -->
+    <div class="search-result-label" id="resultLabel"></div>
+
+    <!-- Categories -->
+    <main id="categoriesContainer"></main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+    <div class="modal-box">
+        <p class="modal-title">Aviso</p>
+        <p class="modal-msg" id="modalMsg"></p>
+        <button class="modal-btn" id="modalOk">OK</button>
     </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Elementos do DOM ---
-            const searchInput = document.getElementById('searchInput');
-            const categoriesContainer = document.getElementById('categoriesContainer');
-            const suggestionsContainer = document.getElementById('suggestionsContainer');
-            const infoModal = document.getElementById('infoModal');
-            const infoMessage = document.getElementById('infoMessage');
-            const infoOkBtn = document.getElementById('infoOkBtn');
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // ── Elements ──
+    const $ = id => document.getElementById(id);
+    const searchInput = $('searchInput');
+    const clearBtn = $('clearBtn');
+    const suggestionsBox = $('suggestionsBox');
+    const categoriesContainer = $('categoriesContainer');
+    const statsBar = $('statsBar');
+    const statCats = $('statCats');
+    const statSubs = $('statSubs');
+    const resultLabel = $('resultLabel');
+    const modal = $('modal');
+    const modalMsg = $('modalMsg');
+    const modalOk = $('modalOk');
+    const themeBtn = $('themeBtn');
+    const iconSun = $('iconSun');
+    const iconMoon = $('iconMoon');
 
-            // --- Variáveis de Estado ---
-            let categories = [];
-            let allSuggestions = [];
-            let activeSuggestionIndex = -1;
-            let isDataLoaded = false;
+    // ── State ──
+    let categories = [];
+    let allSuggestions = [];
+    let activeIdx = -1;
+    let loaded = false;
 
-            // --- MÓDULOS (Tema, Modal, WebGL) ---
-            const ThemeSwitcher = (() => { const DOM = { body: document.body, themeToggleBtn: document.getElementById('theme-toggle-btn'), themeIconSun: document.getElementById('theme-icon-sun'), themeIconMoon: document.getElementById('theme-icon-moon') }; const STORAGE_KEY = 'themePreference'; const applyTheme = (theme) => { DOM.body.dataset.theme = theme; localStorage.setItem(STORAGE_KEY, theme); DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); }; const toggleTheme = () => { const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(currentTheme); }; const init = () => { const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; applyTheme(savedTheme); DOM.themeToggleBtn.addEventListener('click', toggleTheme); }; return { init }; })();
-            const showModal = (message) => { infoMessage.textContent = message; infoModal.classList.remove('hidden'); }; const hideModal = () => infoModal.classList.add('hidden'); infoOkBtn.addEventListener('click', hideModal);
-            const initWebGLBackground = () => { const canvas = document.getElementById('webgl-bg'); if (!canvas) return; const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setClearColor(0x000000, 0); const geometry = new THREE.BufferGeometry(); const vertices = []; for (let i = 0; i < 1000; i++) { vertices.push((Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000); } geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); const material = new THREE.PointsMaterial({ size: 2, color: 0x06B6D4 }); const points = new THREE.Points(geometry, material); scene.add(points); camera.position.z = 1000; const animate = () => { requestAnimationFrame(animate); points.rotation.x += 0.0005; points.rotation.y += 0.001; renderer.render(scene, camera); }; animate(); window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }); };
+    // ── Theme ──
+    const applyTheme = t => {
+        document.documentElement.dataset.theme = t;
+        localStorage.setItem('kb-theme', t);
+        iconSun.classList.toggle('hidden', t === 'dark');
+        iconMoon.classList.toggle('hidden', t === 'light');
+    };
+    themeBtn.addEventListener('click', () => {
+        applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+    });
+    applyTheme(localStorage.getItem('kb-theme') || 'dark');
 
-            // --- LÓGICA DE DADOS ---
-            const loadData = async () => {
-                categoriesContainer.classList.add('loading');
-                try {
-                    const response = await fetch('./database.json');
-                    if (!response.ok) throw new Error(`HTTP error!`);
-                    const data = await response.json();
-                    categories = data;
-                    const suggestionSet = new Set();
-                    categories.forEach(cat => { suggestionSet.add(cat.name); cat.subjects.forEach(sub => suggestionSet.add(sub.name)); });
-                    allSuggestions = [...suggestionSet];
-                    render(categories);
-                    isDataLoaded = true;
-                } catch (error) {
-                    console.error("Erro ao carregar dados", error);
-                    showModal('Não foi possível carregar a base de conhecimento.');
-                } finally {
-                    categoriesContainer.classList.remove('loading');
-                }
-            };
+    // ── Modal ──
+    const showModal = msg => { modalMsg.textContent = msg; modal.classList.add('open'); };
+    const hideModal = () => modal.classList.remove('open');
+    modalOk.addEventListener('click', hideModal);
+    modal.addEventListener('click', e => { if (e.target === modal) hideModal(); });
 
-            const normalizeString = (str) => {
-                if (!str) return '';
-                return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]|-/g, '');
-            };
+    // ── WebGL Background ──
+    (() => {
+        const canvas = $('webgl-bg');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 2000);
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.setClearColor(0x000000, 0);
 
-            const highlightMatch = (text, searchTerm) => {
-                if (!searchTerm || !text) return text;
-                const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const regex = new RegExp(escapedTerm, 'gi');
-                return text.replace(regex, (match) => `<mark class="bg-transparent text-blue-400 font-semibold not-italic">${match}</mark>`);
-            };
+        const geo = new THREE.BufferGeometry();
+        const verts = [];
+        for (let i = 0; i < 800; i++) {
+            verts.push((Math.random() - 0.5) * 1800, (Math.random() - 0.5) * 1800, (Math.random() - 0.5) * 1800);
+        }
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
 
-            // --- LÓGICA DE SUGESTÕES (AUTOCOMPLETE) ---
-            const renderSuggestions = (suggestions) => {
-                suggestionsContainer.innerHTML = '<div></div>';
-                if (suggestions.length === 0) {
-                    suggestionsContainer.classList.remove('expanded');
-                    return;
-                }
-                const wrapper = suggestionsContainer.querySelector('div');
-                suggestions.forEach((suggestionText) => {
-                    const item = document.createElement('div');
-                    item.className = 'suggestion-item flex items-center gap-x-3';
-                    const neuralIconSVG = `
-                        <svg class="w-5 h-5 text-blue-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                            <circle class="neural-dot neural-dot-1" cx="4" cy="12" r="3"/>
-                            <circle class="neural-dot neural-dot-2" cx="12" cy="12" r="3"/>
-                            <circle class="neural-dot neural-dot-3" cx="20" cy="12" r="3"/>
-                        </svg>
-                    `;
-                    item.innerHTML = `${neuralIconSVG}<span>${suggestionText}</span>`;
-                    item.addEventListener('click', () => {
-                        searchInput.value = suggestionText;
-                        suggestionsContainer.classList.remove('expanded');
-                        handleSearch();
-                    });
-                    wrapper.appendChild(item);
-                });
-                suggestionsContainer.classList.add('expanded');
-                activeSuggestionIndex = -1;
-            };
+        const mat = new THREE.PointsMaterial({ size: 1.8, color: 0x63b3ed, transparent: true, opacity: 0.4 });
+        const points = new THREE.Points(geo, mat);
+        scene.add(points);
+        camera.position.z = 900;
 
-            const handleAutocomplete = () => {
-                if (!isDataLoaded) return;
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', e => {
+            mouseX = (e.clientX / innerWidth - 0.5) * 0.3;
+            mouseY = (e.clientY / innerHeight - 0.5) * 0.3;
+        });
+
+        const animate = () => {
+            requestAnimationFrame(animate);
+            points.rotation.y += 0.0004 + mouseX * 0.001;
+            points.rotation.x += 0.0002 + mouseY * 0.001;
+            renderer.render(scene, camera);
+        };
+        animate();
+
+        addEventListener('resize', () => {
+            camera.aspect = innerWidth / innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        });
+    })();
+
+    // ── Normalize ──
+    const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // ── Highlight ──
+    const hl = (text, term) => {
+        if (!term || !text) return text;
+        const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return text.replace(new RegExp(escaped, 'gi'), m => `<mark>${m}</mark>`);
+    };
+
+    // ── Skeletons ──
+    const showSkeletons = () => {
+        categoriesContainer.innerHTML = Array.from({ length: 5 }, () => `<div class="skeleton"></div>`).join('');
+    };
+
+    // ── Load Data ──
+    const loadData = async () => {
+        showSkeletons();
+        try {
+            const res = await fetch('./database.json');
+            if (!res.ok) throw new Error();
+            categories = await res.json();
+
+            const set = new Set();
+            let totalSubs = 0;
+            categories.forEach(cat => {
+                set.add(cat.name);
+                cat.subjects.forEach(s => { set.add(s.name); totalSubs++; });
+            });
+            allSuggestions = [...set];
+
+            statCats.textContent = `${categories.length} categorias`;
+            statSubs.textContent = `${totalSubs} assuntos`;
+
+            loaded = true;
+            render(categories);
+        } catch {
+            categoriesContainer.innerHTML = '';
+            showModal('Não foi possível carregar a base de conhecimento. Verifique se o arquivo database.json está disponível.');
+        }
+    };
+
+    // ── Suggestions ──
+    const renderSuggestions = list => {
+        if (!list.length) {
+            suggestionsBox.classList.remove('open');
+            suggestionsBox.innerHTML = '';
+            return;
+        }
+        suggestionsBox.innerHTML = list.map(s => `
+            <div class="suggestion-item" data-value="${s.replace(/"/g, '&quot;')}">
+                <svg class="suggestion-icon" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <span>${s}</span>
+            </div>
+        `).join('');
+        suggestionsBox.classList.add('open');
+        activeIdx = -1;
+
+        suggestionsBox.querySelectorAll('.suggestion-item').forEach(el => {
+            el.addEventListener('click', () => {
+                searchInput.value = el.dataset.value;
+                closeSuggestions();
                 handleSearch();
-                const searchTerm = searchInput.value.trim();
-                if (searchTerm.length < 1) {
-                    suggestionsContainer.classList.remove('expanded');
-                    return;
-                }
-                const normalizedSearchTerm = normalizeString(searchTerm);
-                const filteredSuggestions = allSuggestions.filter(s => normalizeString(s).includes(normalizedSearchTerm)).slice(0, 4);
-                renderSuggestions(filteredSuggestions);
-            };
+            });
+        });
+    };
 
-            // --- FUNÇÕES DE RENDERIZAÇÃO E BUSCA PRINCIPAL ---
-            const render = (dataToRender = []) => {
-                const searchTerm = searchInput.value.trim();
-                categoriesContainer.innerHTML = '';
-                if (dataToRender.length === 0) {
-                    const message = searchTerm ? `Nenhum resultado encontrado para "${searchTerm}".` : "A base de conhecimento está vazia.";
-                    categoriesContainer.innerHTML = `<div class="text-center text-text-muted py-10">${message}</div>`;
-                    return;
-                }
-                dataToRender.forEach(category => {
-                    const isExpanded = category.expanded || false;
-                    const categoryElement = document.createElement('div');
-                    categoryElement.className = 'panel rounded-lg';
-                    const subjectsToDisplay = category.subjectsToDisplay || category.subjects;
-                    const subjectsHTML = subjectsToDisplay.length > 0
-                        ? subjectsToDisplay.map((subject) => `<li class="flex items-center justify-between text-text ml-2 p-1 rounded-md"><span class="truncate pr-2">${highlightMatch(subject.name, searchTerm)}</span></li>`).join('')
-                        : '<li class="text-text-muted text-sm ml-2">Nenhum assunto nesta categoria.</li>';
+    const closeSuggestions = () => {
+        suggestionsBox.classList.remove('open');
+        suggestionsBox.innerHTML = '';
+        activeIdx = -1;
+    };
 
-                    categoryElement.innerHTML = `
-                        <div class="group flex items-center justify-between p-4 cursor-pointer category-header" data-id="${category.id}">
-                            <h3 class="text-lg font-semibold truncate pr-2">${highlightMatch(category.name, searchTerm)}</h3>
-                            <div class="flex items-center gap-3">
-                                <svg class="w-6 h-6 text-text-muted transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </div>
-                        </div>
-                        <div class="subject-list ${isExpanded ? 'expanded' : ''}">
-                            <div><div class="p-4 border-t" style="border-color: var(--panel-border);"><ul class="space-y-1 mb-4">${subjectsHTML}</ul></div></div>
-                        </div>`;
-                    categoriesContainer.appendChild(categoryElement);
-                });
-            };
+    // ── Render ──
+    const render = (data = []) => {
+        const term = searchInput.value.trim();
+        categoriesContainer.innerHTML = '';
 
-            const handleSearch = () => {
-                if (!isDataLoaded) return;
-                const searchTerm = normalizeString(searchInput.value.trim());
-                if (!searchTerm) {
-                    const resetData = categories.map(cat => ({...cat, subjectsToDisplay: cat.subjects }));
-                    render(resetData);
-                    return;
-                }
-                const searchResults = categories.map(cat => {
-                    const catNameMatches = normalizeString(cat.name).includes(searchTerm);
-                    const matchingSubjects = cat.subjects.filter(sub => normalizeString(sub.name).includes(searchTerm));
-                    if (catNameMatches) return { ...cat, subjectsToDisplay: cat.subjects };
-                    if (matchingSubjects.length > 0) return { ...cat, subjectsToDisplay: matchingSubjects };
-                    return null;
-                }).filter(Boolean);
-                render(searchResults);
-            };
+        if (!data.length) {
+            const msg = term ? `Nenhum resultado para <strong>"${term}"</strong>.` : 'A base de conhecimento está vazia.';
+            categoriesContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">◎</div>
+                    <p>${msg}</p>
+                </div>`;
+            return;
+        }
 
-            categoriesContainer.addEventListener('click', (e) => {
-                const header = e.target.closest('.category-header');
-                if (header) {
-                    const categoryId = Number(header.dataset.id);
-                    const category = categories.find(c => c.id === categoryId);
-                    if (category) {
-                        category.expanded = !category.expanded;
-                        handleSearch();
-                    }
+        data.forEach((cat, i) => {
+            const subjects = cat.subjectsToDisplay || cat.subjects;
+            const isOpen = cat.expanded || false;
+
+            const card = document.createElement('div');
+            card.className = `category-card${isOpen ? ' is-open' : ''}`;
+            card.dataset.id = cat.id;
+
+            const subjectsHTML = subjects.length
+                ? subjects.map(sub => `
+                    <div class="subject-item">
+                        <div class="subject-bullet"></div>
+                        <span class="subject-name">${hl(sub.name, term)}</span>
+                    </div>`).join('')
+                : `<p class="subjects-empty">Nenhum assunto nesta categoria.</p>`;
+
+            card.innerHTML = `
+                <div class="cat-header" role="button" aria-expanded="${isOpen}">
+                    <div class="cat-header-left">
+                        <span class="cat-index">${String(i + 1).padStart(2, '0')}</span>
+                        <span class="cat-name">${hl(cat.name, term)}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:0.6rem">
+                        <span class="cat-count">${subjects.length}</span>
+                        <svg class="cat-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                </div>
+                <div class="subjects-panel${isOpen ? ' open' : ''}">
+                    <div class="subjects-inner">
+                        <div class="subjects-list">${subjectsHTML}</div>
+                    </div>
+                </div>`;
+
+            card.querySelector('.cat-header').addEventListener('click', () => {
+                const catObj = categories.find(c => c.id === cat.id);
+                if (catObj) {
+                    catObj.expanded = !catObj.expanded;
+                    handleSearch();
                 }
             });
-            
-            // --- INICIALIZAÇÃO DA APLICAÇÃO ---
-            const initializeApp = () => {
-                ThemeSwitcher.init();
-                initWebGLBackground();
-                
-                searchInput.addEventListener('input', handleAutocomplete);
 
-                searchInput.addEventListener('keydown', (e) => {
-                    const items = suggestionsContainer.querySelectorAll('.suggestion-item');
-                    if (!suggestionsContainer.classList.contains('expanded') || items.length === 0) return;
-                    
-                    if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
-                    } else if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
-                    }
-                    items.forEach((item, index) => item.classList.toggle('active', index === activeSuggestionIndex));
-                    
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (activeSuggestionIndex > -1 && items[activeSuggestionIndex]) {
-                            items[activeSuggestionIndex].click();
-                        } else {
-                            suggestionsContainer.classList.remove('expanded');
-                            handleSearch();
-                        }
-                    }
-                });
-
-                document.addEventListener('click', (e) => {
-                    if (!e.target.closest('header')) {
-                        suggestionsContainer.classList.remove('expanded');
-                    }
-                });
-
-                loadData();
-            };
-
-            initializeApp();
+            categoriesContainer.appendChild(card);
         });
-    </script>
+    };
+
+    // ── Search ──
+    const handleSearch = () => {
+        if (!loaded) return;
+        const term = norm(searchInput.value.trim());
+        clearBtn.style.display = term ? 'flex' : 'none';
+
+        if (!term) {
+            resultLabel.classList.remove('visible');
+            render(categories.map(c => ({ ...c, subjectsToDisplay: c.subjects })));
+            return;
+        }
+
+        const results = categories.map(cat => {
+            const catMatch = norm(cat.name).includes(term);
+            const subs = cat.subjects.filter(s => norm(s.name).includes(term));
+            if (catMatch) return { ...cat, subjectsToDisplay: cat.subjects };
+            if (subs.length) return { ...cat, subjectsToDisplay: subs };
+            return null;
+        }).filter(Boolean);
+
+        const totalSubs = results.reduce((a, c) => a + (c.subjectsToDisplay || []).length, 0);
+        resultLabel.innerHTML = `<span style="color:var(--accent)">${results.length}</span> categoria${results.length !== 1 ? 's' : ''}, <span style="color:var(--accent)">${totalSubs}</span> assunto${totalSubs !== 1 ? 's' : ''} encontrado${totalSubs !== 1 ? 's' : ''}`;
+        resultLabel.classList.add('visible');
+        render(results);
+    };
+
+    // ── Input Events ──
+    searchInput.addEventListener('input', () => {
+        handleSearch();
+        const val = searchInput.value.trim();
+        if (!val) { closeSuggestions(); return; }
+        const normVal = norm(val);
+        const filtered = allSuggestions.filter(s => norm(s).includes(normVal) && norm(s) !== normVal).slice(0, 5);
+        renderSuggestions(filtered);
+    });
+
+    searchInput.addEventListener('keydown', e => {
+        const items = suggestionsBox.querySelectorAll('.suggestion-item');
+        if (!suggestionsBox.classList.contains('open') || !items.length) {
+            if (e.key === 'Enter') { closeSuggestions(); handleSearch(); }
+            return;
+        }
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIdx = (activeIdx + 1) % items.length;
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIdx = (activeIdx - 1 + items.length) % items.length;
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (activeIdx > -1) items[activeIdx].click();
+            else { closeSuggestions(); handleSearch(); }
+            return;
+        } else if (e.key === 'Escape') {
+            closeSuggestions(); return;
+        }
+        items.forEach((item, i) => item.classList.toggle('active', i === activeIdx));
+    });
+
+    clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        clearBtn.style.display = 'none';
+        closeSuggestions();
+        resultLabel.classList.remove('visible');
+        render(categories.map(c => ({ ...c, subjectsToDisplay: c.subjects })));
+        searchInput.focus();
+    });
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.search-wrapper') && !e.target.closest('.suggestions-box')) {
+            closeSuggestions();
+        }
+    });
+
+    loadData();
+});
+</script>
 </body>
 </html>
