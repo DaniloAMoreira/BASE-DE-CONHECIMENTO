@@ -166,7 +166,7 @@
     </div>
 
     <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="panel w-full max-w-md p-6">
+        <div class="panel w-full max-w-2xl p-6">
             <h3 class="text-lg font-semibold mb-4 text-accent">Informação</h3>
             <p id="infoMessage" class="mb-6"></p>
             <div class="flex justify-end">
@@ -180,12 +180,21 @@
             navigator.clipboard.writeText(text).then(() => {
                 const infoModal = document.getElementById('infoModal');
                 const infoMessage = document.getElementById('infoMessage');
+                infoModal.querySelector('h3').textContent = 'Informação';
                 infoMessage.textContent = 'Comando copiado para a área de transferência!';
                 infoModal.classList.remove('hidden');
             }).catch(err => {
                 console.error('Erro ao copiar', err);
                 alert('Erro ao copiar o comando.');
             });
+        };
+
+        window.viewCommand = (text) => {
+            const infoModal = document.getElementById('infoModal');
+            const infoMessage = document.getElementById('infoMessage');
+            infoModal.querySelector('h3').textContent = 'Comando SQL';
+            infoMessage.innerHTML = `<pre class="text-left text-xs bg-[#0a0f1f] border border-[#2a3a90]/30 text-gray-200 p-3 rounded overflow-auto max-h-96" style="white-space: pre-wrap; font-family: monospace;">${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`;
+            infoModal.classList.remove('hidden');
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -304,8 +313,13 @@
                             if (subject.type === 'download') {
                                 actionBtn = `<a href="${subject.file}" download class="px-3 py-1 bg-accent text-white rounded hover:opacity-90 transition-colors text-sm font-semibold flex items-center gap-1 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>Download</a>`;
                             } else if (subject.type === 'copy') {
-                                const encoded = encodeURIComponent(subject.command || '');
-                                actionBtn = `<button onclick="copyCommand(decodeURIComponent('${encoded}'))" class="px-3 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm font-semibold flex items-center gap-1 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>Copiar</button>`;
+                                const encoded = encodeURIComponent(subject.command || '').replace(/'/g, '%27');
+                                actionBtn = `<div class="flex items-center gap-2">
+                                    <button onclick="viewCommand(decodeURIComponent('${encoded}'))" class="p-1.5 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors flex items-center shrink-0" title="Ver Comando">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    </button>
+                                    <button onclick="copyCommand(decodeURIComponent('${encoded}'))" class="px-3 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm font-semibold flex items-center gap-1 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>Copiar</button>
+                                </div>`;
                             }
                             return `<li class="flex items-center justify-between text-text ml-2 p-2 rounded-md hover:bg-white/5 transition-colors group">
                                 <span class="truncate pr-4">${highlightMatch(subject.name, searchTerm)}</span>
