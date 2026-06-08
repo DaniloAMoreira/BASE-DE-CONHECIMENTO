@@ -212,7 +212,7 @@
             const loadData = async () => {
                 categoriesContainer.classList.add('loading');
                 try {
-                    const response = await fetch('./comandos.json');
+                    const response = await fetch('./comandos.json?t=' + new Date().getTime());
                     if (!response.ok) throw new Error(`HTTP error!`);
                     const data = await response.json();
                     categories = data;
