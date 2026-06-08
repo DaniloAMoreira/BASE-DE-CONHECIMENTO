@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "(SQL) Comandos Básicos",
+    "subjects": [
+      {
+        "name": "SELECT * FROM usuarios;"
+      },
+      {
+        "name": "INSERT INTO usuarios (nome, email) VALUES ('João', 'joao@email.com');"
+      }
+    ]
+  }
+]
