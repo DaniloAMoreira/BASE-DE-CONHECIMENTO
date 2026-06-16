@@ -179,25 +179,29 @@
         window.viewCommand = (text) => {
             const infoModal = document.getElementById('infoModal');
             const infoMessage = document.getElementById('infoMessage');
+            
             infoMessage.style.whiteSpace = 'pre-wrap';
             infoMessage.style.wordBreak = 'break-word';
             infoMessage.style.fontFamily = 'monospace';
             infoMessage.style.backgroundColor = 'var(--color-search-bg)';
             infoMessage.style.padding = '10px';
             infoMessage.style.borderRadius = '5px';
-            infoMessage.textContent = text;
+            
+            // Garante que mostre um aviso caso o comando não venha do JSON
+            infoMessage.textContent = text || 'Aviso: Comando vazio ou não encontrado no JSON.';
             infoModal.classList.remove('hidden');
         };
 
         window.copyCommand = (text, btnElement) => {
-            navigator.clipboard.writeText(text).then(() => {
+            // Função interna para disparar a notificação visual
+            const showNotification = () => {
                 if (btnElement && btnElement.nextElementSibling && btnElement.nextElementSibling.classList.contains('copy-notification')) {
                     btnElement.nextElementSibling.remove();
                 }
                 if (btnElement) {
                     const notif = document.createElement('div');
                     notif.className = 'copy-notification absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 bg-green-600 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-50 pointer-events-none transition-opacity duration-300';
-                    notif.textContent = 'Comando copiado para clipboard';
+                    notif.textContent = 'Copiado!';
                     btnElement.parentNode.appendChild(notif);
                     
                     setTimeout(() => {
@@ -208,18 +212,45 @@
                             }, 300);
                         }
                     }, 1500);
-                } else {
-                    // Fallback se btnElement não for passado (para segurança)
-                    const infoModal = document.getElementById('infoModal');
-                    const infoMessage = document.getElementById('infoMessage');
-                    infoMessage.style.cssText = ''; // Reset custom styles if any
-                    infoMessage.textContent = 'Comando copiado para a área de transferência!';
-                    infoModal.classList.remove('hidden');
                 }
-            }).catch(err => {
-                console.error('Erro ao copiar', err);
-                alert('Erro ao copiar o comando.');
-            });
+            };
+
+            // Plano B: Usa a técnica antiga de seleção de texto para copiar quando rodar localmente (file://)
+            const fallbackCopy = (textToCopy) => {
+                const textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                textArea.style.position = "fixed"; // Evita que a tela pule
+                textArea.style.top = "0";
+                textArea.style.left = "0";
+                textArea.style.opacity = "0";
+                
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) showNotification();
+                    else alert('Erro: Não foi possível copiar o comando.');
+                } catch (err) {
+                    console.error('Erro no fallback de cópia', err);
+                }
+                
+                document.body.removeChild(textArea);
+            };
+
+            // Tenta usar a API moderna primeiro (se for HTTPS ou localhost)
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showNotification();
+                }).catch(err => {
+                    console.warn('Clipboard API falhou, acionando fallback...', err);
+                    fallbackCopy(text); // Aciona o plano B se falhar
+                });
+            } else {
+                // Se nem estiver num contexto seguro, já pula direto pro plano B
+                fallbackCopy(text);
+            }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
