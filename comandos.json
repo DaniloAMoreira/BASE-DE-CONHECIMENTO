@@ -1,42 +1,22 @@
-[
-  {
-    "id": 1,
-    "name": "(TODOS)TIRAR CARACTERES ESPECIAIS",
-    "subjects": [
-      {
-        "name": "(TODOS)TIRAR CARACTERES ESPECIAIS.sql",
-        "command": "COLE AQUI O CONTEÚDO DO SEU FICHEIRO SQL PARA O SCRIPT FUNCIONAR"
-      }
-    ]
-  },
-  {
-    "id": 2,
-    "name": "Comando para Setproduto",
-    "subjects": [
-      {
-        "name": "Comando para Setproduto.txt",
-        "command": "UPDATE produto\nSET\ntrib_icmsaliqsaida = IFNULL(trib_icmsaliqsaida, '0.0000'),\ntrib_icmsaliqredbasecalcsaida = IFNULL(trib_icmsaliqredbasecalcsaida, '0.0000'),\ntrib_pissaida = IFNULL(trib_pissaida, '07'),\ntrib_cofinssaida = IFNULL(trib_cofinssaida, '07'),\ntrib_icmsobs = IFNULL(trib_icmsobs, ''),\ntrib_icmsfcpaliq = IFNULL(trib_icmsfcpaliq, '0.0000'),\nmed_precovendafpopbolsafamilia = IFNULL(med_precovendafpopbolsafamilia, '0.0000'),\nmed_margemfpopbolsafamilia = IFNULL(med_margemfpopbolsafamilia, '0.0000'),\ntrib_genero = IFNULL(trib_genero, '00'),\ntrib_fatorunidade = IFNULL(trib_fatorunidade, '0.0000'),\ntrib_unidadetributavel = IFNULL(trib_unidadetributavel, ''),\ntrib_ipialiqsaida = IFNULL(trib_ipialiqsaida, '0.0000'),\ntrib_pisaliqsaida = IFNULL(trib_pisaliqsaida, '0.0000'),\ntrib_cofinsaliqsaida = IFNULL(trib_cofinsaliqsaida, '0.0000'),\ncomb_percentualbiodiesel = IFNULL(comb_percentualbiodiesel, '0.0000'),\npode_producao_propria = IFNULL(pode_producao_propria, 'N')\nWHERE\ntrib_icmsaliqsaida IS NULL OR\ntrib_icmsaliqredbasecalcsaida IS NULL OR\ntrib_pissaida IS NULL OR\ntrib_cofinssaida IS NULL OR\ntrib_icmsobs IS NULL OR\ntrib_icmsfcpaliq IS NULL OR\nmed_precovendafpopbolsafamilia IS NULL OR\nmed_margemfpopbolsafamilia IS NULL OR\ntrib_genero IS NULL OR\ntrib_fatorunidade IS NULL OR\ntrib_unidadetributavel IS NULL OR\ntrib_ipialiqsaida IS NULL OR\ntrib_pisaliqsaida IS NULL OR\ntrib_cofinsaliqsaida IS NULL OR\ncomb_percentualbiodiesel IS NULL OR\npode_producao_propria IS NULL;\n\nUPDATE cliente\nSET\ntabela_preco = 'NORMAL'\nWHERE\ntabela_preco IS NULL;"
-      }
-    ]
-  },
-  {
-    "id": 3,
-    "name": "SCRIPT SNGPC - REMOVER CARACTERES ESPECIAIS",
-    "subjects": [
-      {
-        "name": "SCRIPT SNGPC - REMOVER CARACTERES ESPECIAIS.sql",
-        "command": "COLE AQUI O CONTEÚDO DO SEU OUTRO FICHEIRO SQL. Lembre-se que as quebras de linha viram \\n no formato json"
-      }
-    ]
-  },
-  {
-    "id": 4,
-    "name": "Zerar IPI",
-    "subjects": [
-      {
-        "name": "Zerar IPI.txt",
-        "command": "update grupotributacao\nset ipi_cst = '', ipi_ex = '', ipi_aliquota = 0.0000, ipi_codigo_enquadramento = '';"
-      }
-    ]
-  }
-]
+{
+  "id": 1,
+  "name": "(TODOS)TIRAR CARACTERES ESPECIAIS",
+  "subjects": [
+    {
+      "name": "(TODOS)TIRAR CARACTERES ESPECIAIS.sql",
+      "type": "download",
+      "command": "UPDATE sua_tabela SET campo = 'sem acento';" 
+    }
+  ]
+},
+{
+  "id": 2,
+  "name": "Comando para Setproduto",
+  "subjects": [
+    {
+      "name": "Comando para Setproduto.txt",
+      "type": "copy",
+      "command": "UPDATE produto SET trib_icmsaliqsaida = '0.0000';"
+    }
+  ]
+}

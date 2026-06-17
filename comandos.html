@@ -312,7 +312,7 @@
 
     <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
         <div class="panel w-full max-w-4xl p-6 flex flex-col max-h-[90vh]">
-            <h3 class="text-lg font-semibold mb-4 text-accent shrink-0">Informação do Comando</h3>
+            <h3 class="text-lg font-semibold mb-4 text-accent shrink-0">Informação</h3>
 
             <div class="overflow-y-auto mb-6 flex-grow custom-scrollbar bg-[color:var(--color-search-bg)] rounded-lg">
                 <p id="infoMessage" class="w-full h-full p-4 m-0"></p>
@@ -338,14 +338,14 @@
             infoModal.classList.remove('hidden');
         };
 
-        // Função para descarregar o ficheiro em tempo real (Opção 2 implementada)
+        // Função para download virtual
         window.downloadFile = (text, fileName) => {
             if (!text || text === 'undefined' || text.trim() === '') {
                 const infoModal = document.getElementById('infoModal');
                 const infoMessage = document.getElementById('infoMessage');
                 infoMessage.style.whiteSpace = 'pre-wrap';
                 infoMessage.style.fontFamily = 'monospace';
-                infoMessage.textContent = 'Aviso: O comando está vazio no JSON. \nInsira o código correspondente no ficheiro comandos.json na propriedade "command" para poder efetuar o download.';
+                infoMessage.textContent = 'Aviso: O comando está vazio no JSON. \nInsira o código correspondente no arquivo comandos.json na propriedade "command" para poder efetuar o download.';
                 infoModal.classList.remove('hidden');
                 return;
             }
@@ -362,7 +362,7 @@
             URL.revokeObjectURL(url);
         };
 
-        // Função para copiar com plano B para leitura local
+        // Função para copiar com plano B
         window.copyCommand = (text, btnElement) => {
             const showNotification = () => {
                 if (btnElement && btnElement.nextElementSibling && btnElement.nextElementSibling.classList.contains('copy-notification')) {
@@ -456,7 +456,7 @@
                 } catch (error) {
                     console.error("Erro ao carregar dados", error);
                     const infoMessage = document.getElementById('infoMessage');
-                    infoMessage.textContent = 'Não foi possível carregar os comandos. Verifique se o ficheiro JSON está correto.';
+                    infoMessage.textContent = 'Não foi possível carregar os comandos. Verifique se o arquivo JSON está correto.';
                     infoModal.classList.remove('hidden');
                 } finally {
                     categoriesContainer.classList.remove('loading');
@@ -534,24 +534,29 @@
                     
                     const subjectsHTML = subjectsToDisplay.length > 0
                         ? subjectsToDisplay.map((subject) => {
+                            let actionBtn = '';
                             const encoded = encodeURIComponent(subject.command || '');
-                            const fileName = subject.name.endsWith('.txt') || subject.name.endsWith('.sql') ? subject.name : subject.name + '.sql';
                             
-                            // Agora TODOS os itens têm os botões Ver, Copiar e Descarregar unificados!
-                            const actionBtn = `
-                            <div class="flex gap-2 items-center">
-                                <button data-command="${encoded}" onclick="viewCommand(decodeURIComponent(this.getAttribute('data-command')))" class="px-2 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm font-semibold flex items-center justify-center shrink-0" title="Ver comando">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                </button>
-                                <div class="relative flex flex-col items-center">
-                                    <button data-command="${encoded}" onclick="copyCommand(decodeURIComponent(this.getAttribute('data-command')), this)" class="px-3 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm font-semibold flex items-center gap-1 shrink-0" title="Copiar">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copiar
-                                    </button>
-                                </div>
+                            // Renderiza botões com base no "type" do JSON
+                            if (subject.type === 'download') {
+                                const fileName = subject.name.endsWith('.txt') || subject.name.endsWith('.sql') ? subject.name : subject.name + '.sql';
+                                actionBtn = `
                                 <button data-command="${encoded}" onclick="downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${fileName}')" class="px-3 py-1 bg-accent text-white rounded hover:opacity-90 transition-colors text-sm font-semibold flex items-center gap-1 shrink-0" title="Descarregar ficheiro">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Descarregar
-                                </button>
-                            </div>`;
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
+                                </button>`;
+                            } else if (subject.type === 'copy') {
+                                actionBtn = `
+                                <div class="flex gap-2 items-center">
+                                    <button data-command="${encoded}" onclick="viewCommand(decodeURIComponent(this.getAttribute('data-command')))" class="px-2 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm font-semibold flex items-center justify-center shrink-0" title="Observar comando">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    </button>
+                                    <div class="relative flex flex-col items-center">
+                                        <button data-command="${encoded}" onclick="copyCommand(decodeURIComponent(this.getAttribute('data-command')), this)" class="px-3 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm font-semibold flex items-center gap-1 shrink-0" title="Copiar">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copiar
+                                        </button>
+                                    </div>
+                                </div>`;
+                            }
 
                             return `<li class="flex items-center justify-between text-text ml-2 p-2 rounded-md hover:bg-white/5 transition-colors group">
                                 <span class="truncate pr-4">${highlightMatch(subject.name, searchTerm)}</span>
