@@ -310,23 +310,22 @@
         </div>
     </div>
 
-    <div id="infoModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
+    <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
         <div class="panel w-full max-w-4xl p-6 flex flex-col max-h-[90vh]">
-            <h3 class="text-lg font-semibold mb-4 text-accent shrink-0">Informação</h3>
+            <h3 class="text-lg font-semibold mb-4 text-accent shrink-0">Informação do Comando</h3>
 
             <div class="overflow-y-auto mb-6 flex-grow custom-scrollbar bg-[color:var(--color-search-bg)] rounded-lg">
                 <p id="infoMessage" class="w-full h-full p-4 m-0"></p>
             </div>
 
             <div class="flex justify-end shrink-0">
-                <button id="infoOkBtn"
-                    class="px-6 py-2 bg-accent hover:opacity-90 text-white rounded-lg transition-opacity">OK</button>
+                <button id="infoOkBtn" class="px-6 py-2 bg-accent hover:opacity-90 text-white rounded-lg transition-opacity">OK</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Função para visualizar
         window.viewCommand = (text) => {
             const infoModal = document.getElementById('infoModal');
             const infoMessage = document.getElementById('infoMessage');
@@ -334,17 +333,37 @@
             infoMessage.style.whiteSpace = 'pre-wrap';
             infoMessage.style.wordBreak = 'break-word';
             infoMessage.style.fontFamily = 'monospace';
-            infoMessage.style.backgroundColor = 'var(--color-search-bg)';
-            infoMessage.style.padding = '10px';
-            infoMessage.style.borderRadius = '5px';
 
-            // Garante que mostre um aviso caso o comando não venha do JSON
             infoMessage.textContent = text || 'Aviso: Comando vazio ou não encontrado no JSON.';
             infoModal.classList.remove('hidden');
         };
 
+        // Função para descarregar o ficheiro em tempo real (Opção 2 implementada)
+        window.downloadFile = (text, fileName) => {
+            if (!text || text === 'undefined' || text.trim() === '') {
+                const infoModal = document.getElementById('infoModal');
+                const infoMessage = document.getElementById('infoMessage');
+                infoMessage.style.whiteSpace = 'pre-wrap';
+                infoMessage.style.fontFamily = 'monospace';
+                infoMessage.textContent = 'Aviso: O comando está vazio no JSON. \nInsira o código correspondente no ficheiro comandos.json na propriedade "command" para poder efetuar o download.';
+                infoModal.classList.remove('hidden');
+                return;
+            }
+
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        // Função para copiar com plano B para leitura local
         window.copyCommand = (text, btnElement) => {
-            // Função interna para disparar a notificação visual
             const showNotification = () => {
                 if (btnElement && btnElement.nextElementSibling && btnElement.nextElementSibling.classList.contains('copy-notification')) {
                     btnElement.nextElementSibling.remove();
@@ -366,11 +385,10 @@
                 }
             };
 
-            // Plano B: Usa a técnica antiga de seleção de texto para copiar quando rodar localmente (file://)
             const fallbackCopy = (textToCopy) => {
                 const textArea = document.createElement("textarea");
-                textArea.value = textToCopy;
-                textArea.style.position = "fixed"; // Evita que a tela pule
+                textArea.value = textToCopy || '';
+                textArea.style.position = "fixed";
                 textArea.style.top = "0";
                 textArea.style.left = "0";
                 textArea.style.opacity = "0";
@@ -390,16 +408,13 @@
                 document.body.removeChild(textArea);
             };
 
-            // Tenta usar a API moderna primeiro (se for HTTPS ou localhost)
             if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(() => {
+                navigator.clipboard.writeText(text || '').then(() => {
                     showNotification();
                 }).catch(err => {
-                    console.warn('Clipboard API falhou, acionando fallback...', err);
-                    fallbackCopy(text); // Aciona o plano B se falhar
+                    fallbackCopy(text);
                 });
             } else {
-                // Se nem estiver num contexto seguro, já pula direto pro plano B
                 fallbackCopy(text);
             }
         };
@@ -410,7 +425,6 @@
             const categoriesContainer = document.getElementById('categoriesContainer');
             const suggestionsContainer = document.getElementById('suggestionsContainer');
             const infoModal = document.getElementById('infoModal');
-            const infoMessage = document.getElementById('infoMessage');
             const infoOkBtn = document.getElementById('infoOkBtn');
 
             // --- Variáveis de Estado ---
@@ -419,9 +433,11 @@
             let activeSuggestionIndex = -1;
             let isDataLoaded = false;
 
-            // --- MÓDULOS (Tema, Modal, WebGL) ---
+            // --- MÓDULOS ---
             const ThemeSwitcher = (() => { const DOM = { body: document.body, themeToggleBtn: document.getElementById('theme-toggle-btn'), themeIconSun: document.getElementById('theme-icon-sun'), themeIconMoon: document.getElementById('theme-icon-moon') }; const STORAGE_KEY = 'themePreference'; const applyTheme = (theme) => { DOM.body.dataset.theme = theme; localStorage.setItem(STORAGE_KEY, theme); DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); }; const toggleTheme = () => { const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(currentTheme); }; const init = () => { const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; applyTheme(savedTheme); DOM.themeToggleBtn.addEventListener('click', toggleTheme); }; return { init }; })();
-            const showModal = (message) => { infoMessage.textContent = message; infoModal.classList.remove('hidden'); }; const hideModal = () => infoModal.classList.add('hidden'); infoOkBtn.addEventListener('click', hideModal);
+            const hideModal = () => infoModal.classList.add('hidden'); 
+            infoOkBtn.addEventListener('click', hideModal);
+            
             const initWebGLBackground = () => { const canvas = document.getElementById('webgl-bg'); if (!canvas) return; const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setClearColor(0x000000, 0); const geometry = new THREE.BufferGeometry(); const vertices = []; for (let i = 0; i < 1000; i++) { vertices.push((Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000); } geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); const material = new THREE.PointsMaterial({ size: 2, color: 0x06B6D4 }); const points = new THREE.Points(geometry, material); scene.add(points); camera.position.z = 1000; const animate = () => { requestAnimationFrame(animate); points.rotation.x += 0.0005; points.rotation.y += 0.001; renderer.render(scene, camera); }; animate(); window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }); };
 
             // --- LÓGICA DE DADOS ---
@@ -439,7 +455,9 @@
                     isDataLoaded = true;
                 } catch (error) {
                     console.error("Erro ao carregar dados", error);
-                    showModal('Não foi possível carregar os comandos.');
+                    const infoMessage = document.getElementById('infoMessage');
+                    infoMessage.textContent = 'Não foi possível carregar os comandos. Verifique se o ficheiro JSON está correto.';
+                    infoModal.classList.remove('hidden');
                 } finally {
                     categoriesContainer.classList.remove('loading');
                 }
@@ -457,7 +475,6 @@
                 return text.replace(regex, (match) => `<mark class="bg-transparent text-blue-400 font-semibold not-italic">${match}</mark>`);
             };
 
-            // --- LÓGICA DE SUGESTÕES (AUTOCOMPLETE) ---
             const renderSuggestions = (suggestions) => {
                 suggestionsContainer.innerHTML = '<div></div>';
                 if (suggestions.length === 0) {
@@ -514,23 +531,28 @@
                     const categoryElement = document.createElement('div');
                     categoryElement.className = 'panel rounded-lg';
                     const subjectsToDisplay = category.subjectsToDisplay || category.subjects;
+                    
                     const subjectsHTML = subjectsToDisplay.length > 0
                         ? subjectsToDisplay.map((subject) => {
-                            let actionBtn = '';
-                            if (subject.type === 'download') {
-                                actionBtn = `<a href="${subject.file}" download class="px-3 py-1 bg-accent text-white rounded hover:opacity-90 transition-colors text-sm font-semibold flex items-center gap-1 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>Download</a>`;
-                            } else if (subject.type === 'copy') {
-                                const encoded = encodeURIComponent(subject.command || '');
-                                actionBtn = `
-                                <div class="flex gap-2 items-center">
-                                    <button data-command="${encoded}" onclick="viewCommand(decodeURIComponent(this.getAttribute('data-command')))" class="px-2 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm font-semibold flex items-center justify-center shrink-0" title="Observar comando">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            const encoded = encodeURIComponent(subject.command || '');
+                            const fileName = subject.name.endsWith('.txt') || subject.name.endsWith('.sql') ? subject.name : subject.name + '.sql';
+                            
+                            // Agora TODOS os itens têm os botões Ver, Copiar e Descarregar unificados!
+                            const actionBtn = `
+                            <div class="flex gap-2 items-center">
+                                <button data-command="${encoded}" onclick="viewCommand(decodeURIComponent(this.getAttribute('data-command')))" class="px-2 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm font-semibold flex items-center justify-center shrink-0" title="Ver comando">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                </button>
+                                <div class="relative flex flex-col items-center">
+                                    <button data-command="${encoded}" onclick="copyCommand(decodeURIComponent(this.getAttribute('data-command')), this)" class="px-3 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm font-semibold flex items-center gap-1 shrink-0" title="Copiar">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copiar
                                     </button>
-                                    <div class="relative flex flex-col items-center">
-                                        <button data-command="${encoded}" onclick="copyCommand(decodeURIComponent(this.getAttribute('data-command')), this)" class="px-3 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm font-semibold flex items-center gap-1 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>Copiar</button>
-                                    </div>
-                                </div>`;
-                            }
+                                </div>
+                                <button data-command="${encoded}" onclick="downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${fileName}')" class="px-3 py-1 bg-accent text-white rounded hover:opacity-90 transition-colors text-sm font-semibold flex items-center gap-1 shrink-0" title="Descarregar ficheiro">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Descarregar
+                                </button>
+                            </div>`;
+
                             return `<li class="flex items-center justify-between text-text ml-2 p-2 rounded-md hover:bg-white/5 transition-colors group">
                                 <span class="truncate pr-4">${highlightMatch(subject.name, searchTerm)}</span>
                                 ${actionBtn}
