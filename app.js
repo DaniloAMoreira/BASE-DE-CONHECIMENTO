@@ -147,37 +147,13 @@ function showSkeletons(n = 7) {
   ).join('');
 }
 
-// ── SUPABASE CONFIG ───────────────────────────────────────
-const SUPABASE_URL = 'https://jqllbwlfikckavipqtfr.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGxid2xmaWtja2F2aXBxdGZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NzczMDQsImV4cCI6MjA5ODA1MzMwNH0.adNqWBWMY3PlIx_0OG1bMswbVR_TThtCmNWFptxkgRU';
-
 // ── CARREGAR DADOS ────────────────────────────────────────
 async function loadData() {
   showSkeletons();
   try {
-    const headers = {
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-    };
-    
-    const [resCat, resCmd] = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/categorias_comandos?select=*`, { headers }),
-      fetch(`${SUPABASE_URL}/rest/v1/comandos?select=*`, { headers })
-    ]);
-
-    if (!resCat.ok || !resCmd.ok) throw new Error(`HTTP Supabase error`);
-    
-    const categorias = await resCat.json();
-    const comandos = await resCmd.json();
-
-    state.categories = categorias.map(cat => ({
-      id: cat.id,
-      name: cat.name,
-      expanded: false,
-      subjects: comandos.filter(cmd => cmd.categoria_id === cat.id).map(cmd => ({
-        name: cmd.name
-      }))
-    }));
+    const res = await fetch('./database.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    state.categories = await res.json();
 
     // Construir sugestões + calcular max subjects
     const set = new Set();
@@ -200,8 +176,8 @@ async function loadData() {
   } catch (err) {
     els.container.innerHTML = '';
     showModal(
-      'Não foi possível carregar a base de conhecimento do Supabase.\n\n' +
-      'Verifique sua conexão ou se as tabelas existem.'
+      'Não foi possível carregar a base de conhecimento.\n\n' +
+      'Verifique se o arquivo database.json está na mesma pasta e tente novamente.'
     );
   }
 }
