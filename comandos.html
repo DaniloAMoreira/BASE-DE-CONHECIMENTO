@@ -435,6 +435,7 @@
             // --- Variáveis de Estado ---
             let categories = [];
             let allSuggestions = [];
+            let isDevMode = false;
             let activeSuggestionIndex = -1;
             let isDataLoaded = false;
 
@@ -453,6 +454,8 @@
             let isNewCategory = false;
 
             openAddModalBtn.addEventListener('click', () => {
+                window.editingCmdId = null;
+                document.querySelector('#addModal h3').textContent = 'Adicionar Novo Comando';
                 // Populate categories
                 categorySelect.innerHTML = '<option value="">Selecione a categoria...</option>';
                 categories.forEach(cat => {
@@ -531,11 +534,21 @@
                         catId = dataCat[0].id;
                     }
 
-                    const resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos`, {
-                        method: 'POST',
-                        headers,
-                        body: JSON.stringify({ categoria_id: catId, name: title, command: text })
-                    });
+                    let resCmd;
+                    if (window.editingCmdId) {
+                        resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${window.editingCmdId}`, {
+                            method: 'PATCH',
+                            headers,
+                            body: JSON.stringify({ categoria_id: catId, name: title, command: text })
+                        });
+                        window.editingCmdId = null; // reset
+                    } else {
+                        resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos`, {
+                            method: 'POST',
+                            headers,
+                            body: JSON.stringify({ categoria_id: catId, name: title, command: text })
+                        });
+                    }
                     if (!resCmd.ok) throw new Error('Erro ao salvar comando');
 
                     addModal.classList.add('hidden');
@@ -558,6 +571,57 @@
             // --- LÓGICA DE DADOS ---
             const SUPABASE_URL = 'https://jqllbwlfikckavipqtfr.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGxid2xmaWtja2F2aXBxdGZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NzczMDQsImV4cCI6MjA5ODA1MzMwNH0.adNqWBWMY3PlIx_0OG1bMswbVR_TThtCmNWFptxkgRU';
+
+            
+            window.toggleDevMenu = (btn) => {
+                const menu = btn.nextElementSibling;
+                document.querySelectorAll('.dev-menu').forEach(m => { if (m !== menu) m.classList.add('hidden') });
+                menu.classList.toggle('hidden');
+            };
+
+            window.deleteCommand = async (cmdId) => {
+                if (!confirm('Tem certeza que deseja excluir este comando?')) return;
+                try {
+                    const res = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${cmdId}`, {
+                        method: 'DELETE',
+                        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                    });
+                    if (!res.ok) throw new Error('Erro ao excluir');
+                    await loadData();
+                } catch (e) {
+                    alert('Erro: ' + e.message);
+                }
+            };
+
+            window.editingCmdId = null;
+            window.editCommand = (cmdId) => {
+                let targetCmd = null;
+                for (let cat of categories) {
+                    targetCmd = cat.subjects.find(s => String(s.id) === String(cmdId));
+                    if (targetCmd) break;
+                }
+                if (!targetCmd) return;
+                
+                const categorySelect = document.getElementById('categorySelect');
+                categorySelect.innerHTML = '<option value="">Selecione a categoria...</option>';
+                categories.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.name;
+                    if (String(c.id) === String(targetCmd.categoria_id)) opt.selected = true;
+                    categorySelect.appendChild(opt);
+                });
+                
+                isNewCategory = false;
+                categorySelect.classList.remove('hidden');
+                document.getElementById('newCategoryInput').classList.add('hidden');
+                document.getElementById('commandTitleInput').value = targetCmd.name;
+                document.getElementById('commandTextInput').value = targetCmd.command;
+                
+                window.editingCmdId = targetCmd.id;
+                document.querySelector('#addModal h3').textContent = 'Editar Comando';
+                document.getElementById('addModal').classList.remove('hidden');
+            };
 
             const loadData = async () => {
                 categoriesContainer.classList.add('loading');
@@ -674,6 +738,18 @@
 
                         const isSql = subject.name.toLowerCase().endsWith('.sql');
                         let actionBtn = '';
+                        let devMenuBtn = '';
+                        if (isDevMode) {
+                            devMenuBtn = `<div class="relative group/menu flex items-center shrink-0">
+                                <button class="text-text-muted hover:text-white p-1" onclick="event.stopPropagation(); toggleDevMenu(this)">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                                </button>
+                                <div class="dev-menu hidden absolute right-0 top-full mt-1 w-32 bg-[color:var(--color-search-bg)] rounded-md shadow-lg z-10 border border-[color:var(--panel-border)]">
+                                    <button class="w-full text-left px-4 py-2 text-sm text-text hover:bg-white/5" onclick="event.stopPropagation(); editCommand('${subject.id}')">Editar</button>
+                                    <button class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-white/5" onclick="event.stopPropagation(); deleteCommand('${subject.id}')">Excluir</button>
+                                </div>
+                            </div>`;
+                        }
                         if (isSql) {
                             actionBtn = `<button data-command="${encoded}" onclick="event.stopPropagation(); downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${subject.name}')" class="px-3 py-1 bg-accent text-white rounded hover:opacity-90 transition-colors text-sm font-semibold flex items-center gap-1 shrink-0" title="Descarregar ficheiro">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
@@ -690,6 +766,7 @@
                                         </button>
                                     </div>
                                     ${actionBtn}
+                                    ${devMenuBtn}
                                     <svg class="w-6 h-6 text-text-muted transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                 </div>
                             </div>
@@ -753,6 +830,15 @@
 
                     if (e.key === 'Enter') {
                         e.preventDefault();
+                        const val = searchInput.value.trim().toLowerCase();
+                        if (val === 'admin') {
+                            isDevMode = !isDevMode;
+                            searchInput.value = '';
+                            suggestionsContainer.classList.remove('expanded');
+                            render(categories);
+                            return;
+                        }
+
                         if (activeSuggestionIndex > -1 && items[activeSuggestionIndex]) {
                             items[activeSuggestionIndex].click();
                         } else {
@@ -763,6 +849,9 @@
                 });
 
                 document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.dev-menu') && !e.target.closest('button[onclick*="toggleDevMenu"]')) {
+                        document.querySelectorAll('.dev-menu').forEach(m => m.classList.add('hidden'));
+                    }
                     if (!e.target.closest('header')) {
                         suggestionsContainer.classList.remove('expanded');
                     }
