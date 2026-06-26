@@ -292,16 +292,21 @@
                             class="text-2xl sm:text-3xl font-bold pb-1 tab-active transition-colors">Comandos banco de
                             dados</a>
                     </div>
-                    <div class="relative">
-                        <input type="text" id="searchInput" placeholder="Pesquisar por categorias e comandos..."
-                            class="w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300"
-                            autocomplete="off">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
+                    <div class="relative flex gap-2 w-full">
+                        <div class="relative flex-grow">
+                            <input type="text" id="searchInput" placeholder="Pesquisar por categorias e comandos..."
+                                class="w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300"
+                                autocomplete="off">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
                         </div>
+                        <button id="openAddModalBtn" class="bg-accent text-white p-3 rounded-lg hover:opacity-90 transition-opacity" title="Adicionar Comando">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        </button>
                     </div>
                     <div id="suggestionsContainer" class="mt-1"></div>
                 </header>
@@ -433,6 +438,116 @@
             let activeSuggestionIndex = -1;
             let isDataLoaded = false;
 
+            
+            // --- Lógica do Modal Adicionar Comando ---
+            const addModal = document.getElementById('addModal');
+            const openAddModalBtn = document.getElementById('openAddModalBtn');
+            const cancelAddBtn = document.getElementById('cancelAddBtn');
+            const saveCommandBtn = document.getElementById('saveCommandBtn');
+            const categorySelect = document.getElementById('categorySelect');
+            const toggleNewCategoryBtn = document.getElementById('toggleNewCategoryBtn');
+            const newCategoryInput = document.getElementById('newCategoryInput');
+            const commandTitleInput = document.getElementById('commandTitleInput');
+            const commandTextInput = document.getElementById('commandTextInput');
+
+            let isNewCategory = false;
+
+            openAddModalBtn.addEventListener('click', () => {
+                // Populate categories
+                categorySelect.innerHTML = '<option value="">Selecione a categoria...</option>';
+                categories.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat.id;
+                    opt.textContent = cat.name;
+                    categorySelect.appendChild(opt);
+                });
+                
+                isNewCategory = false;
+                categorySelect.classList.remove('hidden');
+                newCategoryInput.classList.add('hidden');
+                newCategoryInput.value = '';
+                commandTitleInput.value = '';
+                commandTextInput.value = '';
+                
+                addModal.classList.remove('hidden');
+            });
+
+            cancelAddBtn.addEventListener('click', () => {
+                addModal.classList.add('hidden');
+            });
+
+            toggleNewCategoryBtn.addEventListener('click', () => {
+                isNewCategory = !isNewCategory;
+                if (isNewCategory) {
+                    categorySelect.classList.add('hidden');
+                    newCategoryInput.classList.remove('hidden');
+                    newCategoryInput.focus();
+                    toggleNewCategoryBtn.textContent = "Cancelar Novo";
+                } else {
+                    categorySelect.classList.remove('hidden');
+                    newCategoryInput.classList.add('hidden');
+                    toggleNewCategoryBtn.textContent = "Novo";
+                }
+            });
+
+            saveCommandBtn.addEventListener('click', async () => {
+                let catId = categorySelect.value;
+                let catName = newCategoryInput.value.trim();
+                let title = commandTitleInput.value.trim();
+                let text = commandTextInput.value.trim();
+
+                if (isNewCategory) {
+                    if (!catName) return alert('Digite o nome da nova categoria');
+                } else {
+                    if (!catId) return alert('Selecione uma categoria');
+                }
+
+                if (!text) return alert('Digite o comando SQL');
+                
+                // Se não digitou título, usa a categoria (ou .sql se preferir)
+                if (!title) {
+                    title = isNewCategory ? catName : categorySelect.options[categorySelect.selectedIndex].text;
+                }
+
+                saveCommandBtn.textContent = "Salvando...";
+                saveCommandBtn.disabled = true;
+
+                try {
+                    const headers = { 
+                        'apikey': SUPABASE_ANON_KEY, 
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    };
+
+                    if (isNewCategory) {
+                        const resCat = await fetch(`${SUPABASE_URL}/rest/v1/categorias_comandos`, {
+                            method: 'POST',
+                            headers,
+                            body: JSON.stringify({ name: catName })
+                        });
+                        if (!resCat.ok) throw new Error('Erro ao salvar categoria');
+                        const dataCat = await resCat.json();
+                        catId = dataCat[0].id;
+                    }
+
+                    const resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos`, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({ categoria_id: catId, name: title, command: text })
+                    });
+                    if (!resCmd.ok) throw new Error('Erro ao salvar comando');
+
+                    addModal.classList.add('hidden');
+                    await loadData(); // Reload UI
+                } catch (e) {
+                    alert('Ocorreu um erro ao salvar no banco de dados. ' + e.message);
+                } finally {
+                    saveCommandBtn.textContent = "Salvar Comando";
+                    saveCommandBtn.disabled = false;
+                }
+            });
+
             // --- MÓDULOS ---
             const ThemeSwitcher = (() => { const DOM = { body: document.body, themeToggleBtn: document.getElementById('theme-toggle-btn'), themeIconSun: document.getElementById('theme-icon-sun'), themeIconMoon: document.getElementById('theme-icon-moon') }; const STORAGE_KEY = 'themePreference'; const applyTheme = (theme) => { DOM.body.dataset.theme = theme; localStorage.setItem(STORAGE_KEY, theme); DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); }; const toggleTheme = () => { const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(currentTheme); }; const init = () => { const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; applyTheme(savedTheme); DOM.themeToggleBtn.addEventListener('click', toggleTheme); }; return { init }; })();
             const hideModal = () => infoModal.classList.add('hidden'); 
@@ -441,13 +556,31 @@
             const initWebGLBackground = () => { const canvas = document.getElementById('webgl-bg'); if (!canvas) return; const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setClearColor(0x000000, 0); const geometry = new THREE.BufferGeometry(); const vertices = []; for (let i = 0; i < 1000; i++) { vertices.push((Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000); } geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); const material = new THREE.PointsMaterial({ size: 2, color: 0x06B6D4 }); const points = new THREE.Points(geometry, material); scene.add(points); camera.position.z = 1000; const animate = () => { requestAnimationFrame(animate); points.rotation.x += 0.0005; points.rotation.y += 0.001; renderer.render(scene, camera); }; animate(); window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }); };
 
             // --- LÓGICA DE DADOS ---
+            const SUPABASE_URL = 'https://jqllbwlfikckavipqtfr.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGxid2xmaWtja2F2aXBxdGZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NzczMDQsImV4cCI6MjA5ODA1MzMwNH0.adNqWBWMY3PlIx_0OG1bMswbVR_TThtCmNWFptxkgRU';
+
             const loadData = async () => {
                 categoriesContainer.classList.add('loading');
                 try {
-                    const response = await fetch('./comandos.json?t=' + new Date().getTime());
-                    if (!response.ok) throw new Error(`HTTP error!`);
-                    const data = await response.json();
-                    categories = data;
+                    const headers = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` };
+                    const [resCat, resCmd] = await Promise.all([
+                        fetch(`${SUPABASE_URL}/rest/v1/categorias_comandos?select=*`, { headers }),
+                        fetch(`${SUPABASE_URL}/rest/v1/comandos?select=*`, { headers })
+                    ]);
+                    if (!resCat.ok || !resCmd.ok) throw new Error(`HTTP error from Supabase!`);
+                    
+                    const categoriasData = await resCat.json();
+                    const comandosData = await resCmd.json();
+                    
+                    categories = categoriasData.map(cat => ({
+                        id: cat.id,
+                        name: cat.name,
+                        subjects: comandosData.filter(cmd => cmd.categoria_id === cat.id).map(cmd => ({
+                            name: cmd.name,
+                            command: cmd.command
+                        }))
+                    }));
+
                     const suggestionSet = new Set();
                     categories.forEach(cat => { suggestionSet.add(cat.name); cat.subjects.forEach(sub => suggestionSet.add(sub.name)); });
                     allSuggestions = [...suggestionSet];
@@ -455,9 +588,6 @@
                     isDataLoaded = true;
                 } catch (error) {
                     console.error("Erro ao carregar dados", error);
-                    const infoMessage = document.getElementById('infoMessage');
-                    infoMessage.textContent = 'Não foi possível carregar os comandos. Verifique se o arquivo JSON está correto.';
-                    infoModal.classList.remove('hidden');
                 } finally {
                     categoriesContainer.classList.remove('loading');
                 }
@@ -600,17 +730,7 @@
                 render(searchResults);
             };
 
-            categoriesContainer.addEventListener('click', (e) => {
-                const header = e.target.closest('.category-header');
-                if (header) {
-                    const categoryId = Number(header.dataset.id);
-                    const category = categories.find(c => c.id === categoryId);
-                    if (category) {
-                        category.expanded = !category.expanded;
-                        handleSearch();
-                    }
-                }
-            });
+            // (Listener antigo removido, agora o listener é adicionado no próprio elemento renderizado)
 
             // --- INICIALIZAÇÃO DA APLICAÇÃO ---
             const initializeApp = () => {
@@ -655,6 +775,44 @@
             initializeApp();
         });
     </script>
+
+    <!-- Modal Adicionar Comando -->
+    <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
+        <div class="panel w-full max-w-lg p-6 flex flex-col">
+            <h3 class="text-xl font-semibold mb-4 text-accent">Adicionar Novo Comando</h3>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-text-muted mb-1">Categoria</label>
+                    <div class="flex gap-2">
+                        <select id="categorySelect" class="flex-grow rounded-lg px-3 py-2 bg-[color:var(--color-search-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-2 focus:ring-accent">
+                            <option value="">Selecione ou crie uma nova...</option>
+                        </select>
+                        <button id="toggleNewCategoryBtn" class="px-3 py-2 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm" title="Nova Categoria">
+                            Novo
+                        </button>
+                    </div>
+                    <input type="text" id="newCategoryInput" placeholder="Nome da nova categoria..." class="w-full mt-2 rounded-lg px-3 py-2 bg-[color:var(--color-search-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-2 focus:ring-accent hidden">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-text-muted mb-1">Título do Comando (Opcional se igual à categoria)</label>
+                    <input type="text" id="commandTitleInput" placeholder="Ex: Update LC Sistemas..." class="w-full rounded-lg px-3 py-2 bg-[color:var(--color-search-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-2 focus:ring-accent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-text-muted mb-1">Comando SQL</label>
+                    <textarea id="commandTextInput" rows="5" placeholder="Digite o comando aqui..." class="w-full rounded-lg px-3 py-2 bg-[color:var(--color-search-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-2 focus:ring-accent font-mono text-sm"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 shrink-0">
+                <button id="cancelAddBtn" class="px-4 py-2 bg-surface border border-primary text-text rounded-lg hover:bg-primary transition-colors">Cancelar</button>
+                <button id="saveCommandBtn" class="px-4 py-2 bg-accent hover:opacity-90 text-white rounded-lg transition-opacity">Salvar Comando</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>
