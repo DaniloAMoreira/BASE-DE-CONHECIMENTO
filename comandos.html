@@ -537,14 +537,17 @@
                             let actionBtn = '';
                             const encoded = encodeURIComponent(subject.command || '');
                             
-                            // Renderiza botões com base no "type" do JSON
-                            if (subject.type === 'download') {
-                                const fileName = subject.name.endsWith('.txt') || subject.name.endsWith('.sql') ? subject.name : subject.name + '.sql';
+                            // AQUI ESTÁ A LÓGICA AUTOMÁTICA!
+                            // Se o nome terminar em .sql, é download. Caso contrário, Olho e Copiar.
+                            const isSql = subject.name.toLowerCase().endsWith('.sql');
+                            
+                            if (isSql) {
+                                const fileName = subject.name;
                                 actionBtn = `
                                 <button data-command="${encoded}" onclick="downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${fileName}')" class="px-3 py-1 bg-accent text-white rounded hover:opacity-90 transition-colors text-sm font-semibold flex items-center gap-1 shrink-0" title="Descarregar ficheiro">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
                                 </button>`;
-                            } else if (subject.type === 'copy') {
+                            } else {
                                 actionBtn = `
                                 <div class="flex gap-2 items-center">
                                     <button data-command="${encoded}" onclick="viewCommand(decodeURIComponent(this.getAttribute('data-command')))" class="px-2 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm font-semibold flex items-center justify-center shrink-0" title="Observar comando">
