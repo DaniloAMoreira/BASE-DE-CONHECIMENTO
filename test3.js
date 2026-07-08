@@ -266,67 +266,6 @@
                     saveCommandBtn.disabled = false;
                 }
             });
-                    }
-                });
-
-                if (subCommands.length === 0) {
-                    return alert('Adicione pelo menos um subcomando (Gaveta interna).');
-                }
-
-                if (!title) {
-                    title = isNewCategory ? catName : categorySelect.options[categorySelect.selectedIndex].text;
-                }
-
-                saveCommandBtn.textContent = 'Salvando...';
-                saveCommandBtn.disabled = true;
-
-                try {
-                    const headers = { 
-                        'apikey': SUPABASE_ANON_KEY, 
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=representation'
-                    };
-
-                    if (isNewCategory) {
-                        const resCat = await fetch(`${SUPABASE_URL}/rest/v1/categorias_comandos`, {
-                            method: 'POST',
-                            headers,
-                            body: JSON.stringify({ name: catName })
-                        });
-                        if (!resCat.ok) throw new Error('Erro ao salvar categoria');
-                        const dataCat = await resCat.json();
-                        catId = dataCat[0].id;
-                    }
-
-                    const commandJsonStr = JSON.stringify(subCommands);
-
-                    let resCmd;
-                    if (window.editingCmdId) {
-                        resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${window.editingCmdId}`, {
-                            method: 'PATCH',
-                            headers,
-                            body: JSON.stringify({ categoria_id: catId, name: title, command: commandJsonStr })
-                        });
-                        window.editingCmdId = null;
-                    } else {
-                        resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos`, {
-                            method: 'POST',
-                            headers,
-                            body: JSON.stringify({ categoria_id: catId, name: title, command: commandJsonStr })
-                        });
-                    }
-                    if (!resCmd.ok) throw new Error('Erro ao salvar comando');
-
-                    addModal.classList.add('hidden');
-                    await loadData();
-                } catch (e) {
-                    alert('Ocorreu um erro ao salvar no banco de dados. ' + e.message);
-                } finally {
-                    saveCommandBtn.textContent = 'Salvar Comando';
-                    saveCommandBtn.disabled = false;
-                }
-            });
 
             // --- MÓDULOS ---
             const ThemeSwitcher = (() => { const DOM = { body: document.body, themeToggleBtn: document.getElementById('theme-toggle-btn'), themeIconSun: document.getElementById('theme-icon-sun'), themeIconMoon: document.getElementById('theme-icon-moon') }; const STORAGE_KEY = 'themePreference'; const applyTheme = (theme) => { DOM.body.dataset.theme = theme; localStorage.setItem(STORAGE_KEY, theme); DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); }; const toggleTheme = () => { const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(currentTheme); }; const init = () => { const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; applyTheme(savedTheme); DOM.themeToggleBtn.addEventListener('click', toggleTheme); }; return { init }; })();
@@ -337,6 +276,82 @@
 
             // --- LÓGICA DE DADOS ---
             
+            window.isAdminAuthenticated = false;
+            window.requireAdmin = (callback) => {
+                if (window.isAdminAuthenticated) return callback();
+                const popover = document.getElementById('passwordPopover');
+                const passInput = document.getElementById('adminPasswordInput');
+                const submitBtn = document.getElementById('adminPasswordSubmit');
+                
+                if (popover.classList.contains('hidden')) {
+                    popover.classList.remove('hidden');
+                    setTimeout(() => { popover.classList.remove('opacity-0', 'translate-x-4'); }, 10);
+                    passInput.value = '';
+                    passInput.focus();
+                }
+
+                const checkPassword = () => {
+                    if (passInput.value === 'LCsuporte') {
+                        window.isAdminAuthenticated = true;
+                        popover.classList.add('opacity-0', 'translate-x-4');
+                        setTimeout(() => { popover.classList.add('hidden'); }, 300);
+                        callback();
+                    } else {
+                        alert('Senha incorreta!');
+                        passInput.focus();
+                    }
+                };
+
+                submitBtn.onclick = checkPassword;
+                passInput.onkeydown = (e) => { if (e.key === 'Enter') checkPassword(); };
+                
+                document.addEventListener('click', function closePopover(e) {
+                    if (!popover.contains(e.target) && !e.target.closest('#openAddModalBtn') && !e.target.closest('.edit-btn') && !e.target.closest('.delete-btn')) {
+                        popover.classList.add('opacity-0', 'translate-x-4');
+                        setTimeout(() => { popover.classList.add('hidden'); }, 300);
+                        document.removeEventListener('click', closePopover);
+                    }
+                });
+            };
+
+            window.isAdminAuthenticated = false;
+            window.requireAdmin = (callback) => {
+                if (window.isAdminAuthenticated) return callback();
+                const popover = document.getElementById('passwordPopover');
+                const passInput = document.getElementById('adminPasswordInput');
+                const submitBtn = document.getElementById('adminPasswordSubmit');
+                
+                if (popover.classList.contains('hidden')) {
+                    popover.classList.remove('hidden');
+                    setTimeout(() => { popover.classList.remove('opacity-0', 'translate-x-4'); }, 10);
+                    passInput.value = '';
+                    passInput.focus();
+                }
+
+                const checkPassword = () => {
+                    if (passInput.value === 'LCsuporte') {
+                        window.isAdminAuthenticated = true;
+                        popover.classList.add('opacity-0', 'translate-x-4');
+                        setTimeout(() => { popover.classList.add('hidden'); }, 300);
+                        callback();
+                    } else {
+                        alert('Senha incorreta!');
+                        passInput.focus();
+                    }
+                };
+
+                submitBtn.onclick = checkPassword;
+                passInput.onkeydown = (e) => { if (e.key === 'Enter') checkPassword(); };
+                
+                document.addEventListener('click', function closePopover(e) {
+                    if (!popover.contains(e.target) && !e.target.closest('#openAddModalBtn') && !e.target.closest('.edit-btn') && !e.target.closest('.delete-btn')) {
+                        popover.classList.add('opacity-0', 'translate-x-4');
+                        setTimeout(() => { popover.classList.add('hidden'); }, 300);
+                        document.removeEventListener('click', closePopover);
+                    }
+                });
+            };
+
             window.toggleDevMenu = (btn) => {
                 const menu = btn.nextElementSibling;
                 document.querySelectorAll('.dev-menu').forEach(m => { if (m !== menu) m.classList.add('hidden') });

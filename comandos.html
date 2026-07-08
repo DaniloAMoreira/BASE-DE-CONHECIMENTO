@@ -545,15 +545,8 @@
             
 
             saveCommandBtn.addEventListener('click', async () => {
-                let catId = categorySelect.value;
-                let catName = newCategoryInput.value.trim();
-                let title = commandTitleInput.value.trim();
-
-                if (isNewCategory) {
-                    if (!catName) return alert('Digite o nome da nova categoria');
-                } else {
-                    if (!catId) return alert('Selecione uma categoria');
-                }
+                let title = document.getElementById('commandTitleInput').value.trim();
+                if (!title) return alert('Digite o Título do Comando');
                 
                 const subCommandsElements = document.querySelectorAll('.subcommand-item');
                 let subCommands = [];
@@ -569,10 +562,6 @@
                     return alert('Adicione pelo menos um subcomando (Gaveta interna).');
                 }
 
-                if (!title) {
-                    title = isNewCategory ? catName : categorySelect.options[categorySelect.selectedIndex].text;
-                }
-
                 saveCommandBtn.textContent = 'Salvando...';
                 saveCommandBtn.disabled = true;
 
@@ -584,17 +573,6 @@
                         'Prefer': 'return=representation'
                     };
 
-                    if (isNewCategory) {
-                        const resCat = await fetch(`${SUPABASE_URL}/rest/v1/categorias_comandos`, {
-                            method: 'POST',
-                            headers,
-                            body: JSON.stringify({ name: catName })
-                        });
-                        if (!resCat.ok) throw new Error('Erro ao salvar categoria');
-                        const dataCat = await resCat.json();
-                        catId = dataCat[0].id;
-                    }
-
                     const commandJsonStr = JSON.stringify(subCommands);
 
                     let resCmd;
@@ -602,19 +580,25 @@
                         resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${window.editingCmdId}`, {
                             method: 'PATCH',
                             headers,
-                            body: JSON.stringify({ categoria_id: catId, name: title, command: commandJsonStr })
+                            body: JSON.stringify({ categoria_id: window.editingCmdCategoryId || 1, name: title, command: commandJsonStr })
                         });
                         window.editingCmdId = null;
                     } else {
                         resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos`, {
                             method: 'POST',
                             headers,
-                            body: JSON.stringify({ categoria_id: catId, name: title, command: commandJsonStr })
+                            body: JSON.stringify({ categoria_id: 1, name: title, command: commandJsonStr })
                         });
                     }
                     if (!resCmd.ok) throw new Error('Erro ao salvar comando');
 
-                    addModal.classList.add('hidden');
+                    const addModal = document.getElementById('addModal');
+                    if (addModal) addModal.classList.add('hidden');
+                    
+                    document.getElementById('commandTitleInput').value = '';
+                    const subCommandsContainer = document.getElementById('subCommandsContainer');
+                    if (subCommandsContainer) subCommandsContainer.innerHTML = '';
+                    
                     await loadData();
                 } catch (e) {
                     alert('Ocorreu um erro ao salvar no banco de dados. ' + e.message);
@@ -633,6 +617,82 @@
 
             // --- LÓGICA DE DADOS ---
             
+            window.isAdminAuthenticated = false;
+            window.requireAdmin = (callback) => {
+                if (window.isAdminAuthenticated) return callback();
+                const popover = document.getElementById('passwordPopover');
+                const passInput = document.getElementById('adminPasswordInput');
+                const submitBtn = document.getElementById('adminPasswordSubmit');
+                
+                if (popover.classList.contains('hidden')) {
+                    popover.classList.remove('hidden');
+                    setTimeout(() => { popover.classList.remove('opacity-0', 'translate-x-4'); }, 10);
+                    passInput.value = '';
+                    passInput.focus();
+                }
+
+                const checkPassword = () => {
+                    if (passInput.value === 'LCsuporte') {
+                        window.isAdminAuthenticated = true;
+                        popover.classList.add('opacity-0', 'translate-x-4');
+                        setTimeout(() => { popover.classList.add('hidden'); }, 300);
+                        callback();
+                    } else {
+                        alert('Senha incorreta!');
+                        passInput.focus();
+                    }
+                };
+
+                submitBtn.onclick = checkPassword;
+                passInput.onkeydown = (e) => { if (e.key === 'Enter') checkPassword(); };
+                
+                document.addEventListener('click', function closePopover(e) {
+                    if (!popover.contains(e.target) && !e.target.closest('#openAddModalBtn') && !e.target.closest('.edit-btn') && !e.target.closest('.delete-btn')) {
+                        popover.classList.add('opacity-0', 'translate-x-4');
+                        setTimeout(() => { popover.classList.add('hidden'); }, 300);
+                        document.removeEventListener('click', closePopover);
+                    }
+                });
+            };
+
+            window.isAdminAuthenticated = false;
+            window.requireAdmin = (callback) => {
+                if (window.isAdminAuthenticated) return callback();
+                const popover = document.getElementById('passwordPopover');
+                const passInput = document.getElementById('adminPasswordInput');
+                const submitBtn = document.getElementById('adminPasswordSubmit');
+                
+                if (popover.classList.contains('hidden')) {
+                    popover.classList.remove('hidden');
+                    setTimeout(() => { popover.classList.remove('opacity-0', 'translate-x-4'); }, 10);
+                    passInput.value = '';
+                    passInput.focus();
+                }
+
+                const checkPassword = () => {
+                    if (passInput.value === 'LCsuporte') {
+                        window.isAdminAuthenticated = true;
+                        popover.classList.add('opacity-0', 'translate-x-4');
+                        setTimeout(() => { popover.classList.add('hidden'); }, 300);
+                        callback();
+                    } else {
+                        alert('Senha incorreta!');
+                        passInput.focus();
+                    }
+                };
+
+                submitBtn.onclick = checkPassword;
+                passInput.onkeydown = (e) => { if (e.key === 'Enter') checkPassword(); };
+                
+                document.addEventListener('click', function closePopover(e) {
+                    if (!popover.contains(e.target) && !e.target.closest('#openAddModalBtn') && !e.target.closest('.edit-btn') && !e.target.closest('.delete-btn')) {
+                        popover.classList.add('opacity-0', 'translate-x-4');
+                        setTimeout(() => { popover.classList.add('hidden'); }, 300);
+                        document.removeEventListener('click', closePopover);
+                    }
+                });
+            };
+
             window.toggleDevMenu = (btn) => {
                 const menu = btn.nextElementSibling;
                 document.querySelectorAll('.dev-menu').forEach(m => { if (m !== menu) m.classList.add('hidden') });
