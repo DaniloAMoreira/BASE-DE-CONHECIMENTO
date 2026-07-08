@@ -121,22 +121,76 @@
             const commandTextInput = document.getElementById('commandTextInput');
 
             // --- Lógica para Gavetas Internas Dinâmicas (Modal) ---
-            window.addSubCommandField = (name = '', text = '', desc = '') => {
-                const container = document.getElementById('subCommandsContainer');
-                if (!container) return;
-                const div = document.createElement('div');
-                div.className = 'subcommand-item p-3 border border-[color:var(--panel-border)] rounded-lg mb-2 relative';
-                div.innerHTML = `
-                    <button onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-red-500 hover:text-red-700" title="Remover Gaveta">
+            
+            window.modalSubCommands = [];
+            window.activeModalTabIndex = 0;
+
+            window.renderModalSubCommands = () => {
+                const tabsContainer = document.getElementById('modalTabsContainer');
+                const contentContainer = document.getElementById('modalContentContainer');
+                if (!tabsContainer || !contentContainer) return;
+
+                tabsContainer.innerHTML = '';
+                contentContainer.innerHTML = '';
+
+                if (window.modalSubCommands.length === 0) {
+                    contentContainer.innerHTML = '<div class="text-text-muted text-sm flex items-center justify-center h-full text-center">Nenhuma gaveta criada.<br>Clique no "+" ao lado para adicionar.</div>';
+                    return;
+                }
+
+                window.modalSubCommands.forEach((sc, idx) => {
+                    const isActive = idx === window.activeModalTabIndex;
+                    const btnClass = isActive ? 'bg-primary text-white border-primary' : 'bg-surface border-primary text-text hover:bg-primary hover:text-white';
+                    tabsContainer.innerHTML += `<button type="button" onclick="switchModalTab(${idx})" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors border truncate shrink-0 ${btnClass}">${sc.name || 'Nova Gaveta'}</button>`;
+                });
+
+                const activeSc = window.modalSubCommands[window.activeModalTabIndex];
+                contentContainer.innerHTML = `
+                    <button type="button" onclick="removeModalTab(${window.activeModalTabIndex})" class="absolute top-2 right-2 text-red-500 hover:text-red-700" title="Remover Gaveta">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
-                    <label class="block text-xs font-medium text-text-muted mb-1">Nome da Gaveta Interna (Ex: Select)</label>
-                    <input type="text" value="${name.replace(/"/g, '&quot;')}" class="subcommand-name w-full rounded-md px-3 py-1.5 mb-2 bg-[color:var(--color-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-1 focus:ring-accent text-sm">
+                    <label class="block text-xs font-medium text-text-muted mb-1 mt-1">Nome da Gaveta Interna (Ex: Select)</label>
+                    <input type="text" value="${(activeSc.name || '').replace(/"/g, '&quot;')}" class="w-full rounded-md px-3 py-1.5 mb-3 bg-[color:var(--color-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-1 focus:ring-accent text-sm" oninput="updateActiveModalTab('name', this.value)">
+                    
+                    <label class="block text-xs font-medium text-text-muted mb-1">Descrição (Obrigatório)</label>
+                    <input type="text" value="${(activeSc.desc || '').replace(/"/g, '&quot;')}" class="w-full rounded-md px-3 py-1.5 mb-3 bg-[color:var(--color-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-1 focus:ring-accent text-sm" placeholder="Para que serve este comando?" oninput="updateActiveModalTab('desc', this.value)">
+                    
                     <label class="block text-xs font-medium text-text-muted mb-1">Comando SQL</label>
-                    <textarea rows="3" class="subcommand-text w-full rounded-md px-3 py-1.5 bg-[color:var(--color-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-1 focus:ring-accent font-mono text-xs">${text}</textarea>
+                    <textarea rows="4" class="w-full rounded-md px-3 py-1.5 bg-[color:var(--color-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-1 focus:ring-accent font-mono text-xs custom-scrollbar" oninput="updateActiveModalTab('text', this.value)">${activeSc.text || ''}</textarea>
                 `;
-                container.prepend(div);
             };
+
+            window.addNewModalSubCommand = () => {
+                window.modalSubCommands.push({ name: 'Nova Gaveta', text: '', desc: '' });
+                window.activeModalTabIndex = window.modalSubCommands.length - 1;
+                window.renderModalSubCommands();
+            };
+
+            window.switchModalTab = (idx) => {
+                window.activeModalTabIndex = idx;
+                window.renderModalSubCommands();
+            };
+
+            window.removeModalTab = (idx) => {
+                window.modalSubCommands.splice(idx, 1);
+                if (window.activeModalTabIndex >= window.modalSubCommands.length) {
+                    window.activeModalTabIndex = Math.max(0, window.modalSubCommands.length - 1);
+                }
+                window.renderModalSubCommands();
+            };
+
+            window.updateActiveModalTab = (field, value) => {
+                if (window.modalSubCommands[window.activeModalTabIndex]) {
+                    window.modalSubCommands[window.activeModalTabIndex][field] = value;
+                    if (field === 'name') {
+                        const tabs = document.getElementById('modalTabsContainer').children;
+                        if (tabs[window.activeModalTabIndex]) {
+                            tabs[window.activeModalTabIndex].textContent = value || 'Nova Gaveta';
+                        }
+                    }
+                }
+            };
+
 
             window.isAdminAuthenticated = false;
             let pendingAdminAction = null;
@@ -242,17 +296,17 @@
                 let title = document.getElementById('commandTitleInput').value.trim();
                 if (!title) return alert('Digite o Título do Comando');
 
-                const subCommandsElements = document.querySelectorAll('.subcommand-item');
-                let subCommands = [];
-                subCommandsElements.forEach(item => {
-                    const name = item.querySelector('.subcommand-name').value.trim();
-                    const text = item.querySelector('.subcommand-text').value.trim();
-                    if (name || text) {
-                        subCommands.push({ name: name || 'Comando', text: text });
-                    }
-                });
+                const subCommands = window.modalSubCommands.map(sc => ({
+                    name: sc.name.trim() || 'Comando',
+                    text: sc.text.trim(),
+                    desc: sc.desc.trim()
+                }));
+                const hasEmptyDesc = subCommands.some(sc => !sc.desc);
 
-                if (subCommands.length === 0) {
+                if (hasEmptyDesc) {
+                    return alert('A descrição de todas as gavetas é obrigatória!');
+                }
+                 if (subCommands.length === 0) {
                     return alert('Adicione pelo menos um subcomando (Gaveta interna).');
                 }
 
