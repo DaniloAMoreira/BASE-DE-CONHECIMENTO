@@ -121,11 +121,35 @@
             const commandTextInput = document.getElementById('commandTextInput');
 
             let isNewCategory = false;
+            
+            // --- Lógica para Gavetas Internas Dinâmicas (Modal) ---
+            window.addSubCommandField = (name = '', text = '') => {
+                const container = document.getElementById('subCommandsContainer');
+                if (!container) return;
+                const div = document.createElement('div');
+                div.className = 'subcommand-item p-3 border border-[color:var(--panel-border)] rounded-lg mb-2 relative';
+                div.innerHTML = `
+                    <button onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-red-500 hover:text-red-700" title="Remover Gaveta">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <label class="block text-xs font-medium text-text-muted mb-1">Nome da Gaveta Interna (Ex: Select)</label>
+                    <input type="text" value="${name.replace(/"/g, '&quot;')}" class="subcommand-name w-full rounded-md px-3 py-1.5 mb-2 bg-[color:var(--color-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-1 focus:ring-accent text-sm">
+                    <label class="block text-xs font-medium text-text-muted mb-1">Comando SQL</label>
+                    <textarea rows="3" class="subcommand-text w-full rounded-md px-3 py-1.5 bg-[color:var(--color-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-1 focus:ring-accent font-mono text-xs">${text}</textarea>
+                `;
+                container.appendChild(div);
+            };
 
             openAddModalBtn.addEventListener('click', () => {
+                const senha = prompt('Digite a senha para cadastrar comandos:');
+                if (senha !== 'Lcsuporteadmin') {
+                    alert('Senha incorreta!');
+                    return;
+                }
+                
                 window.editingCmdId = null;
                 document.querySelector('#addModal h3').textContent = 'Adicionar Novo Comando';
-                // Populate categories
+                
                 categorySelect.innerHTML = '<option value="">Selecione a categoria...</option>';
                 categories.forEach(cat => {
                     const opt = document.createElement('option');
@@ -139,7 +163,12 @@
                 newCategoryInput.classList.add('hidden');
                 newCategoryInput.value = '';
                 commandTitleInput.value = '';
-                commandTextInput.value = '';
+                
+                const subCommandsContainer = document.getElementById('subCommandsContainer');
+                if(subCommandsContainer) {
+                    subCommandsContainer.innerHTML = '';
+                    addSubCommandField();
+                }
                 
                 addModal.classList.remove('hidden');
             });
@@ -166,22 +195,32 @@
                 let catId = categorySelect.value;
                 let catName = newCategoryInput.value.trim();
                 let title = commandTitleInput.value.trim();
-                let text = commandTextInput.value.trim();
 
                 if (isNewCategory) {
                     if (!catName) return alert('Digite o nome da nova categoria');
                 } else {
                     if (!catId) return alert('Selecione uma categoria');
                 }
-
-                if (!text) return alert('Digite o comando SQL');
                 
-                // Se não digitou título, usa a categoria (ou .sql se preferir)
+                const subCommandsElements = document.querySelectorAll('.subcommand-item');
+                let subCommands = [];
+                subCommandsElements.forEach(item => {
+                    const name = item.querySelector('.subcommand-name').value.trim();
+                    const text = item.querySelector('.subcommand-text').value.trim();
+                    if (name || text) {
+                        subCommands.push({ name: name || 'Comando', text: text });
+                    }
+                });
+
+                if (subCommands.length === 0) {
+                    return alert('Adicione pelo menos um subcomando (Gaveta interna).');
+                }
+
                 if (!title) {
                     title = isNewCategory ? catName : categorySelect.options[categorySelect.selectedIndex].text;
                 }
 
-                saveCommandBtn.textContent = "Salvando...";
+                saveCommandBtn.textContent = 'Salvando...';
                 saveCommandBtn.disabled = true;
 
                 try {
@@ -203,29 +242,31 @@
                         catId = dataCat[0].id;
                     }
 
+                    const commandJsonStr = JSON.stringify(subCommands);
+
                     let resCmd;
                     if (window.editingCmdId) {
                         resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${window.editingCmdId}`, {
                             method: 'PATCH',
                             headers,
-                            body: JSON.stringify({ categoria_id: catId, name: title, command: text })
+                            body: JSON.stringify({ categoria_id: catId, name: title, command: commandJsonStr })
                         });
-                        window.editingCmdId = null; // reset
+                        window.editingCmdId = null;
                     } else {
                         resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos`, {
                             method: 'POST',
                             headers,
-                            body: JSON.stringify({ categoria_id: catId, name: title, command: text })
+                            body: JSON.stringify({ categoria_id: catId, name: title, command: commandJsonStr })
                         });
                     }
                     if (!resCmd.ok) throw new Error('Erro ao salvar comando');
 
                     addModal.classList.add('hidden');
-                    await loadData(); // Reload UI
+                    await loadData();
                 } catch (e) {
                     alert('Ocorreu um erro ao salvar no banco de dados. ' + e.message);
                 } finally {
-                    saveCommandBtn.textContent = "Salvar Comando";
+                    saveCommandBtn.textContent = 'Salvar Comando';
                     saveCommandBtn.disabled = false;
                 }
             });
@@ -261,6 +302,12 @@
 
             window.editingCmdId = null;
             window.editCommand = (cmdId) => {
+                const senha = prompt('Digite a senha para editar comandos:');
+                if (senha !== 'Lcsuporteadmin') {
+                    alert('Senha incorreta!');
+                    return;
+                }
+
                 let targetCmd = null;
                 for (let cat of categories) {
                     targetCmd = cat.subjects.find(s => String(s.id) === String(cmdId));
@@ -282,7 +329,24 @@
                 categorySelect.classList.remove('hidden');
                 document.getElementById('newCategoryInput').classList.add('hidden');
                 document.getElementById('commandTitleInput').value = targetCmd.name;
-                document.getElementById('commandTextInput').value = targetCmd.command;
+                
+                const subCommandsContainer = document.getElementById('subCommandsContainer');
+                if (subCommandsContainer) {
+                    subCommandsContainer.innerHTML = '';
+                    let subCmds = [];
+                    try {
+                        subCmds = JSON.parse(targetCmd.command);
+                        if (!Array.isArray(subCmds)) throw new Error('Not array');
+                    } catch(e) {
+                        subCmds = [{ name: 'Comando', text: targetCmd.command || '' }];
+                    }
+                    
+                    if (subCmds.length === 0) {
+                        addSubCommandField();
+                    } else {
+                        subCmds.forEach(sc => addSubCommandField(sc.name, sc.text));
+                    }
+                }
                 
                 window.editingCmdId = targetCmd.id;
                 document.querySelector('#addModal h3').textContent = 'Editar Comando';
@@ -292,19 +356,47 @@
             const loadData = async () => {
                 categoriesContainer.classList.add('loading');
                 try {
-                    const response = await fetch('./comandos.json?t=' + new Date().getTime());
-                    if (!response.ok) throw new Error(`HTTP error!`);
-                    const data = await response.json();
-                    categories = data;
+                    const headers = { 
+                        'apikey': SUPABASE_ANON_KEY, 
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    };
+                    
+                    const [resCategorias, resComandos] = await Promise.all([
+                        fetch(`${SUPABASE_URL}/rest/v1/categorias_comandos?select=*`, { headers }),
+                        fetch(`${SUPABASE_URL}/rest/v1/comandos?select=*`, { headers })
+                    ]);
+
+                    if (!resCategorias.ok || !resComandos.ok) {
+                        throw new Error('HTTP error fetching from Supabase');
+                    }
+
+                    const rawCategorias = await resCategorias.json();
+                    const rawComandos = await resComandos.json();
+
+                    categories = rawCategorias.map(cat => {
+                        const comandosDaCategoria = rawComandos.filter(cmd => String(cmd.categoria_id) === String(cat.id));
+                        return {
+                            id: cat.id,
+                            name: cat.name,
+                            subjects: comandosDaCategoria
+                        };
+                    });
+                    
+                    categories.sort((a, b) => a.name.localeCompare(b.name));
+
                     const suggestionSet = new Set();
-                    categories.forEach(cat => { suggestionSet.add(cat.name); cat.subjects.forEach(sub => suggestionSet.add(sub.name)); });
+                    categories.forEach(cat => { 
+                        suggestionSet.add(cat.name); 
+                        cat.subjects.forEach(sub => suggestionSet.add(sub.name)); 
+                    });
                     allSuggestions = [...suggestionSet];
+                    
                     render(categories);
                     isDataLoaded = true;
                 } catch (error) {
-                    console.error("Erro ao carregar dados", error);
+                    console.error('Erro ao carregar dados', error);
                     const infoMessage = document.getElementById('infoMessage');
-                    infoMessage.textContent = 'Não foi possível carregar os comandos. Verifique se o arquivo JSON está correto.';
+                    infoMessage.textContent = 'Não foi possível carregar os comandos do banco de dados.';
                     infoModal.classList.remove('hidden');
                 } finally {
                     categoriesContainer.classList.remove('loading');
@@ -382,39 +474,86 @@
                     
                     const subjectsHTML = subjectsToDisplay.length > 0
                         ? subjectsToDisplay.map((subject) => {
-                            let actionBtn = '';
-                            const encoded = encodeURIComponent(subject.command || '');
-                            
-                            // AQUI ESTÁ A LÓGICA AUTOMÁTICA!
-                            // Se o nome terminar em .sql, é download. Caso contrário, Olho e Copiar.
                             const isSql = subject.name.toLowerCase().endsWith('.sql');
+                            let subCommands = [];
                             
-                            if (isSql) {
-                                const fileName = subject.name;
-                                actionBtn = `
-                                <button data-command="${encoded}" onclick="downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${fileName}')" class="px-3 py-1 bg-accent text-white rounded hover:opacity-90 transition-colors text-sm font-semibold flex items-center gap-1 shrink-0" title="Descarregar ficheiro">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
-                                </button>`;
-                            } else {
-                                actionBtn = `
-                                <div class="flex gap-2 items-center">
-                                    <button data-command="${encoded}" onclick="viewCommand(decodeURIComponent(this.getAttribute('data-command')))" class="px-2 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm font-semibold flex items-center justify-center shrink-0" title="Observar comando">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                    </button>
-                                    <div class="relative flex flex-col items-center">
-                                        <button data-command="${encoded}" onclick="copyCommand(decodeURIComponent(this.getAttribute('data-command')), this)" class="px-3 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-sm font-semibold flex items-center gap-1 shrink-0" title="Copiar">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copiar
-                                        </button>
-                                    </div>
-                                </div>`;
+                            try {
+                                subCommands = JSON.parse(subject.command);
+                                if(!Array.isArray(subCommands)) throw new Error('Not array');
+                            } catch(e) {
+                                subCommands = [{ name: 'Comando', text: subject.command || '' }];
                             }
 
-                            return `<li class="flex items-center justify-between text-text ml-2 p-2 rounded-md hover:bg-white/5 transition-colors group">
-                                <span class="truncate pr-4">${highlightMatch(subject.name, searchTerm)}</span>
-                                ${actionBtn}
-                            </li>`;
+                            const innerAccordionsHTML = subCommands.map((sc, scIdx) => {
+                                const encoded = encodeURIComponent(sc.text || '');
+                                let actionBtn = '';
+                                
+                                if (isSql) {
+                                    const fileName = sc.name.endsWith('.sql') ? sc.name : sc.name + '.sql';
+                                    actionBtn = `
+                                    <button data-command="${encoded}" onclick="downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${fileName}')" class="px-3 py-1 bg-accent text-white rounded hover:opacity-90 transition-colors text-xs font-semibold flex items-center gap-1 shrink-0" title="Descarregar ficheiro">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
+                                    </button>`;
+                                } else {
+                                    actionBtn = `
+                                    <div class="flex gap-2 items-center">
+                                        <button data-command="${encoded}" onclick="viewCommand(decodeURIComponent(this.getAttribute('data-command')))" class="px-2 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-xs font-semibold flex items-center justify-center shrink-0" title="Observar comando">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        </button>
+                                        <div class="relative flex flex-col items-center">
+                                            <button data-command="${encoded}" onclick="copyCommand(decodeURIComponent(this.getAttribute('data-command')), this)" class="px-3 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-xs font-semibold flex items-center gap-1 shrink-0" title="Copiar">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copiar
+                                            </button>
+                                        </div>
+                                    </div>`;
+                                }
+
+                                return `
+                                    <div class="inner-accordion panel bg-black/20 rounded-md mt-2 overflow-hidden border border-[color:var(--panel-border)]">
+                                        <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-white/5 transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-180');">
+                                            <span class="text-sm font-medium text-text">${highlightMatch(sc.name, searchTerm)}</span>
+                                            <svg class="w-5 h-5 text-text-muted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </div>
+                                        <div class="hidden p-3 border-t border-[color:var(--panel-border)]">
+                                            <div class="flex justify-between items-start gap-4">
+                                                <pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow font-mono max-h-40 overflow-y-auto custom-scrollbar p-2 bg-[color:var(--color-surface)] rounded">${sc.text}</pre>
+                                                ${actionBtn}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+
+                            return `
+                            <div class="panel border border-[color:var(--panel-border)] rounded-md mb-3 bg-white/5">
+                                <div class="flex items-center justify-between p-3 cursor-pointer group hover:bg-white/10 transition-colors" onclick="if(event.target.closest('.action-buttons')) return; this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.cmd-chevron').classList.toggle('rotate-180');">
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold text-text">${highlightMatch(subject.name, searchTerm)}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 action-buttons">
+                                        <div class="relative dev-menu hidden">
+                                            <div class="absolute right-0 mt-2 w-32 bg-surface border border-primary/50 rounded-lg shadow-xl z-50 flex flex-col py-1 overflow-hidden">
+                                                <button onclick="editCommand('${subject.id}')" class="px-4 py-2 text-sm text-left hover:bg-primary transition-colors flex items-center gap-2 text-blue-400">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg> Editar
+                                                </button>
+                                                <button onclick="deleteCommand('${subject.id}')" class="px-4 py-2 text-sm text-left hover:bg-primary transition-colors flex items-center gap-2 text-red-400">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Excluir
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <button onclick="event.stopPropagation(); toggleDevMenu(this)" class="p-1 hover:bg-primary rounded transition-colors text-text-muted" title="Opções">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                                        </button>
+                                        <svg class="cmd-chevron w-5 h-5 text-text-muted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
+                                <div class="hidden p-3 pt-0 border-t border-[color:var(--panel-border)] bg-[color:var(--color-bg)] rounded-b-md">
+                                    ${innerAccordionsHTML}
+                                </div>
+                            </div>
+                            `;
                         }).join('')
-                        : '<li class="text-text-muted text-sm ml-2">Nenhum comando nesta categoria.</li>';
+                        : '<div class="text-text-muted text-sm ml-2">Nenhum comando nesta categoria.</div>';
 
                     categoryElement.innerHTML = `
                         <div class="group flex items-center justify-between p-4 cursor-pointer category-header" data-id="${category.id}">
@@ -424,7 +563,7 @@
                             </div>
                         </div>
                         <div class="subject-list ${isExpanded ? 'expanded' : ''}">
-                            <div><div class="p-4 border-t" style="border-color: var(--panel-border);"><ul class="space-y-1 mb-4">${subjectsHTML}</ul></div></div>
+                            <div><div class="p-4 border-t" style="border-color: var(--panel-border);"><div class="space-y-2 mb-4">${subjectsHTML}</div></div></div>
                         </div>`;
                     categoriesContainer.appendChild(categoryElement);
                 });
