@@ -497,16 +497,48 @@
                 adminPasswordInput.focus();
             };
 
-            const attemptLogin = () => {
-                if (adminPasswordInput.value === 'LCsuporte') {
-                    window.isAdminAuthenticated = true;
-                    passwordPopover.classList.add('hidden');
-                    if (pendingAdminAction) {
-                        pendingAdminAction();
-                        pendingAdminAction = null;
+            window.adminToken = null;
+
+            const attemptLogin = async () => {
+                const password = adminPasswordInput.value;
+                if (!password) return;
+
+                const submitBtn = document.getElementById('submitPasswordBtn');
+                submitBtn.textContent = 'Verificando...';
+                submitBtn.disabled = true;
+
+                try {
+                    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: 'admin@lcsistemas.com',
+                            password: password
+                        })
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (data.access_token) {
+                        window.adminToken = data.access_token;
+                        window.isAdminAuthenticated = true;
+                        passwordPopover.classList.add('hidden');
+                        passwordError.classList.add('hidden');
+                        if (pendingAdminAction) {
+                            pendingAdminAction();
+                            pendingAdminAction = null;
+                        }
+                    } else {
+                        throw new Error('Senha incorreta');
                     }
-                } else {
+                } catch (e) {
                     passwordError.classList.remove('hidden');
+                } finally {
+                    submitBtn.textContent = 'Confirmar';
+                    submitBtn.disabled = false;
                 }
             };
 
@@ -568,9 +600,10 @@
                 saveCommandBtn.disabled = true;
 
                 try {
+                    const authHeader = window.adminToken ? `Bearer ${window.adminToken}` : `Bearer ${SUPABASE_ANON_KEY}`;
                     const headers = {
                         'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Authorization': authHeader,
                         'Content-Type': 'application/json',
                         'Prefer': 'return=representation'
                     };
@@ -629,6 +662,27 @@
                 menu.classList.toggle('hidden');
             };
 
+            
+            window.toggleActionDrawer = (drawerId) => {
+                const drawer = document.getElementById(drawerId);
+                if (!drawer) return;
+
+                document.querySelectorAll('.action-drawer').forEach(d => {
+                    if (d !== drawer) {
+                        d.classList.remove('max-w-[200px]', 'opacity-100');
+                        d.classList.add('max-w-0', 'opacity-0');
+                    }
+                });
+
+                if (drawer.classList.contains('max-w-0')) {
+                    drawer.classList.remove('max-w-0', 'opacity-0');
+                    drawer.classList.add('max-w-[200px]', 'opacity-100');
+                } else {
+                    drawer.classList.add('max-w-0', 'opacity-0');
+                    drawer.classList.remove('max-w-[200px]', 'opacity-100');
+                }
+            };
+
             let commandToDeleteId = null;
 
             window.deleteCommand = (cmdId) => {
@@ -651,9 +705,14 @@
                 btn.disabled = true;
 
                 try {
+                    const authHeader = window.adminToken ? `Bearer ${window.adminToken}` : `Bearer ${SUPABASE_ANON_KEY}`;
                     const res = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${commandToDeleteId}`, {
                         method: 'DELETE',
-                        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': authHeader }
+                    }); ? `Bearer ${window.adminToken}` : `Bearer ${SUPABASE_ANON_KEY}`;
+                    const res = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${commandToDeleteId}`, {
+                        method: 'DELETE',
+                        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': authHeader }
                     });
                     if (!res.ok) throw new Error('Erro ao excluir');
                     await loadData();
@@ -867,14 +926,17 @@
                                 <span class="font-semibold text-text">${highlightMatch(subject.name, searchTerm)}</span>
                             </div>
                             <div class="flex items-center gap-4">
-                                <div class="flex items-center gap-2 action-buttons mr-2">
-                                    <button onclick="event.stopPropagation(); deleteCommand('${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-red-400 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 rounded transition-colors" title="Excluir">
+                                <div class="flex items-center gap-2 overflow-hidden transition-all duration-300 max-w-0 opacity-0 action-drawer" id="drawer-${subject.id}">
+                                    <button onclick="event.stopPropagation(); deleteCommand('${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-red-400 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 rounded transition-colors whitespace-nowrap" title="Excluir">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Excluir
                                     </button>
-                                    <button onclick="event.stopPropagation(); editCommand('${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-blue-400 border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 rounded transition-colors" title="Editar">
+                                    <button onclick="event.stopPropagation(); editCommand('${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-blue-400 border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 rounded transition-colors whitespace-nowrap" title="Editar">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg> Editar
                                     </button>
                                 </div>
+                                <button onclick="event.stopPropagation(); toggleActionDrawer('drawer-${subject.id}')" class="p-1 hover:bg-primary rounded transition-colors text-text-muted shrink-0" title="Opções">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                                </button>
                                 <svg class="cmd-chevron w-5 h-5 text-text-muted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                         </div>
