@@ -140,7 +140,7 @@
 
                 window.modalSubCommands.forEach((sc, idx) => {
                     const isActive = idx === window.activeModalTabIndex;
-                    const btnClass = isActive ? 'bg-primary text-white border-primary' : 'bg-surface border-primary text-text hover:bg-primary hover:text-white';
+                    const btnClass = isActive ? 'bg-primary text-white border-primary shadow-md scale-[1.02]' : 'bg-surface border-primary text-text hover:bg-primary hover:text-white hover:shadow-md hover:scale-[1.02] transition-all';
                     tabsContainer.innerHTML += `<button type="button" onclick="switchModalTab(${idx})" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors border truncate shrink-0 ${btnClass}">${sc.name || 'Nova Aba'}</button>`;
                 });
 
@@ -148,7 +148,7 @@
                 contentContainer.innerHTML = `
                     <div class="flex justify-between items-center mb-1">
                         <label class="block text-xs font-medium text-text-muted">Nome da Aba (Ex: Select)</label>
-                        <button type="button" onclick="removeModalTab(${window.activeModalTabIndex})" class="text-red-500 hover:text-red-700 flex items-center justify-center p-1 rounded-md hover:bg-red-500/10 transition-colors" title="Remover Aba">
+                        <button type="button" onclick="removeModalTab(${window.activeModalTabIndex})" class="text-red-500 hover:text-red-700 flex items-center justify-center p-1 rounded-md hover:bg-red-500/10 transition-all hover:scale-110 hover:shadow-sm" title="Remover Aba">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
                     </div>

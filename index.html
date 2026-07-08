@@ -6,77 +6,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="./favicon.png">
     <title>Base de Conhecimento</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>\n    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bg-app': 'var(--bg-app)',
+                        'bg-subtle': 'var(--bg-subtle)',
+                        'bg-panel': 'var(--bg-panel)',
+                        'bg-panel-hover': 'var(--bg-panel-hover)',
+                        'bg-panel-active': 'var(--bg-panel-active)',
+                        'border-subtle': 'var(--border-subtle)',
+                        'border-element': 'var(--border-element)',
+                        'border-hover': 'var(--border-hover)',
+                        'bg-solid': 'var(--bg-solid)',
+                        'bg-solid-hover': 'var(--bg-solid-hover)',
+                        'text-muted': 'var(--text-muted)',
+                        'text-high': 'var(--text-high)',
+                        
+                        'accent-app': 'var(--accent-app)',
+                        'accent-subtle': 'var(--accent-subtle)',
+                        'accent-panel': 'var(--accent-panel)',
+                        'accent-panel-hover': 'var(--accent-panel-hover)',
+                        'accent-panel-active': 'var(--accent-panel-active)',
+                        'accent-border-subtle': 'var(--accent-border-subtle)',
+                        'accent-border-element': 'var(--accent-border-element)',
+                        'accent-border-hover': 'var(--accent-border-hover)',
+                        'accent-solid': 'var(--accent-solid)',
+                        'accent-solid-hover': 'var(--accent-solid-hover)',
+                        'accent-text-muted': 'var(--accent-text-muted)',
+                        'accent-text-high': 'var(--accent-text-high)',
+                    }
+                }
+            }
+        };
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
-            --color-bg: #0a0f1f;
-            --color-surface: #10183b;
-            --color-primary: #2a3a90;
-            --color-accent: #3b82f6;
-            --color-text: #e5e7eb;
-            --color-text-muted: #9ca3af;
-            --panel-bg: rgba(16, 24, 59, 0.85);
-            --panel-border: rgba(42, 58, 144, 0.3);
-            --color-search-bg: #4B5563;
-            --color-search-border: #6B7280;
+            /* DARK MODE (default) - Radix Slate & Blue */
+            --bg-app: #111113;
+            --bg-subtle: #18191b;
+            --bg-panel: #212225;
+            --bg-panel-hover: #272a2d;
+            --bg-panel-active: #2e3135;
+            
+            --border-subtle: #363a3f;
+            --border-element: #43484e;
+            --border-hover: #5a6169;
+            
+            --bg-solid: #696e77;
+            --bg-solid-hover: #777b84;
+            
+            --text-muted: #b0b4ba;
+            --text-high: #edeef0;
+
+            --accent-app: #0d1520;
+            --accent-subtle: #111927;
+            --accent-panel: #0d2847;
+            --accent-panel-hover: #003362;
+            --accent-panel-active: #004074;
+            
+            --accent-border-subtle: #104d87;
+            --accent-border-element: #205d9e;
+            --accent-border-hover: #2870bd;
+            
+            --accent-solid: #0090ff;
+            --accent-solid-hover: #3b9eff;
+            
+            --accent-text-muted: #70b8ff;
+            --accent-text-high: #c2e6ff;
         }
 
         body[data-theme="light"] {
-            --color-bg: #e0f2f7;
-            --color-surface: #ffffff;
-            --color-primary: #60a5fa;
-            --color-accent: #3b82f6;
-            --color-text: #1a202c;
-            --color-text-muted: #6b7280;
-            --panel-bg: rgba(227, 242, 253, 0.9);
-            --panel-border: rgba(144, 202, 249, 0.7);
+            /* LIGHT MODE - Radix Slate & Blue */
+            --bg-app: #fcfcfd;
+            --bg-subtle: #f9f9fb;
+            --bg-panel: #f0f0f3;
+            --bg-panel-hover: #e8e8ec;
+            --bg-panel-active: #e0e1e6;
+            
+            --border-subtle: #d9d9e0;
+            --border-element: #cdced6;
+            --border-hover: #b9bbc6;
+            
+            --bg-solid: #8b8d98;
+            --bg-solid-hover: #80838d;
+            
+            --text-muted: #60646c;
+            --text-high: #1c2024;
+
+            --accent-app: #fbfdff;
+            --accent-subtle: #f4faff;
+            --accent-panel: #e6f4fe;
+            --accent-panel-hover: #d5efff;
+            --accent-panel-active: #c2e5ff;
+            
+            --accent-border-subtle: #acd8fc;
+            --accent-border-element: #8ec8f6;
+            --accent-border-hover: #5eb1ef;
+            
+            --accent-solid: #0090ff;
+            --accent-solid-hover: #0588f0;
+            
+            --accent-text-muted: #0d74ce;
+            --accent-text-high: #0d74ce; 
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--color-bg);
-            color: var(--color-text);
+            background-color: var(--bg-app);
+            color: var(--text-high);
             overflow-x: hidden;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         #searchInput {
-            color: var(--color-text);
+            color: var(--text-high);
             background-color: var(--color-search-bg);
             border: 1px solid var(--color-search-border);
         }
 
         #searchInput::placeholder {
-            color: var(--color-text-muted);
+            color: var(--text-muted);
         }
 
         .search-icon {
-            color: var(--color-text-muted);
+            color: var(--text-muted);
         }
 
-        h1.text-accent,
+        h1.text-accent-solid,
         .category-header h3 {
-            color: var(--color-text);
+            color: var(--text-high);
         }
 
         body[data-theme="light"] #searchInput {
             background-color: #FFFFFF;
             border: 1px solid #D1D5DB;
-            color: var(--color-text);
+            color: var(--text-high);
         }
 
         body[data-theme="light"] #searchInput::placeholder,
         body[data-theme="light"] .search-icon {
-            color: var(--color-text-muted);
+            color: var(--text-muted);
         }
 
-        body[data-theme="light"] h1.text-accent,
+        body[data-theme="light"] h1.text-accent-solid,
         body[data-theme="light"] .category-header h3 {
-            color: var(--color-accent);
+            color: var(--accent-solid);
         }
 
         #webgl-bg {
@@ -89,10 +169,10 @@
         }
 
         .panel {
-            background: var(--panel-bg);
+            background: color-mix(in srgb, var(--bg-panel) 85%, transparent);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--panel-border);
+            border: 1px solid var(--border-subtle);
             box-shadow: 0 8px 32px 0 rgba(10, 15, 31, 0.37);
             border-radius: 0.75rem;
             transition: background-color 0.3s ease, border-color 0.3s ease;
@@ -121,16 +201,16 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: var(--color-bg);
+            background: var(--bg-app);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--color-primary);
+            background: var(--bg-solid);
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--color-accent);
+            background: var(--accent-solid);
         }
 
         @keyframes fadeIn {
@@ -155,7 +235,7 @@
 
         .glow-on-hover:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 15px 2px var(--color-accent);
+            box-shadow: 0 0 15px 2px var(--accent-solid);
         }
 
         .loading {
@@ -169,7 +249,7 @@
             grid-template-rows: 0fr;
             transition: grid-template-rows 0.3s ease-in-out;
             background: var(--color-surface);
-            border: 1px solid var(--panel-border);
+            border: 1px solid var(--border-subtle);
             border-radius: 0.5rem;
             overflow: hidden;
         }
@@ -185,19 +265,19 @@
         .suggestion-item {
             padding: 0.6rem 1rem;
             cursor: pointer;
-            color: var(--color-text-muted);
+            color: var(--text-muted);
             font-size: 0.9rem;
             transition: all 0.2s ease;
         }
 
         .suggestion-item:not(:last-child) {
-            border-bottom: 1px solid var(--panel-border);
+            border-bottom: 1px solid var(--border-subtle);
         }
 
         .suggestion-item:hover,
         .suggestion-item.active {
             background-color: var(--color-search-bg);
-            color: var(--color-text);
+            color: var(--text-high);
         }
 
         /* ANIMAÇÃO PARA ÍCONE NEURAL */
@@ -234,30 +314,30 @@
 
         /* ESTILOS PARA ABAS */
         .tab-active {
-            color: var(--color-text);
-            border-bottom: 2px solid var(--color-accent);
+            color: var(--text-high);
+            border-bottom: 2px solid var(--accent-solid);
         }
 
         body[data-theme="light"] .tab-active {
-            color: var(--color-accent);
+            color: var(--accent-solid);
         }
 
         .tab-inactive {
-            color: var(--color-text-muted);
+            color: var(--text-muted);
             border-bottom: 2px solid transparent;
         }
 
         .tab-inactive:hover {
-            color: var(--color-text);
+            color: var(--text-high);
         }
 
         body[data-theme="light"] .tab-inactive:hover {
-            color: var(--color-accent);
+            color: var(--accent-solid);
         }
     </style>
 </head>
 
-<body class="antialiased">
+<body class="antialiased text-text-high-high bg-bg-app">
 
     <canvas id="webgl-bg"></canvas>
 
@@ -265,7 +345,7 @@
         <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
             <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-20">
                 <button id="theme-toggle-btn" title="Alternar Tema"
-                    class="p-2 bg-surface hover:bg-primary border border-primary/50 rounded-full glow-on-hover">
+                    class="p-2 bg-bg-panel hover:bg-bg-solid-hover border border-border-element/50 rounded-full glow-on-hover">
                     <svg id="theme-icon-sun" class="w-6 h-6 hidden text-text-muted" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -283,7 +363,7 @@
             <div>
                 <header class="mb-6">
                     <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6 pb-2"
-                        style="border-bottom: 1px solid var(--panel-border);">
+                        style="border-bottom: 1px solid var(--border-subtle);">
                         <a href="index.html"
                             class="text-2xl sm:text-3xl font-bold pb-1 tab-active transition-colors">Base de
                             Conhecimento</a>
@@ -311,10 +391,10 @@
 
     <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="panel w-full max-w-md p-6">
-            <h3 class="text-lg font-semibold mb-4 text-accent">Informação</h3>
+            <h3 class="text-lg font-semibold mb-4 text-accent-solid">Informação</h3>
             <p id="infoMessage" class="mb-6"></p>
             <div class="flex justify-end">
-                <button id="infoOkBtn" class="px-4 py-2 bg-accent hover:opacity-90 text-white rounded-lg">OK</button>
+                <button id="infoOkBtn" class="px-4 py-2 bg-accent-solid hover:opacity-90 text-white rounded-lg">OK</button>
             </div>
         </div>
     </div>
@@ -370,7 +450,7 @@
                 if (!searchTerm || !text) return text;
                 const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const regex = new RegExp(escapedTerm, 'gi');
-                return text.replace(regex, (match) => `<mark class="bg-transparent text-blue-400 font-semibold not-italic">${match}</mark>`);
+                return text.replace(regex, (match) => `<mark class="bg-transparent text-accent-solid font-semibold not-italic">${match}</mark>`);
             };
 
             // --- LÓGICA DE SUGESTÕES (AUTOCOMPLETE) ---
@@ -385,7 +465,7 @@
                     const item = document.createElement('div');
                     item.className = 'suggestion-item flex items-center gap-x-3';
                     const neuralIconSVG = `
-                        <svg class="w-5 h-5 text-blue-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="w-5 h-5 text-accent-solid flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                             <circle class="neural-dot neural-dot-1" cx="4" cy="12" r="3"/>
                             <circle class="neural-dot neural-dot-2" cx="12" cy="12" r="3"/>
                             <circle class="neural-dot neural-dot-3" cx="20" cy="12" r="3"/>
@@ -431,7 +511,7 @@
                     categoryElement.className = 'panel rounded-lg';
                     const subjectsToDisplay = category.subjectsToDisplay || category.subjects;
                     const subjectsHTML = subjectsToDisplay.length > 0
-                        ? subjectsToDisplay.map((subject) => `<li class="flex items-center justify-between text-text ml-2 p-1 rounded-md"><span class="truncate pr-2">${highlightMatch(subject.name, searchTerm)}</span></li>`).join('')
+                        ? subjectsToDisplay.map((subject) => `<li class="flex items-center justify-between text-text-high ml-2 p-1 rounded-md"><span class="truncate pr-2">${highlightMatch(subject.name, searchTerm)}</span></li>`).join('')
                         : '<li class="text-text-muted text-sm ml-2">Nenhum assunto nesta categoria.</li>';
 
                     categoryElement.innerHTML = `
@@ -442,7 +522,7 @@
                             </div>
                         </div>
                         <div class="subject-list ${isExpanded ? 'expanded' : ''}">
-                            <div><div class="p-4 border-t" style="border-color: var(--panel-border);"><ul class="space-y-1 mb-4">${subjectsHTML}</ul></div></div>
+                            <div><div class="p-4 border-t" style="border-color: var(--border-subtle);"><ul class="space-y-1 mb-4">${subjectsHTML}</ul></div></div>
                         </div>`;
                     categoriesContainer.appendChild(categoryElement);
                 });
