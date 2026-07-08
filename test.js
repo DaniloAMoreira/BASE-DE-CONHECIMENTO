@@ -1,4 +1,7 @@
 
+        const SUPABASE_URL = 'https://jqllbwlfikckavipqtfr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGxid2xmaWtja2F2aXBxdGZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NzczMDQsImV4cCI6MjA5ODA1MzMwNH0.adNqWBWMY3PlIx_0OG1bMswbVR_TThtCmNWFptxkgRU';
+
         // Função para visualizar
         window.viewCommand = (text) => {
             const infoModal = document.getElementById('infoModal');
@@ -27,7 +30,7 @@
             const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            
+
             a.href = url;
             a.download = fileName;
             document.body.appendChild(a);
@@ -102,13 +105,13 @@
             const infoOkBtn = document.getElementById('infoOkBtn');
 
             // --- Variáveis de Estado ---
-            let categories = [];
+            let allComandos = [];
             let allSuggestions = [];
             let isDevMode = false;
             let activeSuggestionIndex = -1;
             let isDataLoaded = false;
 
-            
+
             // --- Lógica do Modal Adicionar Comando ---
             const addModal = document.getElementById('addModal');
             const openAddModalBtn = document.getElementById('openAddModalBtn');
@@ -154,16 +157,48 @@
                 adminPasswordInput.focus();
             };
 
-            const attemptLogin = () => {
-                if (adminPasswordInput.value === 'LCsuporte') {
-                    window.isAdminAuthenticated = true;
-                    passwordPopover.classList.add('hidden');
-                    if (pendingAdminAction) {
-                        pendingAdminAction();
-                        pendingAdminAction = null;
+            window.adminToken = null;
+
+            const attemptLogin = async () => {
+                const password = adminPasswordInput.value;
+                if (!password) return;
+
+                const submitBtn = document.getElementById('submitPasswordBtn');
+                submitBtn.textContent = 'Verificando...';
+                submitBtn.disabled = true;
+
+                try {
+                    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: 'admin@lcsistemas.com',
+                            password: password
+                        })
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (data.access_token) {
+                        window.adminToken = data.access_token;
+                        window.isAdminAuthenticated = true;
+                        passwordPopover.classList.add('hidden');
+                        passwordError.classList.add('hidden');
+                        if (pendingAdminAction) {
+                            pendingAdminAction();
+                            pendingAdminAction = null;
+                        }
+                    } else {
+                        throw new Error('Senha incorreta');
                     }
-                } else {
+                } catch (e) {
                     passwordError.classList.remove('hidden');
+                } finally {
+                    submitBtn.textContent = 'Confirmar';
+                    submitBtn.disabled = false;
                 }
             };
 
@@ -180,20 +215,20 @@
 
             openAddModalBtn.addEventListener('click', () => {
                 window.requireAdmin(() => {
-                
-                window.editingCmdId = null;
-                window.editingCmdCategoryId = null; // reset category ID
-                document.querySelector('#addModal h3').textContent = 'Adicionar Novo Comando';
-                
-                document.getElementById('commandTitleInput').value = '';
-                
-                const subCommandsContainer = document.getElementById('subCommandsContainer');
-                if(subCommandsContainer) {
-                    subCommandsContainer.innerHTML = '';
-                    addSubCommandField();
-                }
-                
-                addModal.classList.remove('hidden');
+
+                    window.editingCmdId = null;
+                    
+                    document.querySelector('#addModal h3').textContent = 'Adicionar Novo Comando';
+
+                    document.getElementById('commandTitleInput').value = '';
+
+                    const subCommandsContainer = document.getElementById('subCommandsContainer');
+                    if (subCommandsContainer) {
+                        subCommandsContainer.innerHTML = '';
+                        addSubCommandField();
+                    }
+
+                    addModal.classList.remove('hidden');
                 });
             });
 
@@ -201,19 +236,12 @@
                 addModal.classList.add('hidden');
             });
 
-            
+
 
             saveCommandBtn.addEventListener('click', async () => {
-                let catId = categorySelect.value;
-                let catName = newCategoryInput.value.trim();
-                let title = commandTitleInput.value.trim();
+                let title = document.getElementById('commandTitleInput').value.trim();
+                if (!title) return alert('Digite o Título do Comando');
 
-                if (isNewCategory) {
-                    if (!catName) return alert('Digite o nome da nova categoria');
-                } else {
-                    if (!catId) return alert('Selecione uma categoria');
-                }
-                
                 const subCommandsElements = document.querySelectorAll('.subcommand-item');
                 let subCommands = [];
                 subCommandsElements.forEach(item => {
@@ -228,31 +256,17 @@
                     return alert('Adicione pelo menos um subcomando (Gaveta interna).');
                 }
 
-                if (!title) {
-                    title = isNewCategory ? catName : categorySelect.options[categorySelect.selectedIndex].text;
-                }
-
                 saveCommandBtn.textContent = 'Salvando...';
                 saveCommandBtn.disabled = true;
 
                 try {
-                    const headers = { 
-                        'apikey': SUPABASE_ANON_KEY, 
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    const authHeader = window.adminToken ? `Bearer ${window.adminToken}` : `Bearer ${SUPABASE_ANON_KEY}`;
+                    const headers = {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': authHeader,
                         'Content-Type': 'application/json',
                         'Prefer': 'return=representation'
                     };
-
-                    if (isNewCategory) {
-                        const resCat = await fetch(`${SUPABASE_URL}/rest/v1/categorias_comandos`, {
-                            method: 'POST',
-                            headers,
-                            body: JSON.stringify({ name: catName })
-                        });
-                        if (!resCat.ok) throw new Error('Erro ao salvar categoria');
-                        const dataCat = await resCat.json();
-                        catId = dataCat[0].id;
-                    }
 
                     const commandJsonStr = JSON.stringify(subCommands);
 
@@ -261,19 +275,25 @@
                         resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${window.editingCmdId}`, {
                             method: 'PATCH',
                             headers,
-                            body: JSON.stringify({ categoria_id: catId, name: title, command: commandJsonStr })
+                            body: JSON.stringify({ name: title, command: commandJsonStr })
                         });
                         window.editingCmdId = null;
                     } else {
                         resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos`, {
                             method: 'POST',
                             headers,
-                            body: JSON.stringify({ categoria_id: catId, name: title, command: commandJsonStr })
+                            body: JSON.stringify({ name: title, command: commandJsonStr })
                         });
                     }
                     if (!resCmd.ok) throw new Error('Erro ao salvar comando');
 
-                    addModal.classList.add('hidden');
+                    const addModal = document.getElementById('addModal');
+                    if (addModal) addModal.classList.add('hidden');
+
+                    document.getElementById('commandTitleInput').value = '';
+                    const subCommandsContainer = document.getElementById('subCommandsContainer');
+                    if (subCommandsContainer) subCommandsContainer.innerHTML = '';
+
                     await loadData();
                 } catch (e) {
                     alert('Ocorreu um erro ao salvar no banco de dados. ' + e.message);
@@ -285,112 +305,149 @@
 
             // --- MÓDULOS ---
             const ThemeSwitcher = (() => { const DOM = { body: document.body, themeToggleBtn: document.getElementById('theme-toggle-btn'), themeIconSun: document.getElementById('theme-icon-sun'), themeIconMoon: document.getElementById('theme-icon-moon') }; const STORAGE_KEY = 'themePreference'; const applyTheme = (theme) => { DOM.body.dataset.theme = theme; localStorage.setItem(STORAGE_KEY, theme); DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); }; const toggleTheme = () => { const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(currentTheme); }; const init = () => { const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; applyTheme(savedTheme); DOM.themeToggleBtn.addEventListener('click', toggleTheme); }; return { init }; })();
-            const hideModal = () => infoModal.classList.add('hidden'); 
+            const hideModal = () => infoModal.classList.add('hidden');
             infoOkBtn.addEventListener('click', hideModal);
-            
+
             const initWebGLBackground = () => { const canvas = document.getElementById('webgl-bg'); if (!canvas) return; const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setClearColor(0x000000, 0); const geometry = new THREE.BufferGeometry(); const vertices = []; for (let i = 0; i < 1000; i++) { vertices.push((Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000); } geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); const material = new THREE.PointsMaterial({ size: 2, color: 0x06B6D4 }); const points = new THREE.Points(geometry, material); scene.add(points); camera.position.z = 1000; const animate = () => { requestAnimationFrame(animate); points.rotation.x += 0.0005; points.rotation.y += 0.001; renderer.render(scene, camera); }; animate(); window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }); };
 
             // --- LÓGICA DE DADOS ---
+
             
+
+            
+
             window.toggleDevMenu = (btn) => {
                 const menu = btn.nextElementSibling;
                 document.querySelectorAll('.dev-menu').forEach(m => { if (m !== menu) m.classList.add('hidden') });
                 menu.classList.toggle('hidden');
             };
 
+            
+            window.toggleActionDrawer = (drawerId) => {
+                const drawer = document.getElementById(drawerId);
+                if (!drawer) return;
+
+                document.querySelectorAll('.action-drawer').forEach(d => {
+                    if (d !== drawer) {
+                        d.classList.remove('max-w-[200px]', 'opacity-100');
+                        d.classList.add('max-w-0', 'opacity-0');
+                    }
+                });
+
+                if (drawer.classList.contains('max-w-0')) {
+                    drawer.classList.remove('max-w-0', 'opacity-0');
+                    drawer.classList.add('max-w-[200px]', 'opacity-100');
+                } else {
+                    drawer.classList.add('max-w-0', 'opacity-0');
+                    drawer.classList.remove('max-w-[200px]', 'opacity-100');
+                }
+            };
+
+            let commandToDeleteId = null;
+
             window.deleteCommand = (cmdId) => {
-                window.requireAdmin(async () => {
-                    if (!confirm('Tem certeza que deseja excluir este comando?')) return;
+                window.requireAdmin(() => {
+                    commandToDeleteId = cmdId;
+                    document.getElementById('deleteModal').classList.remove('hidden');
+                });
+            };
+
+            document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+                commandToDeleteId = null;
+                document.getElementById('deleteModal').classList.add('hidden');
+            });
+
+            document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+                if (!commandToDeleteId) return;
+                
+                const btn = document.getElementById('confirmDeleteBtn');
+                btn.textContent = 'Excluindo...';
+                btn.disabled = true;
+
                 try {
-                    const res = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${cmdId}`, {
+                    const authHeader = window.adminToken ? `Bearer ${window.adminToken}` : `Bearer ${SUPABASE_ANON_KEY}`;
+                    const res = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${commandToDeleteId}`, {
                         method: 'DELETE',
-                        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': authHeader }
                     });
                     if (!res.ok) throw new Error('Erro ao excluir');
                     await loadData();
                 } catch (e) {
                     alert('Erro: ' + e.message);
-                    }
-                });
-            };
+                } finally {
+                    commandToDeleteId = null;
+                    document.getElementById('deleteModal').classList.add('hidden');
+                    btn.textContent = 'Sim, Excluir';
+                    btn.disabled = false;
+                }
+            });
 
             window.editingCmdId = null;
             window.editCommand = (cmdId) => {
                 window.requireAdmin(() => {
 
-                let targetCmd = null;
-                for (let cat of categories) {
-                    targetCmd = cat.subjects.find(s => String(s.id) === String(cmdId));
-                    if (targetCmd) break;
-                }
-                if (!targetCmd) return;
-                
-                window.editingCmdCategoryId = targetCmd.categoria_id;
-                document.getElementById('commandTitleInput').value = targetCmd.name;
-                
-                const subCommandsContainer = document.getElementById('subCommandsContainer');
-                if (subCommandsContainer) {
-                    subCommandsContainer.innerHTML = '';
-                    let subCmds = [];
-                    try {
-                        subCmds = JSON.parse(targetCmd.command);
-                        if (!Array.isArray(subCmds)) throw new Error('Not array');
-                    } catch(e) {
-                        subCmds = [{ name: 'Comando', text: targetCmd.command || '' }];
+                    let targetCmd = allComandos.find(s => String(s.id) === String(cmdId));
+                    if (!targetCmd) return;
+
+                    window.editingCmdCategoryId = targetCmd.categoria_id;
+                    document.getElementById('commandTitleInput').value = targetCmd.name;
+
+                    const subCommandsContainer = document.getElementById('subCommandsContainer');
+                    if (subCommandsContainer) {
+                        subCommandsContainer.innerHTML = '';
+                        let subCmds = [];
+                        try {
+                            subCmds = JSON.parse(targetCmd.command);
+                            if (!Array.isArray(subCmds)) throw new Error('Not array');
+                        } catch (e) {
+                            subCmds = [{ name: 'Comando', text: targetCmd.command || '' }];
+                        }
+
+                        if (subCmds.length === 0) {
+                            addSubCommandField();
+                        } else {
+                            subCmds.forEach(sc => addSubCommandField(sc.name, sc.text));
+                        }
                     }
-                    
-                    if (subCmds.length === 0) {
-                        addSubCommandField();
-                    } else {
-                        subCmds.forEach(sc => addSubCommandField(sc.name, sc.text));
-                    }
-                }
-                
-                window.editingCmdId = targetCmd.id;
-                document.querySelector('#addModal h3').textContent = 'Editar Comando';
-                document.getElementById('addModal').classList.remove('hidden');
+
+                    window.editingCmdId = targetCmd.id;
+                    document.querySelector('#addModal h3').textContent = 'Editar Comando';
+                    document.getElementById('addModal').classList.remove('hidden');
                 });
             };
 
             const loadData = async () => {
                 categoriesContainer.classList.add('loading');
                 try {
-                    const headers = { 
-                        'apikey': SUPABASE_ANON_KEY, 
+                    const headers = {
+                        'apikey': SUPABASE_ANON_KEY,
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                     };
-                    
-                    const [resCategorias, resComandos] = await Promise.all([
-                        fetch(`${SUPABASE_URL}/rest/v1/categorias_comandos?select=*`, { headers }),
-                        fetch(`${SUPABASE_URL}/rest/v1/comandos?select=*`, { headers })
-                    ]);
 
-                    if (!resCategorias.ok || !resComandos.ok) {
+                    const resComandos = await fetch(`${SUPABASE_URL}/rest/v1/comandos?select=*`, { headers });
+
+                    if (!resComandos.ok) {
                         throw new Error('HTTP error fetching from Supabase');
                     }
 
-                    const rawCategorias = await resCategorias.json();
                     const rawComandos = await resComandos.json();
 
-                    categories = rawCategorias.map(cat => {
-                        const comandosDaCategoria = rawComandos.filter(cmd => String(cmd.categoria_id) === String(cat.id));
-                        return {
-                            id: cat.id,
-                            name: cat.name,
-                            subjects: comandosDaCategoria
-                        };
-                    });
-                    
-                    categories.sort((a, b) => a.name.localeCompare(b.name));
+                    allComandos = rawComandos;
+                    allComandos.sort((a, b) => a.name.localeCompare(b.name));
 
                     const suggestionSet = new Set();
-                    categories.forEach(cat => { 
-                        suggestionSet.add(cat.name); 
-                        cat.subjects.forEach(sub => suggestionSet.add(sub.name)); 
+                    allComandos.forEach(sub => {
+                        suggestionSet.add(sub.name);
+                        try {
+                            const scs = JSON.parse(sub.command);
+                            if (Array.isArray(scs)) {
+                                scs.forEach(sc => suggestionSet.add(sc.name));
+                            }
+                        } catch (e) {}
                     });
                     allSuggestions = [...suggestionSet];
-                    
-                    render(categories);
+
+                    render(allComandos);
                     isDataLoaded = true;
                 } catch (error) {
                     console.error('Erro ao carregar dados', error);
@@ -465,105 +522,85 @@
                     categoriesContainer.innerHTML = `<div class="text-center text-text-muted py-10">${message}</div>`;
                     return;
                 }
-                dataToRender.forEach(category => {
-                    const isExpanded = category.expanded || false;
+                dataToRender.forEach(subject => {
                     const categoryElement = document.createElement('div');
-                    categoryElement.className = 'panel rounded-lg';
-                    const subjectsToDisplay = category.subjectsToDisplay || category.subjects;
                     
-                    const subjectsHTML = subjectsToDisplay.length > 0
-                        ? subjectsToDisplay.map((subject) => {
-                            const isSql = subject.name.toLowerCase().endsWith('.sql');
-                            let subCommands = [];
-                            
-                            try {
-                                subCommands = JSON.parse(subject.command);
-                                if(!Array.isArray(subCommands)) throw new Error('Not array');
-                            } catch(e) {
-                                subCommands = [{ name: 'Comando', text: subject.command || '' }];
-                            }
+                    const isSql = subject.name.toLowerCase().endsWith('.sql');
+                    let subCommands = [];
 
-                            const innerAccordionsHTML = subCommands.map((sc, scIdx) => {
-                                const encoded = encodeURIComponent(sc.text || '');
-                                let actionBtn = '';
-                                
-                                if (isSql) {
-                                    const fileName = sc.name.endsWith('.sql') ? sc.name : sc.name + '.sql';
-                                    actionBtn = `
-                                    <button data-command="${encoded}" onclick="downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${fileName}')" class="px-3 py-1 bg-accent text-white rounded hover:opacity-90 transition-colors text-xs font-semibold flex items-center gap-1 shrink-0" title="Descarregar ficheiro">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
-                                    </button>`;
-                                } else {
-                                    actionBtn = `
-                                    <div class="flex gap-2 items-center">
-                                        <button data-command="${encoded}" onclick="viewCommand(decodeURIComponent(this.getAttribute('data-command')))" class="px-2 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-xs font-semibold flex items-center justify-center shrink-0" title="Observar comando">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                        </button>
-                                        <div class="relative flex flex-col items-center">
-                                            <button data-command="${encoded}" onclick="copyCommand(decodeURIComponent(this.getAttribute('data-command')), this)" class="px-3 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-xs font-semibold flex items-center gap-1 shrink-0" title="Copiar">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copiar
-                                            </button>
-                                        </div>
-                                    </div>`;
-                                }
+                    try {
+                        subCommands = JSON.parse(subject.command);
+                        if (!Array.isArray(subCommands)) throw new Error('Not array');
+                    } catch (e) {
+                        subCommands = [{ name: 'Comando', text: subject.command || '' }];
+                    }
 
-                                return `
-                                    <div class="inner-accordion panel bg-black/20 rounded-md mt-2 overflow-hidden border border-[color:var(--panel-border)]">
-                                        <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-white/5 transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-180');">
-                                            <span class="text-sm font-medium text-text">${highlightMatch(sc.name, searchTerm)}</span>
-                                            <svg class="w-5 h-5 text-text-muted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                        </div>
-                                        <div class="hidden p-3 border-t border-[color:var(--panel-border)]">
-                                            <div class="flex justify-between items-start gap-4">
-                                                <pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow font-mono max-h-40 overflow-y-auto custom-scrollbar p-2 bg-[color:var(--color-surface)] rounded">${sc.text}</pre>
-                                                ${actionBtn}
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('');
+                    const innerAccordionsHTML = subCommands.map((sc, scIdx) => {
+                        const encoded = encodeURIComponent(sc.text || '');
+                        let actionBtn = '';
 
-                            return `
-                            <div class="panel border border-[color:var(--panel-border)] rounded-md mb-3 bg-white/5">
-                                <div class="flex items-center justify-between p-3 cursor-pointer group hover:bg-white/10 transition-colors" onclick="if(event.target.closest('.action-buttons')) return; this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.cmd-chevron').classList.toggle('rotate-180');">
-                                    <div class="flex flex-col">
-                                        <span class="font-semibold text-text">${highlightMatch(subject.name, searchTerm)}</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 action-buttons">
-                                        <div class="relative dev-menu hidden">
-                                            <div class="absolute right-0 mt-2 w-32 bg-surface border border-primary/50 rounded-lg shadow-xl z-50 flex flex-col py-1 overflow-hidden">
-                                                <button onclick="editCommand('${subject.id}')" class="px-4 py-2 text-sm text-left hover:bg-primary transition-colors flex items-center gap-2 text-blue-400">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg> Editar
-                                                </button>
-                                                <button onclick="deleteCommand('${subject.id}')" class="px-4 py-2 text-sm text-left hover:bg-primary transition-colors flex items-center gap-2 text-red-400">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Excluir
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <button onclick="event.stopPropagation(); toggleDevMenu(this)" class="p-1 hover:bg-primary rounded transition-colors text-text-muted" title="Opções">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
-                                        </button>
-                                        <svg class="cmd-chevron w-5 h-5 text-text-muted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                    </div>
+                        if (isSql) {
+                            const fileName = sc.name.endsWith('.sql') ? sc.name : sc.name + '.sql';
+                            actionBtn = `
+                            <button data-command="${encoded}" onclick="downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${fileName}')" class="px-3 py-1 bg-accent text-white rounded hover:opacity-90 transition-colors text-xs font-semibold flex items-center gap-1 shrink-0" title="Descarregar ficheiro">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
+                            </button>`;
+                        } else {
+                            actionBtn = `
+                            <div class="flex gap-2 items-center">
+                                <button data-command="${encoded}" onclick="viewCommand(decodeURIComponent(this.getAttribute('data-command')))" class="px-2 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-xs font-semibold flex items-center justify-center shrink-0" title="Observar comando">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                </button>
+                                <div class="relative flex flex-col items-center">
+                                    <button data-command="${encoded}" onclick="copyCommand(decodeURIComponent(this.getAttribute('data-command')), this)" class="px-3 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-xs font-semibold flex items-center gap-1 shrink-0" title="Copiar">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copiar
+                                    </button>
                                 </div>
-                                <div class="hidden p-3 pt-0 border-t border-[color:var(--panel-border)] bg-[color:var(--color-bg)] rounded-b-md">
-                                    ${innerAccordionsHTML}
+                            </div>`;
+                        }
+
+                        return `
+                            <div class="inner-accordion panel bg-black/20 rounded-md mt-2 overflow-hidden border border-[color:var(--panel-border)]">
+                                <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-white/5 transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-180');">
+                                    <span class="text-sm font-medium text-text">${highlightMatch(sc.name, searchTerm)}</span>
+                                    <svg class="w-5 h-5 text-text-muted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                                <div class="hidden p-3 border-t border-[color:var(--panel-border)]">
+                                    <div class="flex justify-between items-start gap-4">
+                                        <pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow font-mono max-h-40 overflow-y-auto custom-scrollbar p-2 bg-[color:var(--color-surface)] rounded">${sc.text}</pre>
+                                        ${actionBtn}
+                                    </div>
                                 </div>
                             </div>
-                            `;
-                        }).join('')
-                        : '<div class="text-text-muted text-sm ml-2">Nenhum comando nesta categoria.</div>';
+                        `;
+                    }).join('');
 
                     categoryElement.innerHTML = `
-                        <div class="group flex items-center justify-between p-4 cursor-pointer category-header" data-id="${category.id}">
-                            <h3 class="text-lg font-semibold truncate pr-2">${highlightMatch(category.name, searchTerm)}</h3>
-                            <div class="flex items-center gap-3">
-                                <svg class="w-6 h-6 text-text-muted transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <div class="panel border border-[color:var(--panel-border)] rounded-md mb-3 bg-white/5">
+                        <div class="flex items-center justify-between p-3 cursor-pointer group hover:bg-white/10 transition-colors" onclick="if(event.target.closest('.action-buttons')) return; this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.cmd-chevron').classList.toggle('rotate-180');">
+                            <div class="flex flex-col">
+                                <span class="font-semibold text-text">${highlightMatch(subject.name, searchTerm)}</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center gap-2 overflow-hidden transition-all duration-300 max-w-0 opacity-0 action-drawer" id="drawer-${subject.id}">
+                                    <button onclick="event.stopPropagation(); deleteCommand('${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-red-400 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 rounded transition-colors whitespace-nowrap" title="Excluir">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Excluir
+                                    </button>
+                                    <button onclick="event.stopPropagation(); editCommand('${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-blue-400 border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 rounded transition-colors whitespace-nowrap" title="Editar">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg> Editar
+                                    </button>
+                                </div>
+                                <button onclick="event.stopPropagation(); toggleActionDrawer('drawer-${subject.id}')" class="p-1 hover:bg-primary rounded transition-colors text-text-muted shrink-0" title="Opções">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                                </button>
+                                <svg class="cmd-chevron w-5 h-5 text-text-muted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                         </div>
-                        <div class="subject-list ${isExpanded ? 'expanded' : ''}">
-                            <div><div class="p-4 border-t" style="border-color: var(--panel-border);"><div class="space-y-2 mb-4">${subjectsHTML}</div></div></div>
-                        </div>`;
+                        <div class="hidden p-3 pt-0 border-t border-[color:var(--panel-border)] bg-[color:var(--color-bg)] rounded-b-md">
+                            ${innerAccordionsHTML}
+                        </div>
+                    </div>
+                    `;
                     categoriesContainer.appendChild(categoryElement);
                 });
             };
@@ -572,17 +609,22 @@
                 if (!isDataLoaded) return;
                 const searchTerm = normalizeString(searchInput.value.trim());
                 if (!searchTerm) {
-                    const resetData = categories.map(cat => ({ ...cat, subjectsToDisplay: cat.subjects }));
-                    render(resetData);
+                    render(allComandos);
                     return;
                 }
-                const searchResults = categories.map(cat => {
-                    const catNameMatches = normalizeString(cat.name).includes(searchTerm);
-                    const matchingSubjects = cat.subjects.filter(sub => normalizeString(sub.name).includes(searchTerm));
-                    if (catNameMatches) return { ...cat, subjectsToDisplay: cat.subjects };
-                    if (matchingSubjects.length > 0) return { ...cat, subjectsToDisplay: matchingSubjects };
-                    return null;
-                }).filter(Boolean);
+                const searchResults = allComandos.filter(cmd => {
+                    const catNameMatches = normalizeString(cmd.name).includes(searchTerm);
+                    if (catNameMatches) return true;
+                    
+                    let subMatches = false;
+                    try {
+                        const scs = JSON.parse(cmd.command);
+                        if (Array.isArray(scs)) {
+                            subMatches = scs.some(sc => normalizeString(sc.name).includes(searchTerm));
+                        }
+                    } catch (e) {}
+                    return subMatches;
+                });
                 render(searchResults);
             };
 
@@ -604,7 +646,7 @@
                             isDevMode = !isDevMode;
                             searchInput.value = '';
                             suggestionsContainer.classList.remove('expanded');
-                            render(categories);
+                            render(allComandos);
                             return;
                         }
                     }
@@ -621,7 +663,7 @@
 
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        
+
 
                         if (activeSuggestionIndex > -1 && items[activeSuggestionIndex]) {
                             items[activeSuggestionIndex].click();
