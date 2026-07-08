@@ -132,15 +132,54 @@
                     <label class="block text-xs font-medium text-text-muted mb-1">Comando SQL</label>
                     <textarea rows="3" class="subcommand-text w-full rounded-md px-3 py-1.5 bg-[color:var(--color-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-1 focus:ring-accent font-mono text-xs">${text}</textarea>
                 `;
-                container.appendChild(div);
+                container.prepend(div);
             };
 
-            openAddModalBtn.addEventListener('click', () => {
-                const senha = prompt('Digite a senha para cadastrar comandos:');
-                if (senha !== 'Lcsuporteadmin') {
-                    alert('Senha incorreta!');
+            window.isAdminAuthenticated = false;
+            let pendingAdminAction = null;
+            const passwordPopover = document.getElementById('passwordPopover');
+            const adminPasswordInput = document.getElementById('adminPasswordInput');
+            const submitPasswordBtn = document.getElementById('submitPasswordBtn');
+            const passwordError = document.getElementById('passwordError');
+
+            window.requireAdmin = (actionCallback) => {
+                if (window.isAdminAuthenticated) {
+                    actionCallback();
                     return;
                 }
+                pendingAdminAction = actionCallback;
+                passwordPopover.classList.remove('hidden');
+                adminPasswordInput.value = '';
+                passwordError.classList.add('hidden');
+                adminPasswordInput.focus();
+            };
+
+            const attemptLogin = () => {
+                if (adminPasswordInput.value === 'LCsuporte') {
+                    window.isAdminAuthenticated = true;
+                    passwordPopover.classList.add('hidden');
+                    if (pendingAdminAction) {
+                        pendingAdminAction();
+                        pendingAdminAction = null;
+                    }
+                } else {
+                    passwordError.classList.remove('hidden');
+                }
+            };
+
+            submitPasswordBtn.addEventListener('click', attemptLogin);
+            adminPasswordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') attemptLogin();
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!passwordPopover.contains(e.target) && !e.target.closest('#openAddModalBtn') && !e.target.closest('.edit-btn') && !e.target.closest('.delete-btn')) {
+                    passwordPopover.classList.add('hidden');
+                }
+            });
+
+            openAddModalBtn.addEventListener('click', () => {
+                window.requireAdmin(() => {
                 
                 window.editingCmdId = null;
                 window.editingCmdCategoryId = null; // reset category ID
@@ -155,6 +194,7 @@
                 }
                 
                 addModal.classList.remove('hidden');
+                });
             });
 
             cancelAddBtn.addEventListener('click', () => {
@@ -258,8 +298,9 @@
                 menu.classList.toggle('hidden');
             };
 
-            window.deleteCommand = async (cmdId) => {
-                if (!confirm('Tem certeza que deseja excluir este comando?')) return;
+            window.deleteCommand = (cmdId) => {
+                window.requireAdmin(async () => {
+                    if (!confirm('Tem certeza que deseja excluir este comando?')) return;
                 try {
                     const res = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${cmdId}`, {
                         method: 'DELETE',
@@ -269,16 +310,13 @@
                     await loadData();
                 } catch (e) {
                     alert('Erro: ' + e.message);
-                }
+                    }
+                });
             };
 
             window.editingCmdId = null;
             window.editCommand = (cmdId) => {
-                const senha = prompt('Digite a senha para editar comandos:');
-                if (senha !== 'Lcsuporteadmin') {
-                    alert('Senha incorreta!');
-                    return;
-                }
+                window.requireAdmin(() => {
 
                 let targetCmd = null;
                 for (let cat of categories) {
@@ -311,6 +349,7 @@
                 window.editingCmdId = targetCmd.id;
                 document.querySelector('#addModal h3').textContent = 'Editar Comando';
                 document.getElementById('addModal').classList.remove('hidden');
+                });
             };
 
             const loadData = async () => {
