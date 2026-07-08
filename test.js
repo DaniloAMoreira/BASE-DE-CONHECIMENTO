@@ -114,14 +114,9 @@
             const openAddModalBtn = document.getElementById('openAddModalBtn');
             const cancelAddBtn = document.getElementById('cancelAddBtn');
             const saveCommandBtn = document.getElementById('saveCommandBtn');
-            const categorySelect = document.getElementById('categorySelect');
-            const toggleNewCategoryBtn = document.getElementById('toggleNewCategoryBtn');
-            const newCategoryInput = document.getElementById('newCategoryInput');
             const commandTitleInput = document.getElementById('commandTitleInput');
             const commandTextInput = document.getElementById('commandTextInput');
 
-            let isNewCategory = false;
-            
             // --- Lógica para Gavetas Internas Dinâmicas (Modal) ---
             window.addSubCommandField = (name = '', text = '') => {
                 const container = document.getElementById('subCommandsContainer');
@@ -148,21 +143,10 @@
                 }
                 
                 window.editingCmdId = null;
+                window.editingCmdCategoryId = null; // reset category ID
                 document.querySelector('#addModal h3').textContent = 'Adicionar Novo Comando';
                 
-                categorySelect.innerHTML = '<option value="">Selecione a categoria...</option>';
-                categories.forEach(cat => {
-                    const opt = document.createElement('option');
-                    opt.value = cat.id;
-                    opt.textContent = cat.name;
-                    categorySelect.appendChild(opt);
-                });
-                
-                isNewCategory = false;
-                categorySelect.classList.remove('hidden');
-                newCategoryInput.classList.add('hidden');
-                newCategoryInput.value = '';
-                commandTitleInput.value = '';
+                document.getElementById('commandTitleInput').value = '';
                 
                 const subCommandsContainer = document.getElementById('subCommandsContainer');
                 if(subCommandsContainer) {
@@ -177,19 +161,7 @@
                 addModal.classList.add('hidden');
             });
 
-            toggleNewCategoryBtn.addEventListener('click', () => {
-                isNewCategory = !isNewCategory;
-                if (isNewCategory) {
-                    categorySelect.classList.add('hidden');
-                    newCategoryInput.classList.remove('hidden');
-                    newCategoryInput.focus();
-                    toggleNewCategoryBtn.textContent = "Cancelar Novo";
-                } else {
-                    categorySelect.classList.remove('hidden');
-                    newCategoryInput.classList.add('hidden');
-                    toggleNewCategoryBtn.textContent = "Novo";
-                }
-            });
+            
 
             saveCommandBtn.addEventListener('click', async () => {
                 let catId = categorySelect.value;
@@ -315,19 +287,7 @@
                 }
                 if (!targetCmd) return;
                 
-                const categorySelect = document.getElementById('categorySelect');
-                categorySelect.innerHTML = '<option value="">Selecione a categoria...</option>';
-                categories.forEach(c => {
-                    const opt = document.createElement('option');
-                    opt.value = c.id;
-                    opt.textContent = c.name;
-                    if (String(c.id) === String(targetCmd.categoria_id)) opt.selected = true;
-                    categorySelect.appendChild(opt);
-                });
-                
-                isNewCategory = false;
-                categorySelect.classList.remove('hidden');
-                document.getElementById('newCategoryInput').classList.add('hidden');
+                window.editingCmdCategoryId = targetCmd.categoria_id;
                 document.getElementById('commandTitleInput').value = targetCmd.name;
                 
                 const subCommandsContainer = document.getElementById('subCommandsContainer');
