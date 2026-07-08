@@ -121,7 +121,7 @@
             const commandTextInput = document.getElementById('commandTextInput');
 
             // --- Lógica para Gavetas Internas Dinâmicas (Modal) ---
-            window.addSubCommandField = (name = '', text = '') => {
+            window.addSubCommandField = (name = '', text = '', desc = '') => {
                 const container = document.getElementById('subCommandsContainer');
                 if (!container) return;
                 const div = document.createElement('div');
@@ -406,7 +406,7 @@
                         if (subCmds.length === 0) {
                             addSubCommandField();
                         } else {
-                            subCmds.forEach(sc => addSubCommandField(sc.name, sc.text));
+                            subCmds.forEach(sc => addSubCommandField(sc.name, sc.text, sc.desc || ''));
                         }
                     }
 
@@ -466,7 +466,7 @@
 
             const highlightMatch = (text, searchTerm) => {
                 if (!searchTerm || !text) return text;
-                const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\$&');
+                const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '$&');
                 const regex = new RegExp(escapedTerm, 'gi');
                 return text.replace(regex, (match) => `<mark class="bg-transparent text-blue-400 font-semibold not-italic">${match}</mark>`);
             };
@@ -529,7 +529,15 @@
                 });
             };
 
-            // --- FUNÇÕES DE RENDERIZAÇÃO E BUSCA PRINCIPAL ---
+            
+            window.showDescription = (encodedDesc) => {
+                const desc = decodeURIComponent(encodedDesc);
+                const infoMessage = document.getElementById('infoMessage');
+                infoMessage.textContent = desc;
+                document.getElementById('infoModal').classList.remove('hidden');
+            };
+
+// --- FUNÇÕES DE RENDERIZAÇÃO E BUSCA PRINCIPAL ---
 
             const render = (dataToRender = []) => {
                 const searchTerm = searchInput.value.trim();
@@ -559,18 +567,43 @@
                     }).join('');
 
                     const panelsHTML = subCommands.map((sc, scIdx) => {
-                        const encoded = encodeURIComponent(sc.text || '');
+                        let displayText = (sc.text || '').trim();
+                        let isDownloadLink = false;
+
+                        if (displayText.startsWith('https://') || displayText.startsWith('http://')) {
+                            isDownloadLink = true;
+                            if (displayText.includes('drive.google.com/file/d/')) {
+                                const match = displayText.match(/\/file\/d\/([^\/]+)/);
+                                if (match && match[1]) {
+                                    displayText = 'https://drive.google.com/uc?export=download&id=' + match[1];
+                                }
+                            }
+                        }
+
+                        const encoded = encodeURIComponent(displayText);
+                        const encodedDesc = encodeURIComponent(sc.desc || 'Descrição não informada.');
+                        const infoBtnHTML = `<button data-desc="${encodedDesc}" onclick="showDescription(this.getAttribute('data-desc'))" class="px-2 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-xs font-bold flex items-center justify-center shrink-0" title="Descrição do Comando">!</button>`;
                         let actionBtn = '';
 
                         if (isSql) {
                             const fileName = sc.name.endsWith('.sql') ? sc.name : sc.name + '.sql';
                             actionBtn = `
+                            ${infoBtnHTML}
                             <button data-command="${encoded}" onclick="downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${fileName}')" class="px-3 py-1 bg-accent text-white rounded hover:opacity-90 transition-colors text-xs font-semibold flex items-center gap-1 shrink-0" title="Descarregar ficheiro">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
                             </button>`;
+                        } else if (isDownloadLink) {
+                            actionBtn = `
+                            <div class="flex gap-2 items-center">
+                                ${infoBtnHTML}
+                                <a href="${displayText}" target="_blank" class="px-3 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-xs font-semibold flex items-center gap-1 shrink-0" title="Download">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
+                                </a>
+                            </div>`;
                         } else {
                             actionBtn = `
                             <div class="flex gap-2 items-center">
+                                ${infoBtnHTML}
                                 <button data-command="${encoded}" onclick="viewCommand(decodeURIComponent(this.getAttribute('data-command')))" class="px-2 py-1 bg-surface border border-primary text-text rounded hover:bg-primary transition-colors text-xs font-semibold flex items-center justify-center shrink-0" title="Observar comando">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                 </button>
@@ -586,7 +619,7 @@
                         return `
                             <div id="panel-${subject.id}-${scIdx}" class="tab-panel-${subject.id} ${hiddenClass}">
                                 <div class="flex justify-between items-start gap-4">
-                                    <pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow font-mono max-h-40 overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-[color:var(--panel-border)]">${sc.text}</pre>
+                                    <pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow font-mono max-h-40 overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-[color:var(--panel-border)]">${displayText}</pre>
                                     ${actionBtn}
                                 </div>
                             </div>
