@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <link rel="icon" type="image/png" href="./favicon.png">
+    <link rel="icon" type="image/png" href="./favicon.png">
     <title>Base de Conhecimento</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,6 +24,7 @@
             --color-search-bg: #4B5563;
             --color-search-border: #6B7280;
         }
+
         body[data-theme="light"] {
             --color-bg: #e0f2f7;
             --color-surface: #ffffff;
@@ -33,6 +35,7 @@
             --panel-bg: rgba(227, 242, 253, 0.9);
             --panel-border: rgba(144, 202, 249, 0.7);
         }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--color-bg);
@@ -40,29 +43,126 @@
             overflow-x: hidden;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-        #searchInput { color: var(--color-text); background-color: var(--color-search-bg); border: 1px solid var(--color-search-border); }
-        #searchInput::placeholder { color: var(--color-text-muted); }
-        .search-icon { color: var(--color-text-muted); }
-        h1.text-accent, .category-header h3 { color: var(--color-text); }
-        body[data-theme="light"] #searchInput { background-color: #FFFFFF; border: 1px solid #D1D5DB; color: var(--color-text); }
-        body[data-theme="light"] #searchInput::placeholder, body[data-theme="light"] .search-icon { color: var(--color-text-muted); }
-        body[data-theme="light"] h1.text-accent, body[data-theme="light"] .category-header h3 { color: var(--color-accent); }
-        #webgl-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-        .panel { background: var(--panel-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--panel-border); box-shadow: 0 8px 32px 0 rgba(10, 15, 31, 0.37); border-radius: 0.75rem; transition: background-color 0.3s ease, border-color 0.3s ease; }
-        .subject-list { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.5s ease-in-out; }
-        .subject-list > div { overflow: hidden; }
-        .subject-list.expanded { grid-template-rows: 1fr; }
-        .rotate-180 { transform: rotate(180deg); }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--color-bg); }
-        ::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
-        .glow-on-hover { transition: box-shadow 0.3s ease, transform 0.3s ease; }
-        .glow-on-hover:hover { transform: translateY(-2px); box-shadow: 0 0 15px 2px var(--color-accent); }
-        .loading { opacity: 0.5; pointer-events: none; }
-        
+
+        #searchInput {
+            color: var(--color-text);
+            background-color: var(--color-search-bg);
+            border: 1px solid var(--color-search-border);
+        }
+
+        #searchInput::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .search-icon {
+            color: var(--color-text-muted);
+        }
+
+        h1.text-accent,
+        .category-header h3 {
+            color: var(--color-text);
+        }
+
+        body[data-theme="light"] #searchInput {
+            background-color: #FFFFFF;
+            border: 1px solid #D1D5DB;
+            color: var(--color-text);
+        }
+
+        body[data-theme="light"] #searchInput::placeholder,
+        body[data-theme="light"] .search-icon {
+            color: var(--color-text-muted);
+        }
+
+        body[data-theme="light"] h1.text-accent,
+        body[data-theme="light"] .category-header h3 {
+            color: var(--color-accent);
+        }
+
+        #webgl-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 8px 32px 0 rgba(10, 15, 31, 0.37);
+            border-radius: 0.75rem;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .subject-list {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.5s ease-in-out;
+        }
+
+        .subject-list>div {
+            overflow: hidden;
+        }
+
+        .subject-list.expanded {
+            grid-template-rows: 1fr;
+        }
+
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-accent);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .glow-on-hover {
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+
+        .glow-on-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px 2px var(--color-accent);
+        }
+
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
         /* ESTILOS PARA SUGESTÕES QUE EMPURRAM O CONTEÚDO */
         #suggestionsContainer {
             display: grid;
@@ -73,12 +173,15 @@
             border-radius: 0.5rem;
             overflow: hidden;
         }
+
         #suggestionsContainer.expanded {
             grid-template-rows: 1fr;
         }
-        #suggestionsContainer > div {
+
+        #suggestionsContainer>div {
             min-height: 0;
         }
+
         .suggestion-item {
             padding: 0.6rem 1rem;
             cursor: pointer;
@@ -86,53 +189,74 @@
             font-size: 0.9rem;
             transition: all 0.2s ease;
         }
+
         .suggestion-item:not(:last-child) {
             border-bottom: 1px solid var(--panel-border);
         }
-        .suggestion-item:hover, .suggestion-item.active {
+
+        .suggestion-item:hover,
+        .suggestion-item.active {
             background-color: var(--color-search-bg);
             color: var(--color-text);
         }
 
         /* ANIMAÇÃO PARA ÍCONE NEURAL */
         @keyframes pulse {
-          0%, 100% {
-            transform: scale(0.9);
-            opacity: 0.7;
-          }
-          50% {
-            transform: scale(1.1);
-            opacity: 1;
-          }
+
+            0%,
+            100% {
+                transform: scale(0.9);
+                opacity: 0.7;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
         }
+
         .neural-dot {
-          transform-origin: center;
-          animation: pulse 2s infinite ease-in-out;
+            transform-origin: center;
+            animation: pulse 2s infinite ease-in-out;
         }
-        .neural-dot-1 { animation-delay: 0s; }
-        .neural-dot-2 { animation-delay: 0.3s; }
-        .neural-dot-3 { animation-delay: 0.6s; }
-        
+
+        .neural-dot-1 {
+            animation-delay: 0s;
+        }
+
+        .neural-dot-2 {
+            animation-delay: 0.3s;
+        }
+
+        .neural-dot-3 {
+            animation-delay: 0.6s;
+        }
+
         /* ESTILOS PARA ABAS */
         .tab-active {
             color: var(--color-text);
             border-bottom: 2px solid var(--color-accent);
         }
+
         body[data-theme="light"] .tab-active {
             color: var(--color-accent);
         }
+
         .tab-inactive {
             color: var(--color-text-muted);
             border-bottom: 2px solid transparent;
         }
+
         .tab-inactive:hover {
             color: var(--color-text);
         }
+
         body[data-theme="light"] .tab-inactive:hover {
             color: var(--color-accent);
         }
     </style>
 </head>
+
 <body class="antialiased">
 
     <canvas id="webgl-bg"></canvas>
@@ -140,21 +264,42 @@
     <div id="main-content" class="relative z-10 animate-fade-in">
         <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
             <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-20">
-                <button id="theme-toggle-btn" title="Alternar Tema" class="p-2 bg-surface hover:bg-primary border border-primary/50 rounded-full glow-on-hover">
-                    <svg id="theme-icon-sun" class="w-6 h-6 hidden text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    <svg id="theme-icon-moon" class="w-6 h-6 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                <button id="theme-toggle-btn" title="Alternar Tema"
+                    class="p-2 bg-surface hover:bg-primary border border-primary/50 rounded-full glow-on-hover">
+                    <svg id="theme-icon-sun" class="w-6 h-6 hidden text-text-muted" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                    <svg id="theme-icon-moon" class="w-6 h-6 text-text-muted" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                        </path>
+                    </svg>
                 </button>
             </div>
             <div>
                 <header class="mb-6">
-                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6 pb-2" style="border-bottom: 1px solid var(--panel-border);">
-                        <a href="index.html" class="text-2xl sm:text-3xl font-bold pb-1 tab-active transition-colors">Base de Conhecimento</a>
-                        <a href="comandos.html" class="text-2xl sm:text-3xl font-bold pb-1 tab-inactive transition-colors">Comandos banco de dados</a>
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6 pb-2"
+                        style="border-bottom: 1px solid var(--panel-border);">
+                        <a href="index.html"
+                            class="text-2xl sm:text-3xl font-bold pb-1 tab-active transition-colors">Base de
+                            Conhecimento</a>
+                        <a href="comandos.html"
+                            class="text-2xl sm:text-3xl font-bold pb-1 tab-inactive transition-colors">Comandos banco de
+                            dados</a>
                     </div>
                     <div class="relative">
-                        <input type="text" id="searchInput" placeholder="Pesquisar por categorias e assuntos..." class="w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300" autocomplete="off">
+                        <input type="text" id="searchInput" placeholder="Pesquisar por categorias e assuntos..."
+                            class="w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300"
+                            autocomplete="off">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <svg class="w-5 h-5 search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
                         </div>
                     </div>
                     <div id="suggestionsContainer" class="mt-1"></div>
@@ -307,7 +452,7 @@
                 if (!isDataLoaded) return;
                 const searchTerm = normalizeString(searchInput.value.trim());
                 if (!searchTerm) {
-                    const resetData = categories.map(cat => ({...cat, subjectsToDisplay: cat.subjects }));
+                    const resetData = categories.map(cat => ({ ...cat, subjectsToDisplay: cat.subjects }));
                     render(resetData);
                     return;
                 }
@@ -332,18 +477,18 @@
                     }
                 }
             });
-            
+
             // --- INICIALIZAÇÃO DA APLICAÇÃO ---
             const initializeApp = () => {
                 ThemeSwitcher.init();
                 initWebGLBackground();
-                
+
                 searchInput.addEventListener('input', handleAutocomplete);
 
                 searchInput.addEventListener('keydown', (e) => {
                     const items = suggestionsContainer.querySelectorAll('.suggestion-item');
                     if (!suggestionsContainer.classList.contains('expanded') || items.length === 0) return;
-                    
+
                     if (e.key === 'ArrowDown') {
                         e.preventDefault();
                         activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
@@ -352,7 +497,7 @@
                         activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
                     }
                     items.forEach((item, index) => item.classList.toggle('active', index === activeSuggestionIndex));
-                    
+
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         if (activeSuggestionIndex > -1 && items[activeSuggestionIndex]) {
@@ -377,4 +522,5 @@
         });
     </script>
 </body>
+
 </html>
