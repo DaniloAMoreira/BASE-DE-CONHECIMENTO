@@ -466,7 +466,7 @@
 
             const highlightMatch = (text, searchTerm) => {
                 if (!searchTerm || !text) return text;
-                const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\$&');
                 const regex = new RegExp(escapedTerm, 'gi');
                 return text.replace(regex, (match) => `<mark class="bg-transparent text-blue-400 font-semibold not-italic">${match}</mark>`);
             };
@@ -513,7 +513,24 @@
                 renderSuggestions(filteredSuggestions);
             };
 
+            
+            window.switchTab = (event, subjectId, index) => {
+                event.stopPropagation();
+                document.querySelectorAll('.tab-panel-' + subjectId).forEach(p => p.classList.add('hidden'));
+                const activePanel = document.getElementById('panel-' + subjectId + '-' + index);
+                if (activePanel) activePanel.classList.remove('hidden');
+                
+                document.querySelectorAll('.tab-btn-' + subjectId).forEach((btn, idx) => {
+                    if (idx === index) {
+                        btn.className = `tab-btn-${subjectId} px-3 py-1.5 rounded-md text-sm font-medium transition-colors border shrink-0 bg-primary text-white border-primary`;
+                    } else {
+                        btn.className = `tab-btn-${subjectId} px-3 py-1.5 rounded-md text-sm font-medium transition-colors border shrink-0 bg-surface border-primary text-text hover:bg-primary hover:text-white`;
+                    }
+                });
+            };
+
             // --- FUNÇÕES DE RENDERIZAÇÃO E BUSCA PRINCIPAL ---
+
             const render = (dataToRender = []) => {
                 const searchTerm = searchInput.value.trim();
                 categoriesContainer.innerHTML = '';
@@ -535,7 +552,13 @@
                         subCommands = [{ name: 'Comando', text: subject.command || '' }];
                     }
 
-                    const innerAccordionsHTML = subCommands.map((sc, scIdx) => {
+                    const tabsHTML = subCommands.map((sc, scIdx) => {
+                        const isActive = scIdx === 0;
+                        const btnClass = isActive ? 'bg-primary text-white border-primary' : 'bg-surface border-primary text-text hover:bg-primary hover:text-white';
+                        return `<button onclick="switchTab(event, '${subject.id}', ${scIdx})" class="tab-btn-${subject.id} px-3 py-1.5 rounded-md text-sm font-medium transition-colors border shrink-0 ${btnClass}">${highlightMatch(sc.name, searchTerm)}</button>`;
+                    }).join('');
+
+                    const panelsHTML = subCommands.map((sc, scIdx) => {
                         const encoded = encodeURIComponent(sc.text || '');
                         let actionBtn = '';
 
@@ -559,17 +582,12 @@
                             </div>`;
                         }
 
+                        const hiddenClass = scIdx === 0 ? '' : 'hidden';
                         return `
-                            <div class="inner-accordion panel bg-black/20 rounded-md mt-2 overflow-hidden border border-[color:var(--panel-border)]">
-                                <div class="flex items-center justify-between p-3 cursor-pointer hover:bg-white/5 transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-180');">
-                                    <span class="text-sm font-medium text-text">${highlightMatch(sc.name, searchTerm)}</span>
-                                    <svg class="w-5 h-5 text-text-muted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                </div>
-                                <div class="hidden p-3 border-t border-[color:var(--panel-border)]">
-                                    <div class="flex justify-between items-start gap-4">
-                                        <pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow font-mono max-h-40 overflow-y-auto custom-scrollbar p-2 bg-[color:var(--color-surface)] rounded">${sc.text}</pre>
-                                        ${actionBtn}
-                                    </div>
+                            <div id="panel-${subject.id}-${scIdx}" class="tab-panel-${subject.id} ${hiddenClass}">
+                                <div class="flex justify-between items-start gap-4">
+                                    <pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow font-mono max-h-40 overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-[color:var(--panel-border)]">${sc.text}</pre>
+                                    ${actionBtn}
                                 </div>
                             </div>
                         `;
@@ -581,7 +599,7 @@
                             <div class="flex flex-col">
                                 <span class="font-semibold text-text">${highlightMatch(subject.name, searchTerm)}</span>
                             </div>
-                            <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-4 action-buttons">
                                 <div class="flex items-center gap-2 overflow-hidden transition-all duration-300 max-w-0 opacity-0 action-drawer" id="drawer-${subject.id}">
                                     <button onclick="event.stopPropagation(); deleteCommand('${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-red-400 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 rounded transition-colors whitespace-nowrap" title="Excluir">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Excluir
@@ -597,10 +615,16 @@
                             </div>
                         </div>
                         <div class="hidden p-3 pt-0 border-t border-[color:var(--panel-border)] bg-[color:var(--color-bg)] rounded-b-md">
-                            ${innerAccordionsHTML}
+                            <div class="flex overflow-x-auto custom-scrollbar gap-2 pb-3 mb-1 pt-3">
+                                ${tabsHTML}
+                            </div>
+                            <div class="panels-container">
+                                ${panelsHTML}
+                            </div>
                         </div>
                     </div>
                     `;
+
                     categoriesContainer.appendChild(categoryElement);
                 });
             };
