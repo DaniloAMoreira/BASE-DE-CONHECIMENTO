@@ -134,34 +134,36 @@
                 contentContainer.innerHTML = '';
 
                 if (window.modalSubCommands.length === 0) {
-                    contentContainer.innerHTML = '<div class="text-text-muted text-sm flex items-center justify-center h-full text-center">Nenhuma gaveta criada.<br>Clique no "+" ao lado para adicionar.</div>';
+                    contentContainer.innerHTML = '<div class="text-text-muted text-sm flex items-center justify-center h-full text-center">Nenhuma aba criada.<br>Clique no "+" ao lado para adicionar.</div>';
                     return;
                 }
 
                 window.modalSubCommands.forEach((sc, idx) => {
                     const isActive = idx === window.activeModalTabIndex;
                     const btnClass = isActive ? 'bg-primary text-white border-primary' : 'bg-surface border-primary text-text hover:bg-primary hover:text-white';
-                    tabsContainer.innerHTML += `<button type="button" onclick="switchModalTab(${idx})" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors border truncate shrink-0 ${btnClass}">${sc.name || 'Nova Gaveta'}</button>`;
+                    tabsContainer.innerHTML += `<button type="button" onclick="switchModalTab(${idx})" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors border truncate shrink-0 ${btnClass}">${sc.name || 'Nova Aba'}</button>`;
                 });
 
                 const activeSc = window.modalSubCommands[window.activeModalTabIndex];
                 contentContainer.innerHTML = `
-                    <button type="button" onclick="removeModalTab(${window.activeModalTabIndex})" class="absolute top-2 right-2 text-red-500 hover:text-red-700" title="Remover Gaveta">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                    <label class="block text-xs font-medium text-text-muted mb-1 mt-1">Nome da Gaveta Interna (Ex: Select)</label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-medium text-text-muted">Nome da Aba (Ex: Select)</label>
+                        <button type="button" onclick="removeModalTab(${window.activeModalTabIndex})" class="text-red-500 hover:text-red-700 flex items-center justify-center p-1 rounded-md hover:bg-red-500/10 transition-colors" title="Remover Aba">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
                     <input type="text" value="${(activeSc.name || '').replace(/"/g, '&quot;')}" class="w-full rounded-md px-3 py-1.5 mb-3 bg-[color:var(--color-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-1 focus:ring-accent text-sm" oninput="updateActiveModalTab('name', this.value)">
                     
                     <label class="block text-xs font-medium text-text-muted mb-1">Descrição (Obrigatório)</label>
                     <input type="text" value="${(activeSc.desc || '').replace(/"/g, '&quot;')}" class="w-full rounded-md px-3 py-1.5 mb-3 bg-[color:var(--color-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-1 focus:ring-accent text-sm" placeholder="Para que serve este comando?" oninput="updateActiveModalTab('desc', this.value)">
                     
                     <label class="block text-xs font-medium text-text-muted mb-1">Comando SQL</label>
-                    <textarea rows="4" class="w-full rounded-md px-3 py-1.5 bg-[color:var(--color-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-1 focus:ring-accent font-mono text-xs custom-scrollbar" oninput="updateActiveModalTab('text', this.value)">${activeSc.text || ''}</textarea>
+                    <textarea rows="4" class="w-full rounded-md px-3 py-1.5 bg-[color:var(--color-bg)] border border-[color:var(--color-search-border)] text-text focus:outline-none focus:ring-1 focus:ring-accent font-mono text-xs custom-scrollbar flex-grow min-h-[80px]" oninput="updateActiveModalTab('text', this.value)">${activeSc.text || ''}</textarea>
                 `;
             };
 
             window.addNewModalSubCommand = () => {
-                window.modalSubCommands.push({ name: 'Nova Gaveta', text: '', desc: '' });
+                window.modalSubCommands.push({ name: 'Nova Aba', text: '', desc: '' });
                 window.activeModalTabIndex = window.modalSubCommands.length - 1;
                 window.renderModalSubCommands();
             };
@@ -185,7 +187,7 @@
                     if (field === 'name') {
                         const tabs = document.getElementById('modalTabsContainer').children;
                         if (tabs[window.activeModalTabIndex]) {
-                            tabs[window.activeModalTabIndex].textContent = value || 'Nova Gaveta';
+                            tabs[window.activeModalTabIndex].textContent = value || 'Nova Aba';
                         }
                     }
                 }
