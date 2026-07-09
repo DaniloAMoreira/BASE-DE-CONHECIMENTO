@@ -444,19 +444,6 @@
         const SUPABASE_URL = 'https://jqllbwlfikckavipqtfr.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGxid2xmaWtja2F2aXBxdGZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NzczMDQsImV4cCI6MjA5ODA1MzMwNH0.adNqWBWMY3PlIx_0OG1bMswbVR_TThtCmNWFptxkgRU';
 
-        // Função para visualizar
-        window.viewCommand = (text) => {
-            document.getElementById('infoModalTitle').textContent = 'Comando';
-            const infoModal = document.getElementById('infoModal');
-            const infoMessage = document.getElementById('infoMessage');
-
-            infoMessage.style.whiteSpace = 'pre-wrap';
-            infoMessage.style.wordBreak = 'break-word';
-            infoMessage.style.fontFamily = 'monospace';
-
-            infoMessage.textContent = text || 'Aviso: Comando vazio ou não encontrado no JSON.';
-            infoModal.classList.remove('hidden');
-        };
 
         // Função para download virtual
         window.downloadFile = (text, fileName) => {
@@ -540,6 +527,12 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
+        window.expandCommand = (subjectId, scIdx) => {
+            document.getElementById('pre-preview-' + subjectId + '-' + scIdx).classList.add('hidden');
+            document.getElementById('pre-expand-overlay-' + subjectId + '-' + scIdx).classList.add('hidden');
+            document.getElementById('pre-full-' + subjectId + '-' + scIdx).classList.remove('hidden');
+        };
+
         window.showCustomAlert = (message, title = 'Aviso') => {
             document.getElementById('alertModalTitle').textContent = title;
             document.getElementById('alertModalMessage').textContent = message;
@@ -1034,9 +1027,9 @@
                 
                 document.querySelectorAll('.tab-btn-' + subjectId).forEach((btn, idx) => {
                     if (idx === index) {
-                        btn.className = `tab-btn-${subjectId} px-3 py-1.5 rounded-md text-sm font-medium transition-colors border shrink-0 bg-bg-solid text-white border-border-element`;
+                        btn.className = `tab-btn-${subjectId} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 bg-black/20 text-white border-border-element border-b-0 z-10 relative`;
                     } else {
-                        btn.className = `tab-btn-${subjectId} px-3 py-1.5 rounded-md text-sm font-medium transition-colors border shrink-0 bg-bg-panel border-border-element text-text-high hover:bg-bg-solid-hover hover:text-white`;
+                        btn.className = `tab-btn-${subjectId} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 bg-bg-panel border-border-element text-text-muted hover:bg-bg-solid-hover hover:text-white`;
                     }
                 });
             };
@@ -1075,8 +1068,8 @@
 
                     const tabsHTML = subCommands.map((sc, scIdx) => {
                         const isActive = scIdx === 0;
-                        const btnClass = isActive ? 'bg-bg-solid text-white border-border-element' : 'bg-bg-panel border-border-element text-text-high hover:bg-bg-solid-hover hover:text-white';
-                        return `<button onclick="switchTab(event, '${subject.id}', ${scIdx})" class="tab-btn-${subject.id} px-3 py-1.5 rounded-md text-sm font-medium transition-colors border shrink-0 ${btnClass}">${highlightMatch(sc.name, searchTerm)}</button>`;
+                        const btnClass = isActive ? 'bg-black/20 text-white border-border-element border-b-0 z-10 relative' : 'bg-bg-panel border-border-element text-text-muted hover:bg-bg-solid-hover hover:text-white';
+                        return `<button onclick="switchTab(event, '${subject.id}', ${scIdx})" class="tab-btn-${subject.id} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 ${btnClass}" style="margin-bottom: -1px;">${highlightMatch(sc.name, searchTerm)}</button>`;
                     }).join('');
 
                     const panelsHTML = subCommands.map((sc, scIdx) => {
@@ -1094,7 +1087,7 @@
                         }
 
                         const encoded = encodeURIComponent(displayText);
-                        const encodedDesc = encodeURIComponent(sc.desc || 'Descrição não informada.');
+                        const encodedDesc = encodeURIComponent(sc.desc || 'Descrição não informada.').replace(/'/g, "%27");
                         const descHeaderHTML = (sc.desc && sc.desc.trim() !== '') ? `
                             <div class="inline-flex items-center gap-2 mb-2 p-2 -ml-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group w-fit" onclick="showDescription('${encodedDesc}')">
                                 <div class="w-6 h-6 rounded-full bg-orange-500 group-hover:bg-orange-600 text-white text-xs font-bold flex items-center justify-center shrink-0 group-hover:scale-110 transition-all shadow-md" title="Ver descrição">!</div>
@@ -1119,9 +1112,7 @@
                         } else {
                             actionBtn = `
                             <div class="flex gap-2 items-center">
-                                <button data-command="${encoded}" onclick="viewCommand(decodeURIComponent(this.getAttribute('data-command')))" class="px-2 py-1 bg-bg-panel border border-border-element text-text-high rounded hover:bg-bg-solid-hover transition-colors text-xs font-semibold flex items-center justify-center shrink-0" title="Observar comando">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                </button>
+
                                 <div class="relative flex flex-col items-center">
                                     <button data-command="${encoded}" onclick="copyCommand(decodeURIComponent(this.getAttribute('data-command')), this)" class="px-3 py-1 bg-bg-panel border border-border-element text-text-high rounded hover:bg-bg-solid-hover transition-colors text-xs font-semibold flex items-center gap-1 shrink-0" title="Copiar">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copiar
@@ -1135,7 +1126,23 @@
                             <div id="panel-${subject.id}-${scIdx}" class="tab-panel-${subject.id} ${hiddenClass}">
                                 ${descHeaderHTML}
                                 <div class="flex justify-between items-start gap-4">
-                                    <pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow font-mono max-h-40 overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-border-subtle">${displayText}</pre>
+                                    ${(() => {
+                                        const lines = displayText.split('\n');
+                                        if (lines.length > 10) {
+                                            const previewText = lines.slice(0, 10).join('\n');
+                                            return `
+                                            <div class="relative w-full flex-grow min-w-0">
+                                                <pre id="pre-preview-${subject.id}-${scIdx}" class="text-xs text-text-muted whitespace-pre-wrap font-mono p-3 pb-8 bg-black/20 rounded-md border border-border-subtle overflow-hidden">${previewText}</pre>
+                                                <div id="pre-expand-overlay-${subject.id}-${scIdx}" class="absolute bottom-2 left-0 right-0 flex items-center justify-center">
+                                                    <button onclick="expandCommand('${subject.id}', '${scIdx}')" class="text-accent-solid text-xs font-bold hover:underline bg-transparent border-none cursor-pointer">Expandir</button>
+                                                </div>
+                                                <pre id="pre-full-${subject.id}-${scIdx}" class="hidden text-xs text-text-muted whitespace-pre-wrap font-mono max-h-[300px] overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-border-subtle">${displayText}</pre>
+                                            </div>
+                                            `;
+                                        } else {
+                                            return `<pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow min-w-0 font-mono overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-border-subtle w-full">${displayText}</pre>`;
+                                        }
+                                    })()}
                                     ${actionBtn}
                                 </div>
                             </div>
@@ -1163,11 +1170,11 @@
                                 <svg class="cmd-chevron w-5 h-5 text-text-muted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                         </div>
-                        <div class="hidden p-3 pt-0 border-t border-border-subtle bg-[color:var(--bg-app)] rounded-b-md">
-                            <div class="flex overflow-x-auto custom-scrollbar gap-2 pb-3 mb-1 pt-3">
+                        <div class="hidden pt-0 border-t border-border-subtle bg-[color:var(--bg-app)] rounded-b-md">
+                            <div class="flex overflow-x-auto custom-scrollbar gap-1 pt-3 px-3 border-b border-border-element">
                                 ${tabsHTML}
                             </div>
-                            <div class="panels-container">
+                            <div class="panels-container p-3 bg-black/20 rounded-b-md">
                                 ${panelsHTML}
                             </div>
                         </div>
