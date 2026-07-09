@@ -390,6 +390,27 @@
                             <button id="openAddModalBtn" class="bg-accent-solid text-white p-3 rounded-lg hover:opacity-90 transition-opacity" title="Adicionar Comando">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                             </button>
+                            
+    <!-- Modal Custom Alert -->
+    <div id="alertModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-[100] transition-opacity duration-300 opacity-0">
+        <div class="bg-bg-panel border border-border-element p-6 rounded-lg shadow-2xl max-w-sm w-full transform scale-95 transition-transform duration-300">
+            <div class="flex items-start mb-4">
+                <div class="flex-shrink-0">
+                    <svg class="h-6 w-6 text-accent-solid" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-lg font-medium text-text-high" id="alertModalTitle">Aviso</h3>
+                    <div class="mt-2 text-sm text-text-muted" id="alertModalMessage"></div>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button type="button" id="alertModalBtn" class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-accent-solid border border-transparent rounded-md hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-solid">OK</button>
+            </div>
+        </div>
+    </div>
+
                             <div id="passwordPopover" class="absolute right-0 top-full mt-2 w-64 p-4 bg-bg-panel border border-border-element rounded-lg shadow-xl hidden transition-all duration-300 z-50">
                                 <h4 class="text-sm font-semibold mb-2 text-text-high">Acesso Administrativo</h4>
                                 <input type="password" id="adminPasswordInput" class="w-full rounded bg-bg-panel border border-border-element px-3 py-1.5 text-sm text-text-high focus:outline-none focus:ring-2 focus:ring-accent mb-2" placeholder="Senha">
@@ -425,6 +446,7 @@
 
         // Função para visualizar
         window.viewCommand = (text) => {
+            document.getElementById('infoModalTitle').textContent = 'Comando';
             const infoModal = document.getElementById('infoModal');
             const infoMessage = document.getElementById('infoMessage');
 
@@ -498,7 +520,7 @@
                 try {
                     const successful = document.execCommand('copy');
                     if (successful) showNotification();
-                    else alert('Erro: Não foi possível copiar o comando.');
+                    else window.showCustomAlert('Erro: Não foi possível copiar o comando.');
                 } catch (err) {
                     console.error('Erro no fallback de cópia', err);
                 }
@@ -518,6 +540,22 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
+        window.showCustomAlert = (message, title = 'Aviso') => {
+            document.getElementById('alertModalTitle').textContent = title;
+            document.getElementById('alertModalMessage').textContent = message;
+            const modal = document.getElementById('alertModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); }, 10);
+            
+            return new Promise(resolve => {
+                const btn = document.getElementById('alertModalBtn');
+                btn.onclick = () => {
+                    modal.classList.add('opacity-0'); modal.children[0].classList.add('scale-95');
+                    setTimeout(() => { modal.classList.add('hidden'); resolve(); }, 300);
+                };
+            });
+        };
+
             // --- Elementos do DOM ---
             const searchInput = document.getElementById('searchInput');
             const categoriesContainer = document.getElementById('categoriesContainer');
@@ -699,11 +737,8 @@
 
                     document.getElementById('commandTitleInput').value = '';
 
-                    const subCommandsContainer = document.getElementById('subCommandsContainer');
-                    if (subCommandsContainer) {
-                        subCommandsContainer.innerHTML = '';
-                        addSubCommandField();
-                    }
+                    window.modalSubCommands = [];
+                    window.addNewModalSubCommand();
 
                     addModal.classList.remove('hidden');
                 });
@@ -717,7 +752,7 @@
 
             saveCommandBtn.addEventListener('click', async () => {
                 let title = document.getElementById('commandTitleInput').value.trim();
-                if (!title) return alert('Digite o Título do Comando');
+                if (!title) return window.showCustomAlert('Digite o Título do Comando');
 
                 const subCommands = window.modalSubCommands.map(sc => ({
                     name: sc.name.trim() || 'Comando',
@@ -727,10 +762,10 @@
                 const hasEmptyDesc = subCommands.some(sc => !sc.desc);
 
                 if (hasEmptyDesc) {
-                    return alert('A descrição de todas as gavetas é obrigatória!');
+                    return window.showCustomAlert('A descrição de todas as gavetas é obrigatória!');
                 }
                  if (subCommands.length === 0) {
-                    return alert('Adicione pelo menos um subcomando (Gaveta interna).');
+                    return window.showCustomAlert('Adicione pelo menos um subcomando (Gaveta interna).');
                 }
 
                 saveCommandBtn.textContent = 'Salvando...';
@@ -773,7 +808,7 @@
 
                     await loadData();
                 } catch (e) {
-                    alert('Ocorreu um erro ao salvar no banco de dados. ' + e.message);
+                    window.showCustomAlert('Ocorreu um erro ao salvar no banco de dados. ' + e.message);
                 } finally {
                     saveCommandBtn.textContent = 'Salvar Comando';
                     saveCommandBtn.disabled = false;
@@ -850,7 +885,7 @@
                     if (!res.ok) throw new Error('Erro ao excluir');
                     await loadData();
                 } catch (e) {
-                    alert('Erro: ' + e.message);
+                    window.showCustomAlert('Erro: ' + e.message);
                 } finally {
                     commandToDeleteId = null;
                     document.getElementById('deleteModal').classList.add('hidden');
@@ -1008,6 +1043,7 @@
 
             
             window.showDescription = (encodedDesc) => {
+                document.getElementById('infoModalTitle').textContent = 'Descrição';
                 const desc = decodeURIComponent(encodedDesc);
                 const infoMessage = document.getElementById('infoMessage');
                 infoMessage.textContent = desc;
@@ -1060,9 +1096,9 @@
                         const encoded = encodeURIComponent(displayText);
                         const encodedDesc = encodeURIComponent(sc.desc || 'Descrição não informada.');
                         const descHeaderHTML = (sc.desc && sc.desc.trim() !== '') ? `
-                            <div class="flex items-center gap-2 mb-2">
-                                <button data-desc="${encodedDesc}" onclick="showDescription(this.getAttribute('data-desc'))" class="w-6 h-6 rounded-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold flex items-center justify-center shrink-0 hover:scale-110 transition-all shadow-md" title="Ver descrição">!</button>
-                                <span class="text-sm font-medium text-text-high cursor-pointer hover:text-accent-solid transition-colors" onclick="showDescription('${encodedDesc}')">Para que serve este comando?</span>
+                            <div class="flex items-center gap-2 mb-2 p-2 -ml-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group" onclick="showDescription('${encodedDesc}')">
+                                <div class="w-6 h-6 rounded-full bg-orange-500 group-hover:bg-orange-600 text-white text-xs font-bold flex items-center justify-center shrink-0 group-hover:scale-110 transition-all shadow-md" title="Ver descrição">!</div>
+                                <span class="text-sm font-medium text-text-high group-hover:text-accent-solid transition-colors">Para que serve este comando?</span>
                             </div>
                         ` : '';
                         let actionBtn = '';
