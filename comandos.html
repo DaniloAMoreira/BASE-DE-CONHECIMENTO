@@ -615,7 +615,7 @@
             };
 
             window.addNewModalSubCommand = () => {
-                window.modalSubCommands.push({ name: 'Nova Aba', text: '', desc: '' });
+                window.modalSubCommands.push({ name: '', text: '', desc: '' });
                 window.activeModalTabIndex = window.modalSubCommands.length - 1;
                 window.renderModalSubCommands();
             };
@@ -909,10 +909,12 @@
                         }
 
                         if (subCmds.length === 0) {
-                            addSubCommandField();
-                        } else {
-                            subCmds.forEach(sc => addSubCommandField(sc.name, sc.text, sc.desc || ''));
+                            subCmds = [{ name: '', text: '', desc: '' }];
                         }
+                        
+                        window.modalSubCommands = subCmds;
+                        window.activeModalTabIndex = 0;
+                        window.renderModalSubCommands();
                     }
 
                     window.editingCmdId = targetCmd.id;
@@ -1027,9 +1029,9 @@
                 
                 document.querySelectorAll('.tab-btn-' + subjectId).forEach((btn, idx) => {
                     if (idx === index) {
-                        btn.className = `tab-btn-${subjectId} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 bg-black/20 text-white border-border-element border-b-0 z-10 relative`;
+                        btn.className = `tab-btn-${subjectId} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 bg-[#1e293b] text-white border-border-element border-b-0 z-10 relative`;
                     } else {
-                        btn.className = `tab-btn-${subjectId} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 bg-bg-panel border-border-element text-text-muted hover:bg-bg-solid-hover hover:text-white`;
+                        btn.className = `tab-btn-${subjectId} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 bg-transparent border-border-element text-text-muted hover:bg-[#1e293b]/50 hover:text-white`;
                     }
                 });
             };
@@ -1068,7 +1070,7 @@
 
                     const tabsHTML = subCommands.map((sc, scIdx) => {
                         const isActive = scIdx === 0;
-                        const btnClass = isActive ? 'bg-black/20 text-white border-border-element border-b-0 z-10 relative' : 'bg-bg-panel border-border-element text-text-muted hover:bg-bg-solid-hover hover:text-white';
+                        const btnClass = isActive ? 'bg-[#1e293b] text-white border-border-element border-b-0 z-10 relative' : 'bg-transparent border-border-element text-text-muted hover:bg-[#1e293b]/50 hover:text-white';
                         return `<button onclick="switchTab(event, '${subject.id}', ${scIdx})" class="tab-btn-${subject.id} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 ${btnClass}" style="margin-bottom: -1px;">${highlightMatch(sc.name, searchTerm)}</button>`;
                     }).join('');
 
@@ -1151,7 +1153,7 @@
 
                     categoryElement.innerHTML = `
                     <div class="panel border border-border-subtle rounded-md mb-3 bg-white/5">
-                        <div class="flex items-center justify-between p-3 cursor-pointer group hover:bg-white/10 transition-colors" onclick="if(event.target.closest('.action-buttons')) return; this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.cmd-chevron').classList.toggle('rotate-180');">
+                        <div class="flex items-center justify-between p-3 cursor-pointer group hover:bg-white/10 transition-colors" onclick="if(event.target.closest('.action-buttons')) return; const content = this.nextElementSibling; content.classList.toggle('hidden'); this.querySelector('.cmd-chevron').classList.toggle('rotate-180'); if(content.classList.contains('hidden')){ content.querySelectorAll('[id^=\\'pre-preview-\\']').forEach(el => el.classList.remove('hidden')); content.querySelectorAll('[id^=\\'pre-expand-overlay-\\']').forEach(el => el.classList.remove('hidden')); content.querySelectorAll('[id^=\\'pre-full-\\']').forEach(el => el.classList.add('hidden')); }">
                             <div class="flex flex-col">
                                 <span class="font-semibold text-text-high">${highlightMatch(subject.name, searchTerm)}</span>
                             </div>
@@ -1174,7 +1176,7 @@
                             <div class="flex overflow-x-auto custom-scrollbar gap-1 pt-3 px-3 border-b border-border-element">
                                 ${tabsHTML}
                             </div>
-                            <div class="panels-container p-3 bg-black/20 rounded-b-md">
+                            <div class="panels-container p-3 bg-[#1e293b] rounded-b-md">
                                 ${panelsHTML}
                             </div>
                         </div>
