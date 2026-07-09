@@ -392,7 +392,7 @@
                             </button>
                             
     <!-- Modal Custom Alert -->
-    <div id="alertModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-[100] transition-opacity duration-300 opacity-0">
+    <div id="alertModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[100] transition-opacity duration-300 opacity-0">
         <div class="bg-bg-panel border border-border-element p-6 rounded-lg shadow-2xl max-w-sm w-full transform scale-95 transition-transform duration-300">
             <div class="flex items-start mb-4">
                 <div class="flex-shrink-0">
@@ -1096,7 +1096,7 @@
                         const encoded = encodeURIComponent(displayText);
                         const encodedDesc = encodeURIComponent(sc.desc || 'Descrição não informada.');
                         const descHeaderHTML = (sc.desc && sc.desc.trim() !== '') ? `
-                            <div class="flex items-center gap-2 mb-2 p-2 -ml-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group" onclick="showDescription('${encodedDesc}')">
+                            <div class="inline-flex items-center gap-2 mb-2 p-2 -ml-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group w-fit" onclick="showDescription('${encodedDesc}')">
                                 <div class="w-6 h-6 rounded-full bg-orange-500 group-hover:bg-orange-600 text-white text-xs font-bold flex items-center justify-center shrink-0 group-hover:scale-110 transition-all shadow-md" title="Ver descrição">!</div>
                                 <span class="text-sm font-medium text-text-high group-hover:text-accent-solid transition-colors">Para que serve este comando?</span>
                             </div>
