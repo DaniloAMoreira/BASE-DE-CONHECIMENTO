@@ -922,9 +922,6 @@
                 saveCommandBtn.disabled = true;
 
                 try {
-                    const authHeader = window.adminToken ? `Bearer ${window.adminToken}` : `Bearer ${SUPABASE_ANON_KEY}`;
-                    const headers = {
-                        'apikey': SUPABASE_ANON_KEY,
                     const isEditing = !!window.editingCmdId;
                     const data = { name: title, command: JSON.stringify(subCommands) };
                     const targetUrl = isEditing 
@@ -1638,3 +1635,5 @@
 
 </html>
 <!-- push trigger -->
+
+<!-- push trigger 2 -->
