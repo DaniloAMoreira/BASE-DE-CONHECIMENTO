@@ -884,25 +884,21 @@
                     window.editingCmdCategoryId = targetCmd.categoria_id;
                     document.getElementById('commandTitleInput').value = targetCmd.name;
 
-                    const subCommandsContainer = document.getElementById('subCommandsContainer');
-                    if (subCommandsContainer) {
-                        subCommandsContainer.innerHTML = '';
-                        let subCmds = [];
-                        try {
-                            subCmds = JSON.parse(targetCmd.command);
-                            if (!Array.isArray(subCmds)) throw new Error('Not array');
-                        } catch (e) {
-                            subCmds = [{ name: 'Comando', text: targetCmd.command || '' }];
-                        }
-
-                        if (subCmds.length === 0) {
-                            subCmds = [{ name: '', text: '', desc: '' }];
-                        }
-                        
-                        window.modalSubCommands = subCmds;
-                        window.activeModalTabIndex = 0;
-                        window.renderModalSubCommands();
+                    let subCmds = [];
+                    try {
+                        subCmds = JSON.parse(targetCmd.command);
+                        if (!Array.isArray(subCmds)) throw new Error('Not array');
+                    } catch (e) {
+                        subCmds = [{ name: 'Comando', text: targetCmd.command || '' }];
                     }
+
+                    if (subCmds.length === 0) {
+                        subCmds = [{ name: '', text: '', desc: '' }];
+                    }
+                    
+                    window.modalSubCommands = subCmds;
+                    window.activeModalTabIndex = 0;
+                    window.renderModalSubCommands();
 
                     window.editingCmdId = targetCmd.id;
                     document.querySelector('#addModal h3').textContent = 'Editar Comando';
