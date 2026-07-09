@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="./favicon.png">
     <title>Comandos de Banco de Dados</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/diff@5.2.0/dist/diff.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -24,7 +25,7 @@
                         'bg-solid-hover': 'var(--bg-solid-hover)',
                         'text-muted': 'var(--text-muted)',
                         'text-high': 'var(--text-high)',
-
+                        
                         'accent-app': 'var(--accent-app)',
                         'accent-subtle': 'var(--accent-subtle)',
                         'accent-panel': 'var(--accent-panel)',
@@ -48,20 +49,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
-            /* DARK. MODE (Vivid) - Indigo Neutrals & Blue Accents */
+            /* DARK MODE (Vivid) - Indigo Neutrals & Blue Accents */
             --bg-app: #11131f;
             --bg-subtle: #141726;
             --bg-panel: #182449;
             --bg-panel-hover: #1d2e62;
             --bg-panel-active: #253974;
-
+            
             --border-subtle: #304384;
             --border-element: #3a4f97;
             --border-hover: #435db1;
-
+            
             --bg-solid: #3e63dd;
             --bg-solid-hover: #5472e4;
-
+            
             --text-muted: #9eb1ff;
             --text-high: #d6e1ff;
 
@@ -70,14 +71,14 @@
             --accent-panel: #082c36;
             --accent-panel-hover: #003848;
             --accent-panel-active: #004558;
-
+            
             --accent-border-subtle: #045468;
             --accent-border-element: #12677e;
             --accent-border-hover: #11809c;
-
+            
             --accent-solid: #00a2c7;
             --accent-solid-hover: #23afd0;
-
+            
             --accent-text-muted: #4ccce6;
             --accent-text-high: #b6ecf7;
         }
@@ -89,14 +90,14 @@
             --bg-panel: #f0f0f3;
             --bg-panel-hover: #e8e8ec;
             --bg-panel-active: #e0e1e6;
-
+            
             --border-subtle: #d9d9e0;
             --border-element: #cdced6;
             --border-hover: #b9bbc6;
-
+            
             --bg-solid: #8b8d98;
             --bg-solid-hover: #80838d;
-
+            
             --text-muted: #60646c;
             --text-high: #1c2024;
 
@@ -105,16 +106,16 @@
             --accent-panel: #e6f4fe;
             --accent-panel-hover: #d5efff;
             --accent-panel-active: #c2e5ff;
-
+            
             --accent-border-subtle: #acd8fc;
             --accent-border-element: #8ec8f6;
             --accent-border-hover: #5eb1ef;
-
+            
             --accent-solid: #0090ff;
             --accent-solid-hover: #0588f0;
-
+            
             --accent-text-muted: #0d74ce;
-            --accent-text-high: #0d74ce;
+            --accent-text-high: #0d74ce; 
         }
 
         body {
@@ -343,9 +344,78 @@
 
     <canvas id="webgl-bg"></canvas>
 
-    <div id="main-content" class="relative z-10 animate-fade-in">
+    <!-- LOGIN OVERLAY -->
+    <div id="login-overlay" class="fixed inset-0 z-[100] bg-bg-app flex flex-col items-center justify-center p-4">
+        <!-- Optional Background matching the app -->
+        <div class="absolute inset-0 pointer-events-none overflow-hidden flex justify-center items-center opacity-30">
+            <div class="w-[800px] h-[800px] bg-accent-solid rounded-full blur-[150px] opacity-10"></div>
+        </div>
+
+        <div class="relative z-10 w-full max-w-md bg-bg-panel border border-border-element rounded-2xl shadow-2xl p-8 backdrop-blur-xl">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-accent-solid to-accent-solid-hover mb-2">Base de Conhecimento</h1>
+                <p class="text-text-muted">Faça login para acessar os comandos</p>
+            </div>
+            
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="login-user" class="block text-sm font-medium text-text-muted mb-2">Usuário</label>
+                    <select id="login-user" required
+                        class="w-full bg-bg-app border border-border-element rounded-xl px-4 py-3 text-text-high focus:outline-none focus:ring-2 focus:ring-accent-solid focus:border-transparent transition-all">
+                        <option value="" disabled selected>Selecione seu nome</option>
+                        <option value="rafael@lcsistemas.com">RAFAEL</option>
+                        <option value="matheus@lcsistemas.com">MATHEUS</option>
+                        <option value="allany@lcsistemas.com">ALLANY</option>
+                        <option value="kleyver@lcsistemas.com">KLEYVER</option>
+                        <option value="carla@lcsistemas.com">CARLA</option>
+                        <option value="nilth@lcsistemas.com">NILTH</option>
+                        <option value="leandro@lcsistemas.com">LEANDRO</option>
+                        <option value="danilo@lcsistemas.com">DANILO</option>
+                        <option value="mauricio@lcsistemas.com">MAURICIO</option>
+                        <option value="herbert@lcsistemas.com">HERBERT</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-text-muted mb-2">Senha</label>
+                    <input type="password" id="login-password" required placeholder="••••••••"
+                        class="w-full bg-bg-app border border-border-element rounded-xl px-4 py-3 text-text-high focus:outline-none focus:ring-2 focus:ring-accent-solid focus:border-transparent transition-all">
+                </div>
+                
+                <div id="login-error" class="hidden bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg p-3 text-sm text-center">
+                    Usuário ou senha incorretos.
+                </div>
+
+                <button type="submit" id="login-btn"
+                    class="w-full bg-gradient-to-r from-accent-solid to-accent-solid-hover text-white font-medium rounded-xl px-4 py-3 hover:shadow-lg hover:shadow-accent-solid/30 focus:outline-none focus:ring-2 focus:ring-accent-solid focus:ring-offset-2 focus:ring-offset-bg-panel transition-all flex justify-center items-center">
+                    <span>Entrar</span>
+                    <svg id="login-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="main-content" class="relative z-10 hidden opacity-0 transition-opacity duration-500">
         <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
-            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-20">
+            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-20 flex items-center gap-4">
+                
+                <!-- USER BADGE -->
+                <div id="user-info-badge" class="hidden flex items-center gap-3 bg-bg-panel border border-border-element rounded-full py-1.5 pl-2 pr-4 shadow-sm hover:border-border-hover transition-colors">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-accent-solid to-accent-solid-hover flex items-center justify-center text-white font-bold text-sm" id="user-avatar">
+                        U
+                    </div>
+                    <span class="text-sm font-medium text-text-high" id="user-name-display">User</span>
+                    <div class="w-px h-4 bg-border-element mx-1"></div>
+                    <button id="logout-btn" class="text-text-muted hover:text-red-500 transition-colors text-xs flex items-center gap-1" title="Sair">
+                        Sair
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                    </button>
+                </div>
+
                 <button id="theme-toggle-btn" title="Alternar Tema"
                     class="p-2 bg-bg-panel hover:bg-bg-solid-hover border border-border-element/50 rounded-full glow-on-hover">
                     <svg id="theme-icon-sun" class="w-6 h-6 hidden text-text-muted" fill="none" stroke="currentColor"
@@ -385,28 +455,19 @@
                                 </svg>
                             </div>
                         </div>
-
+                        
                         <div class="relative">
-                            <button id="openAddModalBtn"
-                                class="bg-accent-solid text-white p-3 rounded-lg hover:opacity-90 transition-opacity"
-                                title="Adicionar Comando">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4"></path>
-                                </svg>
+                            <button id="openAddModalBtn" class="bg-accent-solid text-white p-3 rounded-lg hover:opacity-90 transition-opacity" title="Adicionar Comando">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                             </button>
+                            
 
 
-
-                            <div id="passwordPopover"
-                                class="absolute right-0 top-full mt-2 w-64 p-4 bg-bg-panel border border-border-element rounded-lg shadow-xl hidden transition-all duration-300 z-50">
+                            <div id="passwordPopover" class="absolute right-0 top-full mt-2 w-64 p-4 bg-bg-panel border border-border-element rounded-lg shadow-xl hidden transition-all duration-300 z-50">
                                 <h4 class="text-sm font-semibold mb-2 text-text-high">Acesso Administrativo</h4>
-                                <input type="password" id="adminPasswordInput"
-                                    class="w-full rounded bg-bg-panel border border-border-element px-3 py-1.5 text-sm text-text-high focus:outline-none focus:ring-2 focus:ring-accent mb-2"
-                                    placeholder="Senha">
+                                <input type="password" id="adminPasswordInput" class="w-full rounded bg-bg-panel border border-border-element px-3 py-1.5 text-sm text-text-high focus:outline-none focus:ring-2 focus:ring-accent mb-2" placeholder="Senha">
                                 <div id="passwordError" class="text-red-500 text-xs mb-2 hidden">Senha incorreta</div>
-                                <button id="submitPasswordBtn"
-                                    class="w-full bg-accent-solid text-white rounded py-1.5 text-sm hover:opacity-90 transition-opacity">Confirmar</button>
+                                <button id="submitPasswordBtn" class="w-full bg-accent-solid text-white rounded py-1.5 text-sm hover:opacity-90 transition-opacity">Confirmar</button>
                             </div>
                         </div>
                     </div>
@@ -417,8 +478,7 @@
         </div>
     </div>
 
-    <div id="infoModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
+    <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
         <div class="panel w-full max-w-4xl p-6 flex flex-col max-h-[90vh]">
             <h3 id="infoModalTitle" class="text-lg font-semibold mb-4 text-accent-solid shrink-0">Informação</h3>
 
@@ -427,8 +487,7 @@
             </div>
 
             <div class="flex justify-end shrink-0">
-                <button id="infoOkBtn"
-                    class="px-6 py-2 bg-accent-solid hover:opacity-90 text-white rounded-lg transition-opacity">OK</button>
+                <button id="infoOkBtn" class="px-6 py-2 bg-accent-solid hover:opacity-90 text-white rounded-lg transition-opacity">OK</button>
             </div>
         </div>
     </div>
@@ -437,6 +496,48 @@
         const SUPABASE_URL = 'https://jqllbwlfikckavipqtfr.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGxid2xmaWtja2F2aXBxdGZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NzczMDQsImV4cCI6MjA5ODA1MzMwNH0.adNqWBWMY3PlIx_0OG1bMswbVR_TThtCmNWFptxkgRU';
 
+        let sessionToken = localStorage.getItem('supabaseToken');
+        let sessionUser = JSON.parse(localStorage.getItem('supabaseUser') || 'null');
+
+        function getAuthHeaders() {
+            const headers = {
+                'apikey': SUPABASE_ANON_KEY,
+                'Content-Type': 'application/json'
+            };
+            if (sessionToken) {
+                headers['Authorization'] = `Bearer ${sessionToken}`;
+            } else {
+                headers['Authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
+            }
+            return headers;
+        }
+
+        function checkAuth() {
+            const loginOverlay = document.getElementById('login-overlay');
+            const mainContent = document.getElementById('main-content');
+            const userInfoBadge = document.getElementById('user-info-badge');
+            
+            if (sessionToken && sessionUser) {
+                if(loginOverlay) loginOverlay.style.display = 'none';
+                if(mainContent) {
+                    mainContent.classList.remove('hidden');
+                    setTimeout(() => { mainContent.classList.remove('opacity-0'); }, 10);
+                }
+                
+                if(userInfoBadge) {
+                    userInfoBadge.classList.remove('hidden');
+                    const name = sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || 'User';
+                    document.getElementById('user-name-display').textContent = name;
+                    document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+                }
+                return true;
+            } else {
+                if(loginOverlay) loginOverlay.style.display = 'flex';
+                if(mainContent) mainContent.classList.add('hidden', 'opacity-0');
+                if(userInfoBadge) userInfoBadge.classList.add('hidden');
+                return false;
+            }
+        }
 
         // Função para download virtual
         window.downloadFile = (text, fileName) => {
@@ -520,27 +621,85 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            window.expandCommand = (subjectId, scIdx) => {
-                document.getElementById('pre-preview-' + subjectId + '-' + scIdx).classList.add('hidden');
-                document.getElementById('pre-expand-overlay-' + subjectId + '-' + scIdx).classList.add('hidden');
-                document.getElementById('pre-full-' + subjectId + '-' + scIdx).classList.remove('hidden');
-            };
+            
+            // --- AUTH INIT ---
+            if (checkAuth()) {
+                // Initial load handled further down or we can just let it flow
+            }
 
-            window.showCustomAlert = (message, title = 'Aviso') => {
-                document.getElementById('alertModalTitle').textContent = title;
-                document.getElementById('alertModalMessage').textContent = message;
-                const modal = document.getElementById('alertModal');
-                modal.classList.remove('hidden');
-                setTimeout(() => { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); }, 10);
+            document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-user').value;
+                const password = document.getElementById('login-password').value;
+                const btn = document.getElementById('login-btn');
+                const spinner = document.getElementById('login-spinner');
+                const errorDiv = document.getElementById('login-error');
+                
+                btn.disabled = true;
+                spinner.classList.remove('hidden');
+                errorDiv.classList.add('hidden');
+                
+                try {
+                    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (!res.ok) throw new Error(data.error_description || data.msg || 'Erro ao logar');
+                    
+                    sessionToken = data.access_token;
+                    sessionUser = data.user;
+                    localStorage.setItem('supabaseToken', sessionToken);
+                    localStorage.setItem('supabaseUser', JSON.stringify(sessionUser));
+                    
+                    checkAuth();
+                    if(typeof loadData === 'function') loadData();
+                } catch (err) {
+                    errorDiv.textContent = 'Usuário ou senha incorretos.';
+                    errorDiv.classList.remove('hidden');
+                } finally {
+                    btn.disabled = false;
+                    spinner.classList.add('hidden');
+                }
+            });
 
-                return new Promise(resolve => {
-                    const btn = document.getElementById('alertModalBtn');
-                    btn.onclick = () => {
-                        modal.classList.add('opacity-0'); modal.children[0].classList.add('scale-95');
-                        setTimeout(() => { modal.classList.add('hidden'); resolve(); }, 300);
-                    };
-                });
-            };
+            document.getElementById('logout-btn')?.addEventListener('click', () => {
+                sessionToken = null;
+                sessionUser = null;
+                localStorage.removeItem('supabaseToken');
+                localStorage.removeItem('supabaseUser');
+                document.getElementById('login-password').value = '';
+                checkAuth();
+            });
+            // --- END AUTH INIT ---
+
+        window.expandCommand = (subjectId, scIdx) => {
+            document.getElementById('pre-preview-' + subjectId + '-' + scIdx).classList.add('hidden');
+            document.getElementById('pre-expand-overlay-' + subjectId + '-' + scIdx).classList.add('hidden');
+            document.getElementById('pre-full-' + subjectId + '-' + scIdx).classList.remove('hidden');
+        };
+
+        window.showCustomAlert = (message, title = 'Aviso') => {
+            document.getElementById('alertModalTitle').textContent = title;
+            document.getElementById('alertModalMessage').textContent = message;
+            const modal = document.getElementById('alertModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); }, 10);
+            
+            return new Promise(resolve => {
+                const btn = document.getElementById('alertModalBtn');
+                btn.onclick = () => {
+                    modal.classList.add('opacity-0'); modal.children[0].classList.add('scale-95');
+                    setTimeout(() => { modal.classList.add('hidden'); resolve(); }, 300);
+                };
+            });
+        };
 
             // --- Elementos do DOM ---
             const searchInput = document.getElementById('searchInput');
@@ -566,7 +725,7 @@
             const commandTextInput = document.getElementById('commandTextInput');
 
             // --- Lógica para Gavetas Internas Dinâmicas (Modal) ---
-
+            
             window.modalSubCommands = [];
             window.activeModalTabIndex = 0;
 
@@ -680,9 +839,9 @@
                             password: password
                         })
                     });
-
+                    
                     const data = await res.json();
-
+                    
                     if (data.access_token) {
                         window.adminToken = data.access_token;
                         window.isAdminAuthenticated = true;
@@ -718,7 +877,7 @@
                 window.requireAdmin(() => {
 
                     window.editingCmdId = null;
-
+                    
                     document.querySelector('#addModal h3').textContent = 'Adicionar Novo Comando';
 
                     document.getElementById('commandTitleInput').value = '';
@@ -748,14 +907,14 @@
 
                 const hasEmptyName = subCommands.some(sc => !sc.name);
                 if (hasEmptyName) return window.showCustomAlert('O Nome da Aba de todas as gavetas é obrigatório!');
-
+                
                 const hasEmptyDesc = subCommands.some(sc => !sc.desc);
                 if (hasEmptyDesc) return window.showCustomAlert('A descrição de todas as gavetas é obrigatória!');
 
                 const hasEmptyText = subCommands.some(sc => !sc.text);
                 if (hasEmptyText) return window.showCustomAlert('O Comando SQL de todas as gavetas é obrigatório!');
 
-                if (subCommands.length === 0) {
+                 if (subCommands.length === 0) {
                     return window.showCustomAlert('Adicione pelo menos um subcomando (Gaveta interna).');
                 }
 
@@ -766,29 +925,58 @@
                     const authHeader = window.adminToken ? `Bearer ${window.adminToken}` : `Bearer ${SUPABASE_ANON_KEY}`;
                     const headers = {
                         'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': authHeader,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=representation'
-                    };
-
-                    const commandJsonStr = JSON.stringify(subCommands);
+                    const isEditing = !!window.editingCmdId;
+                    const data = { name: title, command: JSON.stringify(subCommands) };
+                    const targetUrl = isEditing 
+                        ? `${SUPABASE_URL}/rest/v1/comandos?id=eq.${window.editingCmdId}`
+                        : `${SUPABASE_URL}/rest/v1/comandos`;
+                        
+                    const method = isEditing ? 'PATCH' : 'POST';
+                    const headers = getAuthHeaders();
+                    headers['Prefer'] = 'return=representation'; // Always return so we get ID
+                    
+                    const userName = sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0] || 'Desconhecido';
+                    if (!isEditing) {
+                        data.created_by_name = userName;
+                    }
 
                     let resCmd;
-                    if (window.editingCmdId) {
-                        resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${window.editingCmdId}`, {
-                            method: 'PATCH',
-                            headers,
-                            body: JSON.stringify({ name: title, command: commandJsonStr })
+                    try {
+                        const oldCmd = isEditing ? allComandos.find(c => c.id === window.editingCmdId) : null;
+
+                        resCmd = await fetch(targetUrl, {
+                            method: method,
+                            headers: headers,
+                            body: JSON.stringify(data)
                         });
-                        window.editingCmdId = null;
-                    } else {
-                        resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos`, {
+                        
+                        if (!resCmd.ok) {
+                            const errData = await resCmd.json();
+                            throw new Error(errData.message || 'Erro ao salvar o comando no Supabase.');
+                        }
+
+                        const savedData = await resCmd.json();
+                        const savedCmd = Array.isArray(savedData) ? savedData[0] : savedData;
+                        const commandId = savedCmd.id;
+
+                        // Save History
+                        const historyPayload = {
+                            command_id: commandId,
+                            action: isEditing ? 'UPDATE' : 'CREATE',
+                            user_name: userName,
+                            old_content: oldCmd ? { name: oldCmd.name, command: oldCmd.command } : null,
+                            new_content: { name: title, command: JSON.stringify(subCommands) }
+                        };
+
+                        await fetch(`${SUPABASE_URL}/rest/v1/command_history`, {
                             method: 'POST',
-                            headers,
-                            body: JSON.stringify({ name: title, command: commandJsonStr })
+                            headers: Object.assign(getAuthHeaders(), { 'Prefer': 'return=minimal' }),
+                            body: JSON.stringify(historyPayload)
                         });
+
+                    } catch (e) {
+                        throw e;
                     }
-                    if (!resCmd.ok) throw new Error('Erro ao salvar comando');
 
                     const addModal = document.getElementById('addModal');
                     if (addModal) addModal.classList.add('hidden');
@@ -797,6 +985,7 @@
                     const subCommandsContainer = document.getElementById('subCommandsContainer');
                     if (subCommandsContainer) subCommandsContainer.innerHTML = '';
 
+                    window.editingCmdId = null;
                     await loadData();
                 } catch (e) {
                     window.showCustomAlert('Ocorreu um erro ao salvar no banco de dados. ' + e.message);
@@ -815,9 +1004,9 @@
 
             // --- LÓGICA DE DADOS ---
 
+            
 
-
-
+            
 
             window.toggleDevMenu = (btn) => {
                 const menu = btn.nextElementSibling;
@@ -825,7 +1014,7 @@
                 menu.classList.toggle('hidden');
             };
 
-
+            
             window.toggleActionDrawer = (drawerId) => {
                 const drawer = document.getElementById(drawerId);
                 if (!drawer) return;
@@ -848,6 +1037,81 @@
 
             let commandToDeleteId = null;
 
+            window.viewHistory = async (cmdId, cmdName) => {
+                document.getElementById('historyCommandName').textContent = decodeURIComponent(cmdName);
+                const modal = document.getElementById('historyModal');
+                const loading = document.getElementById('historyLoading');
+                const empty = document.getElementById('historyEmpty');
+                const list = document.getElementById('historyListContainer');
+                
+                modal.classList.remove('hidden');
+                loading.classList.remove('hidden');
+                empty.classList.add('hidden');
+                list.innerHTML = '';
+                
+                try {
+                    const res = await fetch(`${SUPABASE_URL}/rest/v1/command_history?command_id=eq.${cmdId}&order=created_at.desc`, {
+                        headers: getAuthHeaders()
+                    });
+                    if (!res.ok) throw new Error('Erro ao buscar histórico');
+                    const historyData = await res.json();
+                    
+                    loading.classList.add('hidden');
+                    if (historyData.length === 0) {
+                        empty.classList.remove('hidden');
+                        return;
+                    }
+                    
+                    historyData.forEach(item => {
+                        const date = new Date(item.created_at).toLocaleString('pt-BR');
+                        const isUpdate = item.action === 'UPDATE';
+                        
+                        let diffHTML = '';
+                        if (isUpdate && item.old_content && item.new_content) {
+                            try {
+                                const oldStr = typeof item.old_content.command === 'string' ? item.old_content.command : JSON.stringify(item.old_content.command, null, 2);
+                                const newStr = typeof item.new_content.command === 'string' ? item.new_content.command : JSON.stringify(item.new_content.command, null, 2);
+                                
+                                const diff = window.Diff.diffLines(oldStr, newStr);
+                                
+                                diffHTML = '<div class="mt-3 bg-[#1e293b] rounded p-2 overflow-x-auto text-xs font-mono">';
+                                diff.forEach(part => {
+                                    if (part.added) {
+                                        diffHTML += `<div class="text-green-400 bg-green-500/10 px-1 py-0.5 whitespace-pre-wrap">+ ${part.value}</div>`;
+                                    } else if (part.removed) {
+                                        diffHTML += `<div class="text-red-400 bg-red-500/10 px-1 py-0.5 whitespace-pre-wrap line-through">- ${part.value}</div>`;
+                                    } else {
+                                        diffHTML += `<div class="text-gray-400 px-1 py-0.5 whitespace-pre-wrap">  ${part.value}</div>`;
+                                    }
+                                });
+                                diffHTML += '</div>';
+                            } catch(e) {
+                                diffHTML = '<div class="text-xs text-red-400 mt-2">Não foi possível calcular as diferenças.</div>';
+                            }
+                        }
+                        
+                        const el = document.createElement('div');
+                        el.className = 'bg-black/20 border border-border-subtle rounded-lg p-4';
+                        el.innerHTML = `
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <span class="inline-block px-2 py-1 rounded text-xs font-bold ${isUpdate ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400'} mb-1">
+                                        ${isUpdate ? 'EDITADO' : 'CRIADO'}
+                                    </span>
+                                    <p class="text-text-high font-medium text-sm">Por: ${item.user_name || 'Desconhecido'}</p>
+                                </div>
+                                <span class="text-xs text-text-muted">${date}</span>
+                            </div>
+                            ${diffHTML}
+                        `;
+                        list.appendChild(el);
+                    });
+                } catch (e) {
+                    loading.classList.add('hidden');
+                    window.showCustomAlert('Erro ao carregar o histórico: ' + e.message);
+                }
+            };
+
             window.deleteCommand = (cmdId) => {
                 window.requireAdmin(() => {
                     commandToDeleteId = cmdId;
@@ -862,16 +1126,17 @@
 
             document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
                 if (!commandToDeleteId) return;
-
+                
                 const btn = document.getElementById('confirmDeleteBtn');
                 btn.textContent = 'Excluindo...';
                 btn.disabled = true;
 
                 try {
-                    const authHeader = window.adminToken ? `Bearer ${window.adminToken}` : `Bearer ${SUPABASE_ANON_KEY}`;
+                    const headers = getAuthHeaders();
+                    
                     const res = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${commandToDeleteId}`, {
                         method: 'DELETE',
-                        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': authHeader }
+                        headers: headers
                     });
                     if (!res.ok) throw new Error('Erro ao excluir');
                     await loadData();
@@ -906,7 +1171,7 @@
                     if (subCmds.length === 0) {
                         subCmds = [{ name: '', text: '', desc: '' }];
                     }
-
+                    
                     window.modalSubCommands = subCmds;
                     window.activeModalTabIndex = 0;
                     window.renderModalSubCommands();
@@ -920,10 +1185,7 @@
             const loadData = async () => {
                 categoriesContainer.classList.add('loading');
                 try {
-                    const headers = {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                    };
+                    const headers = getAuthHeaders();
 
                     const resComandos = await fetch(`${SUPABASE_URL}/rest/v1/comandos?select=*`, { headers });
 
@@ -944,7 +1206,7 @@
                             if (Array.isArray(scs)) {
                                 scs.forEach(sc => suggestionSet.add(sc.name));
                             }
-                        } catch (e) { }
+                        } catch (e) {}
                     });
                     allSuggestions = [...suggestionSet];
 
@@ -1014,13 +1276,13 @@
                 renderSuggestions(filteredSuggestions);
             };
 
-
+            
             window.switchTab = (event, subjectId, index) => {
                 event.stopPropagation();
                 document.querySelectorAll('.tab-panel-' + subjectId).forEach(p => p.classList.add('hidden'));
                 const activePanel = document.getElementById('panel-' + subjectId + '-' + index);
                 if (activePanel) activePanel.classList.remove('hidden');
-
+                
                 document.querySelectorAll('.tab-btn-' + subjectId).forEach((btn, idx) => {
                     if (idx === index) {
                         btn.className = `tab-btn-${subjectId} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 bg-[#1e293b] text-white border-border-element border-b-0 z-10 relative`;
@@ -1030,7 +1292,7 @@
                 });
             };
 
-
+            
             window.showDescription = (encodedDesc) => {
                 document.getElementById('infoModalTitle').textContent = 'Descrição';
                 const desc = decodeURIComponent(encodedDesc);
@@ -1039,7 +1301,7 @@
                 document.getElementById('infoModal').classList.remove('hidden');
             };
 
-            // --- FUNÇÕES DE RENDERIZAÇÃO E BUSCA PRINCIPAL ---
+// --- FUNÇÕES DE RENDERIZAÇÃO E BUSCA PRINCIPAL ---
 
             const render = (dataToRender = []) => {
                 const searchTerm = searchInput.value.trim();
@@ -1051,7 +1313,7 @@
                 }
                 dataToRender.forEach(subject => {
                     const categoryElement = document.createElement('div');
-
+                    
                     const isSql = subject.name.toLowerCase().endsWith('.sql');
                     let subCommands = [];
 
@@ -1123,10 +1385,10 @@
                                 ${descHeaderHTML}
                                 <div class="flex justify-between items-start gap-4">
                                     ${(() => {
-                                const lines = displayText.split('\n');
-                                if (lines.length > 10) {
-                                    const previewText = lines.slice(0, 10).join('\n');
-                                    return `
+                                        const lines = displayText.split('\n');
+                                        if (lines.length > 10) {
+                                            const previewText = lines.slice(0, 10).join('\n');
+                                            return `
                                             <div class="relative w-full flex-grow min-w-0">
                                                 <pre id="pre-preview-${subject.id}-${scIdx}" class="text-xs text-text-muted whitespace-pre-wrap font-mono p-3 pb-8 bg-black/20 rounded-md border border-border-subtle overflow-hidden">${previewText}</pre>
                                                 <div id="pre-expand-overlay-${subject.id}-${scIdx}" class="absolute bottom-2 left-0 right-0 flex items-center justify-center">
@@ -1135,10 +1397,10 @@
                                                 <pre id="pre-full-${subject.id}-${scIdx}" class="hidden text-xs text-text-muted whitespace-pre-wrap font-mono max-h-[300px] overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-border-subtle">${displayText}</pre>
                                             </div>
                                             `;
-                                } else {
-                                    return `<pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow min-w-0 font-mono overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-border-subtle w-full">${displayText}</pre>`;
-                                }
-                            })()}
+                                        } else {
+                                            return `<pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow min-w-0 font-mono overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-border-subtle w-full">${displayText}</pre>`;
+                                        }
+                                    })()}
                                     ${actionBtn}
                                 </div>
                             </div>
@@ -1153,6 +1415,9 @@
                             </div>
                             <div class="flex items-center gap-4 action-buttons">
                                 <div class="flex items-center gap-2 overflow-hidden transition-all duration-300 max-w-0 opacity-0 action-drawer" id="drawer-${subject.id}">
+                                    <button onclick="event.stopPropagation(); viewHistory('${subject.id}', '${encodeURIComponent(subject.name.replace(/'/g, "\\'"))}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-orange-400 border border-orange-500/30 bg-orange-500/10 hover:bg-orange-500/20 rounded transition-colors whitespace-nowrap" title="Histórico">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Histórico
+                                    </button>
                                     <button onclick="event.stopPropagation(); deleteCommand('${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-red-400 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 rounded transition-colors whitespace-nowrap" title="Excluir">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Excluir
                                     </button>
@@ -1191,14 +1456,14 @@
                 const searchResults = allComandos.filter(cmd => {
                     const catNameMatches = normalizeString(cmd.name).includes(searchTerm);
                     if (catNameMatches) return true;
-
+                    
                     let subMatches = false;
                     try {
                         const scs = JSON.parse(cmd.command);
                         if (Array.isArray(scs)) {
                             subMatches = scs.some(sc => normalizeString(sc.name).includes(searchTerm));
                         }
-                    } catch (e) { }
+                    } catch (e) {}
                     return subMatches;
                 });
                 render(searchResults);
@@ -1267,35 +1532,29 @@
     </script>
 
     <!-- Modal Adicionar Comando -->
-    <div id="addModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
+    <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
         <div class="panel w-full max-w-5xl p-6 flex flex-col max-h-[90vh] shadow-2xl">
             <h3 class="text-xl font-semibold mb-4 text-accent-solid">Adicionar Novo Comando</h3>
-
+            
             <div class="space-y-4 mb-6 overflow-y-auto custom-scrollbar pr-2 flex-grow">
                 <div>
                     <label class="block text-sm font-medium text-text-muted mb-1">Título do Comando</label>
-                    <input type="text" id="commandTitleInput" placeholder="Ex: Update LC Sistemas..."
-                        class="w-full rounded-lg px-3 py-2 bg-bg-panel border border-border-element text-text-high focus:outline-none focus:ring-2 focus:ring-accent">
+                    <input type="text" id="commandTitleInput" placeholder="Ex: Update LC Sistemas..." class="w-full rounded-lg px-3 py-2 bg-bg-panel border border-border-element text-text-high focus:outline-none focus:ring-2 focus:ring-accent">
                 </div>
 
                 <div>
-
+                    
                     <div class="flex flex-col sm:flex-row gap-4">
                         <div class="flex flex-col gap-2 w-full sm:w-1/3 md:w-1/4">
-                            <button type="button" onclick="addNewModalSubCommand()"
-                                class="w-full py-2 bg-accent-solid/20 border border-accent-border-element text-accent-solid rounded-lg hover:bg-accent-solid-hover hover:text-white transition-all flex justify-center items-center font-bold text-xl shrink-0 hover:shadow-lg hover:-translate-y-0.5 glow-on-hover"
-                                title="Adicionar Aba">
+                            <button type="button" onclick="addNewModalSubCommand()" class="w-full py-2 bg-accent-solid/20 border border-accent-border-element text-accent-solid rounded-lg hover:bg-accent-solid-hover hover:text-white transition-all flex justify-center items-center font-bold text-xl shrink-0 hover:shadow-lg hover:-translate-y-0.5 glow-on-hover" title="Adicionar Aba">
                                 +
                             </button>
-                            <div id="modalTabsContainer"
-                                class="flex flex-col gap-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                            <div id="modalTabsContainer" class="flex flex-col gap-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
                                 <!-- Tabs rendered via JS -->
                             </div>
                         </div>
-
-                        <div class="flex-grow p-4 bg-black/20 border border-border-subtle rounded-lg relative min-h-[260px] flex flex-col"
-                            id="modalContentContainer" style="min-width: 0;">
+                        
+                        <div class="flex-grow p-4 bg-black/20 border border-border-subtle rounded-lg relative min-h-[260px] flex flex-col" id="modalContentContainer" style="min-width: 0;">
                             <!-- Content rendered via JS -->
                         </div>
                     </div>
@@ -1303,49 +1562,34 @@
             </div>
 
             <div class="flex justify-end gap-3 shrink-0 pt-4 border-t border-border-subtle">
-                <button id="cancelAddBtn"
-                    class="px-4 py-2 bg-bg-panel border border-border-element text-text-high rounded-lg hover:bg-bg-solid-hover transition-all hover:shadow-md hover:-translate-y-0.5">Cancelar</button>
-                <button id="saveCommandBtn"
-                    class="px-4 py-2 bg-accent-solid hover:opacity-90 text-white rounded-lg transition-all shadow-md hover:shadow-lg hover:shadow-accent/40 hover:-translate-y-0.5 glow-on-hover">Salvar
-                    Comando</button>
+                <button id="cancelAddBtn" class="px-4 py-2 bg-bg-panel border border-border-element text-text-high rounded-lg hover:bg-bg-solid-hover transition-all hover:shadow-md hover:-translate-y-0.5">Cancelar</button>
+                <button id="saveCommandBtn" class="px-4 py-2 bg-accent-solid hover:opacity-90 text-white rounded-lg transition-all shadow-md hover:shadow-lg hover:shadow-accent/40 hover:-translate-y-0.5 glow-on-hover">Salvar Comando</button>
             </div>
         </div>
     </div>
 
 
     <!-- Confirm Delete Modal -->
-    <div id="deleteModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
         <div class="panel w-full max-w-sm p-6 rounded-xl flex flex-col items-center text-center">
             <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mb-4 text-red-500">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
-                    </path>
-                </svg>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             </div>
             <h3 class="text-xl font-semibold mb-2 text-text-high">Excluir Comando?</h3>
-            <p class="text-text-muted text-sm mb-6">Tem certeza que deseja excluir este comando? Esta ação não pode ser
-                desfeita.</p>
+            <p class="text-text-muted text-sm mb-6">Tem certeza que deseja excluir este comando? Esta ação não pode ser desfeita.</p>
             <div class="flex justify-center gap-3 w-full">
-                <button id="cancelDeleteBtn"
-                    class="flex-1 px-4 py-2 bg-bg-panel border border-border-subtle text-text-high rounded-lg hover:bg-bg-solid-hover transition-colors">Cancelar</button>
-                <button id="confirmDeleteBtn"
-                    class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-lg">Sim,
-                    Excluir</button>
+                <button id="cancelDeleteBtn" class="flex-1 px-4 py-2 bg-bg-panel border border-border-subtle text-text-high rounded-lg hover:bg-bg-solid-hover transition-colors">Cancelar</button>
+                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-lg">Sim, Excluir</button>
             </div>
         </div>
     </div>
     <!-- Modal Custom Alert -->
-    <div id="alertModal"
-        class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[100] transition-opacity duration-300 opacity-0">
-        <div
-            class="bg-bg-panel border border-border-element p-6 rounded-lg shadow-2xl max-w-sm w-full transform scale-95 transition-transform duration-300">
+    <div id="alertModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[100] transition-opacity duration-300 opacity-0">
+        <div class="bg-bg-panel border border-border-element p-6 rounded-lg shadow-2xl max-w-sm w-full transform scale-95 transition-transform duration-300">
             <div class="flex items-start mb-4">
                 <div class="flex-shrink-0">
                     <svg class="h-6 w-6 text-accent-solid" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <div class="ml-3">
@@ -1354,11 +1598,43 @@
                 </div>
             </div>
             <div class="mt-4 flex justify-end">
-                <button type="button" id="alertModalBtn"
-                    class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-accent-solid border border-transparent rounded-md hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-solid">OK</button>
+                <button type="button" id="alertModalBtn" class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-accent-solid border border-transparent rounded-md hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-solid">OK</button>
             </div>
         </div>
     </div>
+    <!-- History Modal -->
+    <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
+        <div class="panel w-full max-w-4xl p-6 rounded-xl flex flex-col h-[80vh]">
+            <div class="flex justify-between items-center mb-4 shrink-0">
+                <h3 class="text-xl font-semibold text-text-high flex items-center gap-2">
+                    <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Histórico de Alterações: <span id="historyCommandName" class="text-accent-solid ml-1"></span>
+                </h3>
+                <button onclick="document.getElementById('historyModal').classList.add('hidden')" class="text-text-muted hover:text-red-500 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div id="historyLoading" class="hidden flex-grow flex flex-col items-center justify-center text-text-muted">
+                <svg class="animate-spin h-10 w-10 text-accent-solid mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p>Carregando histórico...</p>
+            </div>
+            
+            <div id="historyEmpty" class="hidden flex-grow flex flex-col items-center justify-center text-text-muted">
+                <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                <p>Nenhuma alteração registrada para este comando.</p>
+            </div>
+            
+            <div id="historyListContainer" class="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-4">
+                <!-- History Items go here -->
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>
+<!-- push trigger -->
