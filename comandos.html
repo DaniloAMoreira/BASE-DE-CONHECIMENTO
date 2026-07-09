@@ -48,42 +48,42 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
-            /* DARK MODE (default) - Radix Slate & Blue */
-            --bg-app: #111113;
-            --bg-subtle: #18191b;
-            --bg-panel: #212225;
-            --bg-panel-hover: #272a2d;
-            --bg-panel-active: #2e3135;
+            /* DARK MODE (Vivid) - Indigo Neutrals & Blue Accents */
+            --bg-app: #11131f;
+            --bg-subtle: #141726;
+            --bg-panel: #182449;
+            --bg-panel-hover: #1d2e62;
+            --bg-panel-active: #253974;
             
-            --border-subtle: #363a3f;
-            --border-element: #43484e;
-            --border-hover: #5a6169;
+            --border-subtle: #304384;
+            --border-element: #3a4f97;
+            --border-hover: #435db1;
             
-            --bg-solid: #696e77;
-            --bg-solid-hover: #777b84;
+            --bg-solid: #3e63dd;
+            --bg-solid-hover: #5472e4;
             
-            --text-muted: #b0b4ba;
-            --text-high: #edeef0;
+            --text-muted: #9eb1ff;
+            --text-high: #d6e1ff;
 
-            --accent-app: #0d1520;
-            --accent-subtle: #111927;
-            --accent-panel: #0d2847;
-            --accent-panel-hover: #003362;
-            --accent-panel-active: #004074;
+            --accent-app: #0b161a;
+            --accent-subtle: #101b20;
+            --accent-panel: #082c36;
+            --accent-panel-hover: #003848;
+            --accent-panel-active: #004558;
             
-            --accent-border-subtle: #104d87;
-            --accent-border-element: #205d9e;
-            --accent-border-hover: #2870bd;
+            --accent-border-subtle: #045468;
+            --accent-border-element: #12677e;
+            --accent-border-hover: #11809c;
             
-            --accent-solid: #0090ff;
-            --accent-solid-hover: #3b9eff;
+            --accent-solid: #00a2c7;
+            --accent-solid-hover: #23afd0;
             
-            --accent-text-muted: #70b8ff;
-            --accent-text-high: #c2e6ff;
+            --accent-text-muted: #4ccce6;
+            --accent-text-high: #b6ecf7;
         }
 
         body[data-theme="light"] {
-            /* LIGHT MODE - Radix Slate & Blue */
+            /* LIGHT MODE - Slate Neutrals & Blue Accents */
             --bg-app: #fcfcfd;
             --bg-subtle: #f9f9fb;
             --bg-panel: #f0f0f3;
@@ -407,7 +407,7 @@
 
     <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
         <div class="panel w-full max-w-4xl p-6 flex flex-col max-h-[90vh]">
-            <h3 class="text-lg font-semibold mb-4 text-accent-solid shrink-0">Informação</h3>
+            <h3 id="infoModalTitle" class="text-lg font-semibold mb-4 text-accent-solid shrink-0">Informação</h3>
 
             <div class="overflow-y-auto mb-6 flex-grow custom-scrollbar bg-bg-panel rounded-lg">
                 <p id="infoMessage" class="w-full h-full p-4 m-0"></p>
@@ -1059,20 +1059,23 @@
 
                         const encoded = encodeURIComponent(displayText);
                         const encodedDesc = encodeURIComponent(sc.desc || 'Descrição não informada.');
-                        const infoBtnHTML = `<button data-desc="${encodedDesc}" onclick="showDescription(this.getAttribute('data-desc'))" class="px-2 py-1 bg-bg-panel border border-border-element text-text-high rounded hover:bg-bg-solid-hover transition-colors text-xs font-bold flex items-center justify-center shrink-0" title="Descrição do Comando">!</button>`;
+                        const descHeaderHTML = (sc.desc && sc.desc.trim() !== '') ? `
+                            <div class="flex items-center gap-2 mb-2">
+                                <button data-desc="${encodedDesc}" onclick="showDescription(this.getAttribute('data-desc'))" class="w-6 h-6 rounded-full bg-accent-solid text-white text-xs font-bold flex items-center justify-center shrink-0 hover:scale-110 transition-transform shadow-md" title="Ver descrição">!</button>
+                                <span class="text-sm font-medium text-text-high cursor-pointer hover:text-accent-solid transition-colors" onclick="showDescription('${encodedDesc}')">Para que serve este comando?</span>
+                            </div>
+                        ` : '';
                         let actionBtn = '';
 
                         if (isSql) {
                             const fileName = sc.name.endsWith('.sql') ? sc.name : sc.name + '.sql';
                             actionBtn = `
-                            ${infoBtnHTML}
                             <button data-command="${encoded}" onclick="downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${fileName}')" class="px-3 py-1 bg-accent-solid text-white rounded hover:opacity-90 transition-colors text-xs font-semibold flex items-center gap-1 shrink-0" title="Descarregar ficheiro">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
                             </button>`;
                         } else if (isDownloadLink) {
                             actionBtn = `
                             <div class="flex gap-2 items-center">
-                                ${infoBtnHTML}
                                 <a href="${displayText}" target="_blank" class="px-3 py-1 bg-bg-panel border border-border-element text-text-high rounded hover:bg-bg-solid-hover transition-colors text-xs font-semibold flex items-center gap-1 shrink-0" title="Download">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
                                 </a>
@@ -1080,7 +1083,6 @@
                         } else {
                             actionBtn = `
                             <div class="flex gap-2 items-center">
-                                ${infoBtnHTML}
                                 <button data-command="${encoded}" onclick="viewCommand(decodeURIComponent(this.getAttribute('data-command')))" class="px-2 py-1 bg-bg-panel border border-border-element text-text-high rounded hover:bg-bg-solid-hover transition-colors text-xs font-semibold flex items-center justify-center shrink-0" title="Observar comando">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                 </button>
@@ -1095,6 +1097,7 @@
                         const hiddenClass = scIdx === 0 ? '' : 'hidden';
                         return `
                             <div id="panel-${subject.id}-${scIdx}" class="tab-panel-${subject.id} ${hiddenClass}">
+                                ${descHeaderHTML}
                                 <div class="flex justify-between items-start gap-4">
                                     <pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow font-mono max-h-40 overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-border-subtle">${displayText}</pre>
                                     ${actionBtn}
