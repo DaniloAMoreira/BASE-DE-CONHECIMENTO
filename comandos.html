@@ -1061,7 +1061,7 @@
                         const encodedDesc = encodeURIComponent(sc.desc || 'Descrição não informada.');
                         const descHeaderHTML = (sc.desc && sc.desc.trim() !== '') ? `
                             <div class="flex items-center gap-2 mb-2">
-                                <button data-desc="${encodedDesc}" onclick="showDescription(this.getAttribute('data-desc'))" class="w-6 h-6 rounded-full bg-accent-solid text-white text-xs font-bold flex items-center justify-center shrink-0 hover:scale-110 transition-transform shadow-md" title="Ver descrição">!</button>
+                                <button data-desc="${encodedDesc}" onclick="showDescription(this.getAttribute('data-desc'))" class="w-6 h-6 rounded-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold flex items-center justify-center shrink-0 hover:scale-110 transition-all shadow-md" title="Ver descrição">!</button>
                                 <span class="text-sm font-medium text-text-high cursor-pointer hover:text-accent-solid transition-colors" onclick="showDescription('${encodedDesc}')">Para que serve este comando?</span>
                             </div>
                         ` : '';
