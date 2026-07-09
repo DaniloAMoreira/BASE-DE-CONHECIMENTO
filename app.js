@@ -1,14 +1,14 @@
 /* ══════════════════════════════════════
-   BASE DE CONHECIMENTO — app.js
+   BASE DE CONHECIMENTO — app.js.
    Compatível com GitHub Pages (JS puro)
 ══════════════════════════════════════ */
 
 'use strict';
 
 // ── Utilitários ──────────────────────────────────────────
-const $   = id  => document.getElementById(id);
-const qs  = sel => document.querySelector(sel);
-const norm = s  => (s || '')
+const $ = id => document.getElementById(id);
+const qs = sel => document.querySelector(sel);
+const norm = s => (s || '')
   .toLowerCase()
   .normalize('NFD')
   .replace(/[\u0300-\u036f]/g, '');
@@ -30,19 +30,19 @@ const state = {
 
 // ── Referências DOM ───────────────────────────────────────
 const els = {
-  searchInput:  $('searchInput'),
-  clearBtn:     $('clearBtn'),
-  sugBox:       $('suggestionsBox'),
-  container:    $('categoriesContainer'),
-  statCats:     $('statCats'),
-  statSubs:     $('statSubs'),
-  resultLabel:  $('resultLabel'),
-  modal:        $('modal'),
-  modalMsg:     $('modalMsg'),
-  modalOk:      $('modalOk'),
-  themeBtn:     $('themeBtn'),
-  iconSun:      $('iconSun'),
-  iconMoon:     $('iconMoon'),
+  searchInput: $('searchInput'),
+  clearBtn: $('clearBtn'),
+  sugBox: $('suggestionsBox'),
+  container: $('categoriesContainer'),
+  statCats: $('statCats'),
+  statSubs: $('statSubs'),
+  resultLabel: $('resultLabel'),
+  modal: $('modal'),
+  modalMsg: $('modalMsg'),
+  modalOk: $('modalOk'),
+  themeBtn: $('themeBtn'),
+  iconSun: $('iconSun'),
+  iconMoon: $('iconMoon'),
 };
 
 // ── TEMA ──────────────────────────────────────────────────
@@ -83,9 +83,9 @@ document.addEventListener('keydown', e => {
 (function initWebGL() {
   if (typeof THREE === 'undefined') return;
 
-  const canvas   = $('webgl-bg');
-  const scene    = new THREE.Scene();
-  const camera   = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 3000);
+  const canvas = $('webgl-bg');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 3000);
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(innerWidth, innerHeight);
@@ -94,16 +94,16 @@ document.addEventListener('keydown', e => {
   // Partículas principais
   const pts1 = buildPoints(1200, 2400, 1.4, 0x6b9fff, 0.32);
   // Partículas secundárias (teal)
-  const pts2 = buildPoints(400,  1600, 2.2, 0x4fd9c8, 0.16);
+  const pts2 = buildPoints(400, 1600, 2.2, 0x4fd9c8, 0.16);
   // Partículas de destaque (purple)
-  const pts3 = buildPoints(120,  1000, 3.5, 0xa78bfa, 0.12);
+  const pts3 = buildPoints(120, 1000, 3.5, 0xa78bfa, 0.12);
 
   scene.add(pts1, pts2, pts3);
   camera.position.z = 1000;
 
   let mx = 0, my = 0;
   document.addEventListener('mousemove', e => {
-    mx = (e.clientX / innerWidth  - 0.5) * 0.5;
+    mx = (e.clientX / innerWidth - 0.5) * 0.5;
     my = (e.clientY / innerHeight - 0.5) * 0.5;
   });
 
@@ -233,8 +233,8 @@ function render(data = []) {
         </div>
         <h3>${rawVal ? 'Sem resultados' : 'Base vazia'}</h3>
         <p>${rawVal
-          ? `Nenhum resultado para <strong>"${rawVal}"</strong>.<br>Tente outros termos de busca.`
-          : 'O arquivo database.json está vazio ou não foi encontrado.'}</p>
+        ? `Nenhum resultado para <strong>"${rawVal}"</strong>.<br>Tente outros termos de busca.`
+        : 'O arquivo database.json está vazio ou não foi encontrado.'}</p>
       </div>`;
     return;
   }
@@ -242,10 +242,10 @@ function render(data = []) {
   const frag = document.createDocumentFragment();
 
   data.forEach((cat, i) => {
-    const subjects  = cat.subjectsToDisplay || cat.subjects;
-    const isOpen    = cat.expanded || false;
+    const subjects = cat.subjectsToDisplay || cat.subjects;
+    const isOpen = cat.expanded || false;
     const stripeIdx = i % 8;
-    const progress  = Math.round((subjects.length / state.maxSubjectsAny) * 100);
+    const progress = Math.round((subjects.length / state.maxSubjectsAny) * 100);
 
     const card = document.createElement('div');
     card.className = `category-card${isOpen ? ' is-open' : ''}`;
@@ -257,7 +257,7 @@ function render(data = []) {
             <div class="sub-dot"></div>
             <span class="sub-name">${hl(sub.name, term)}</span>
           </div>`).join('') +
-        `<div class="subjects-footer">
+      `<div class="subjects-footer">
            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
              <circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/>
            </svg>
@@ -270,7 +270,7 @@ function render(data = []) {
         <div class="cat-left">
           <div class="cat-stripe s${stripeIdx}"></div>
           <div class="cat-info">
-            <span class="cat-idx">${String(i + 1).padStart(2,'0')} · ${String(data.length).padStart(2,'0')}</span>
+            <span class="cat-idx">${String(i + 1).padStart(2, '0')} · ${String(data.length).padStart(2, '0')}</span>
             <span class="cat-name">${hl(cat.name, term)}</span>
           </div>
           <div class="cat-progress" title="${subjects.length} assuntos">
@@ -313,7 +313,7 @@ function handleSearch() {
   if (!state.loaded) return;
 
   const rawTerm = els.searchInput.value.trim();
-  const term    = norm(rawTerm);
+  const term = norm(rawTerm);
   els.clearBtn.style.display = term ? 'flex' : 'none';
 
   if (!term) {
@@ -324,7 +324,7 @@ function handleSearch() {
 
   const results = state.categories.map(cat => {
     const catMatch = norm(cat.name).includes(term);
-    const subs     = cat.subjects.filter(s => norm(s.name).includes(term));
+    const subs = cat.subjects.filter(s => norm(s.name).includes(term));
     if (catMatch) return { ...cat, subjectsToDisplay: cat.subjects, expanded: true };
     if (subs.length) return { ...cat, subjectsToDisplay: subs, expanded: true };
     return null;
