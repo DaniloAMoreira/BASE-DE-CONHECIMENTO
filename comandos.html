@@ -460,15 +460,6 @@
                             <button id="openAddModalBtn" class="bg-accent-solid text-white p-3 rounded-lg hover:opacity-90 transition-opacity" title="Adicionar Comando">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                             </button>
-                            
-
-
-                            <div id="passwordPopover" class="absolute right-0 top-full mt-2 w-64 p-4 bg-bg-panel border border-border-element rounded-lg shadow-xl hidden transition-all duration-300 z-50">
-                                <h4 class="text-sm font-semibold mb-2 text-text-high">Acesso Administrativo</h4>
-                                <input type="password" id="adminPasswordInput" class="w-full rounded bg-bg-panel border border-border-element px-3 py-1.5 text-sm text-text-high focus:outline-none focus:ring-2 focus:ring-accent mb-2" placeholder="Senha">
-                                <div id="passwordError" class="text-red-500 text-xs mb-2 hidden">Senha incorreta</div>
-                                <button id="submitPasswordBtn" class="w-full bg-accent-solid text-white rounded py-1.5 text-sm hover:opacity-90 transition-opacity">Confirmar</button>
-                            </div>
                         </div>
                     </div>
                     <div id="suggestionsContainer" class="mt-1"></div>
@@ -798,80 +789,9 @@
             };
 
 
-            window.isAdminAuthenticated = false;
-            let pendingAdminAction = null;
-            const passwordPopover = document.getElementById('passwordPopover');
-            const adminPasswordInput = document.getElementById('adminPasswordInput');
-            const submitPasswordBtn = document.getElementById('submitPasswordBtn');
-            const passwordError = document.getElementById('passwordError');
-
             window.requireAdmin = (actionCallback) => {
-                if (window.isAdminAuthenticated) {
-                    actionCallback();
-                    return;
-                }
-                pendingAdminAction = actionCallback;
-                passwordPopover.classList.remove('hidden');
-                adminPasswordInput.value = '';
-                passwordError.classList.add('hidden');
-                adminPasswordInput.focus();
+                actionCallback();
             };
-
-            window.adminToken = null;
-
-            const attemptLogin = async () => {
-                const password = adminPasswordInput.value;
-                if (!password) return;
-
-                const submitBtn = document.getElementById('submitPasswordBtn');
-                submitBtn.textContent = 'Verificando...';
-                submitBtn.disabled = true;
-
-                try {
-                    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-                        method: 'POST',
-                        headers: {
-                            'apikey': SUPABASE_ANON_KEY,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            email: 'admin@lcsistemas.com',
-                            password: password
-                        })
-                    });
-                    
-                    const data = await res.json();
-                    
-                    if (data.access_token) {
-                        window.adminToken = data.access_token;
-                        window.isAdminAuthenticated = true;
-                        passwordPopover.classList.add('hidden');
-                        passwordError.classList.add('hidden');
-                        if (pendingAdminAction) {
-                            pendingAdminAction();
-                            pendingAdminAction = null;
-                        }
-                    } else {
-                        throw new Error('Senha incorreta');
-                    }
-                } catch (e) {
-                    passwordError.classList.remove('hidden');
-                } finally {
-                    submitBtn.textContent = 'Confirmar';
-                    submitBtn.disabled = false;
-                }
-            };
-
-            submitPasswordBtn.addEventListener('click', attemptLogin);
-            adminPasswordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') attemptLogin();
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!passwordPopover.contains(e.target) && !e.target.closest('#openAddModalBtn') && !e.target.closest('.edit-btn') && !e.target.closest('.delete-btn')) {
-                    passwordPopover.classList.add('hidden');
-                }
-            });
 
             openAddModalBtn.addEventListener('click', () => {
                 window.requireAdmin(() => {
@@ -1064,27 +984,48 @@
                         const isUpdate = item.action === 'UPDATE';
                         
                         let diffHTML = '';
+                        
+                        const formatCommandForDiff = (cmdJsonStr) => {
+                            try {
+                                const subCommands = typeof cmdJsonStr === 'string' ? JSON.parse(cmdJsonStr) : cmdJsonStr;
+                                if (!Array.isArray(subCommands)) return typeof cmdJsonStr === 'string' ? cmdJsonStr : JSON.stringify(cmdJsonStr, null, 2);
+                                return subCommands.map((sc, i) => {
+                                    let res = `[GAVETA ${i + 1}] ${sc.name || 'Sem título'}`;
+                                    if (sc.desc) res += `\nDescrição: ${sc.desc}`;
+                                    if (sc.text) res += `\nCódigo:\n${sc.text}`;
+                                    return res;
+                                }).join('\n\n------------------------\n\n');
+                            } catch(e) {
+                                return typeof cmdJsonStr === 'string' ? cmdJsonStr : JSON.stringify(cmdJsonStr, null, 2);
+                            }
+                        };
+
                         if (isUpdate && item.old_content && item.new_content) {
                             try {
-                                const oldStr = typeof item.old_content.command === 'string' ? item.old_content.command : JSON.stringify(item.old_content.command, null, 2);
-                                const newStr = typeof item.new_content.command === 'string' ? item.new_content.command : JSON.stringify(item.new_content.command, null, 2);
+                                const oldStr = formatCommandForDiff(item.old_content.command);
+                                const newStr = formatCommandForDiff(item.new_content.command);
                                 
                                 const diff = window.Diff.diffLines(oldStr, newStr);
                                 
                                 diffHTML = '<div class="mt-3 bg-[#1e293b] rounded p-2 overflow-x-auto text-xs font-mono">';
                                 diff.forEach(part => {
                                     if (part.added) {
-                                        diffHTML += `<div class="text-green-400 bg-green-500/10 px-1 py-0.5 whitespace-pre-wrap">+ ${part.value}</div>`;
+                                        diffHTML += `<div class="text-green-400 bg-green-500/10 px-2 py-1 whitespace-pre-wrap border-l-2 border-green-500">+ ${part.value}</div>`;
                                     } else if (part.removed) {
-                                        diffHTML += `<div class="text-red-400 bg-red-500/10 px-1 py-0.5 whitespace-pre-wrap line-through">- ${part.value}</div>`;
+                                        diffHTML += `<div class="text-red-400 bg-red-500/10 px-2 py-1 whitespace-pre-wrap border-l-2 border-red-500">- ${part.value}</div>`;
                                     } else {
-                                        diffHTML += `<div class="text-gray-400 px-1 py-0.5 whitespace-pre-wrap">  ${part.value}</div>`;
+                                        diffHTML += `<div class="text-gray-400 px-2 py-1 whitespace-pre-wrap border-l-2 border-transparent">  ${part.value}</div>`;
                                     }
                                 });
                                 diffHTML += '</div>';
                             } catch(e) {
                                 diffHTML = '<div class="text-xs text-red-400 mt-2">Não foi possível calcular as diferenças.</div>';
                             }
+                        } else if (!isUpdate && item.new_content) {
+                            try {
+                                const newStr = formatCommandForDiff(item.new_content.command);
+                                diffHTML = `<div class="mt-3 bg-[#1e293b] rounded p-3 overflow-x-auto text-xs font-mono whitespace-pre-wrap text-text-muted border-l-2 border-green-500 bg-green-500/5">${newStr}</div>`;
+                            } catch(e) {}
                         }
                         
                         const el = document.createElement('div');
