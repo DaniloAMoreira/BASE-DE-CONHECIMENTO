@@ -399,38 +399,44 @@
 
     <div id="main-content" class="relative z-10 hidden opacity-0 transition-opacity duration-500">
         <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
-            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-20 flex items-center gap-4">
+            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-50 flex items-center gap-4 relative">
                 
-                <!-- USER BADGE -->
-                <div id="user-info-badge" class="hidden flex items-center gap-3 bg-bg-panel border border-border-element rounded-full py-1.5 pl-2 pr-4 shadow-sm hover:border-border-hover transition-colors">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-accent-solid to-accent-solid-hover flex items-center justify-center text-white font-bold text-sm" id="user-avatar">
-                        U
-                    </div>
-                    <span class="text-sm font-medium text-text-high" id="user-name-display">User</span>
-                    <div class="w-px h-4 bg-border-element mx-1"></div>
-                    <button id="logout-btn" class="text-text-muted hover:text-red-500 transition-colors text-xs flex items-center gap-1" title="Sair">
-                        Sair
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                        </svg>
+                <!-- USER DROPDOWN MENU -->
+                <div id="user-menu-container" class="relative hidden">
+                    <button id="user-info-badge" class="flex items-center gap-3 bg-bg-panel border border-border-element rounded-full py-1.5 pl-2 pr-4 shadow-sm hover:border-border-hover transition-colors focus:outline-none" onclick="document.getElementById('user-dropdown').classList.toggle('hidden')">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-accent-solid to-accent-solid-hover flex items-center justify-center text-white font-bold text-sm" id="user-avatar">
+                            U
+                        </div>
+                        <span class="text-sm font-medium text-text-high" id="user-name-display">User</span>
+                        <svg class="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
-                </div>
+                    
+                    <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-bg-panel border border-border-element rounded-xl shadow-lg py-2 hidden flex flex-col z-[60]">
+                        <button id="theme-toggle-btn" class="w-full px-4 py-2 text-left text-sm text-text-high hover:bg-bg-solid-hover hover:text-accent-solid transition-colors flex items-center gap-2">
+                            <svg id="theme-icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                            <svg id="theme-icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            </svg>
+                            <span id="theme-toggle-text">Mudar Tema</span>
+                        </button>
+                        
+                        <button id="openTrashModalBtn" class="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-2 hidden">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Lixeira
+                        </button>
 
-                <button id="theme-toggle-btn" title="Alternar Tema"
-                    class="p-2 bg-bg-panel hover:bg-bg-solid-hover border border-border-element/50 rounded-full glow-on-hover">
-                    <svg id="theme-icon-sun" class="w-6 h-6 hidden text-text-muted" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
-                        </path>
-                    </svg>
-                    <svg id="theme-icon-moon" class="w-6 h-6 text-text-muted" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
-                        </path>
-                    </svg>
-                </button>
+                        <div class="w-full h-px bg-border-element my-1"></div>
+
+                        <button id="logout-btn" class="w-full px-4 py-2 text-left text-sm text-text-high hover:bg-bg-solid-hover hover:text-red-500 transition-colors flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                            Sair
+                        </button>
+                    </div>
+                </div>
             </div>
             <div>
                 <header class="mb-6">
@@ -444,7 +450,7 @@
                             dados</a>
                     </div>
 
-                    <div class="flex gap-6 mb-6 border-b border-border-subtle px-1">
+                    <div class="flex gap-6 mb-6 px-1">
                         <button id="tabFilterAll" onclick="window.setFilterTab('all')" class="pb-3 text-sm font-semibold text-accent-solid border-b-2 border-accent-solid transition-colors">Todos os Comandos</button>
                         <button id="tabFilterMine" onclick="window.setFilterTab('mine')" class="pb-3 text-sm font-semibold text-text-muted border-b-2 border-transparent hover:text-text-high transition-colors">Meus Comandos</button>
                     </div>
@@ -463,9 +469,6 @@
                         </div>
                         
                         <div class="relative flex gap-2">
-                            <button id="openTrashModalBtn" class="bg-red-500 text-white p-3 rounded-lg hover:opacity-90 transition-opacity hidden" title="Lixeira">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
                             <button id="openAddModalBtn" class="bg-accent-solid text-white p-3 rounded-lg hover:opacity-90 transition-opacity" title="Adicionar Comando">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                             </button>
@@ -533,17 +536,19 @@
         function checkAuth() {
             const loginOverlay = document.getElementById('login-overlay');
             const mainContent = document.getElementById('main-content');
-            const userInfoBadge = document.getElementById('user-info-badge');
+            const userMenuContainer = document.getElementById('user-menu-container');
             
             if (sessionToken && sessionUser) {
                 if(loginOverlay) loginOverlay.style.display = 'none';
                 if(mainContent) {
                     mainContent.classList.remove('hidden');
-                    setTimeout(() => { mainContent.classList.remove('opacity-0'); }, 10);
+                    // Small delay to allow display:block to apply before animating opacity
+                    setTimeout(() => {
+                        mainContent.classList.remove('opacity-0');
+                    }, 50);
                 }
-                
-                if(userInfoBadge) {
-                    userInfoBadge.classList.remove('hidden');
+                if(userMenuContainer) {
+                    userMenuContainer.classList.remove('hidden');
                     const name = sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || 'User';
                     document.getElementById('user-name-display').textContent = name;
                     document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
@@ -552,7 +557,7 @@
             } else {
                 if(loginOverlay) loginOverlay.style.display = 'flex';
                 if(mainContent) mainContent.classList.add('hidden', 'opacity-0');
-                if(userInfoBadge) userInfoBadge.classList.add('hidden');
+                if(userMenuContainer) userMenuContainer.classList.add('hidden');
                 return false;
             }
         }
@@ -1503,10 +1508,11 @@
                     }).join('');
 
                     const panelsHTML = subCommands.map((sc, scIdx) => {
-                        let displayText = (sc.text || '').trim();
+                        let isSql = sc.name.toLowerCase().endsWith('.sql');
                         let isDownloadLink = false;
-
-                        if (displayText.startsWith('https://') || displayText.startsWith('http://')) {
+                        let displayText = (sc.text || '').trim();
+                        
+                        if (displayText.startsWith('http')) {
                             isDownloadLink = true;
                             if (displayText.includes('drive.google.com/file/d/')) {
                                 const match = displayText.match(/\/file\/d\/([^\/]+)/);
@@ -1519,71 +1525,50 @@
                         const encoded = encodeURIComponent(displayText);
                         const encodedDesc = encodeURIComponent(sc.desc || 'Descrição não informada.').replace(/'/g, "%27");
                         const encodedMedia = sc.media_url ? encodeURIComponent(sc.media_url).replace(/'/g, "%27") : '';
+                        
                         const descHeaderHTML = (sc.desc && sc.desc.trim() !== '') ? `
-                            <div class="inline-flex items-center gap-2 mb-2 p-2 -ml-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group w-fit" onclick="showDescription('${encodedDesc}', '${encodedMedia}')">
-                                <div class="w-6 h-6 rounded-full bg-orange-500 group-hover:bg-orange-600 text-white text-xs font-bold flex items-center justify-center shrink-0 group-hover:scale-110 transition-all shadow-md" title="Ver descrição">!</div>
-                                <span class="text-sm font-medium text-text-high group-hover:text-accent-solid transition-colors">Para que serve este comando?</span>
-                                ${sc.media_url ? '<svg class="w-4 h-4 text-orange-400 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>' : ''}
+                            <div class="mb-4 bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 flex items-start gap-3 cursor-pointer hover:bg-orange-500/20 transition-all shadow-sm" onclick="showDescription('${encodedDesc}', '${encodedMedia}')">
+                                <div class="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-md mt-0.5">!</div>
+                                <div class="flex-grow">
+                                    <h4 class="text-sm font-semibold text-orange-400 mb-0.5">Para que serve este comando?</h4>
+                                    <p class="text-xs text-orange-400/80 line-clamp-1">${sc.desc.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+                                </div>
+                                ${sc.media_url ? '<svg class="w-4 h-4 text-orange-400 opacity-80 shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>' : ''}
                             </div>
                         ` : '';
+                        
                         let actionBtn = '';
-
                         const historyBtnHTML = `
-                                    <button onclick="event.stopPropagation(); viewHistory('${subject.id}', '${encodeURIComponent(subject.name).replace(/'/g, "%27")}')" class="px-3 py-1 bg-orange-500/10 border border-orange-500/30 text-orange-400 rounded hover:bg-orange-500/20 transition-colors text-xs font-semibold flex items-center gap-1 shrink-0 w-full justify-center" title="Histórico">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Histórico
-                                    </button>
+                            <button onclick="event.stopPropagation(); viewHistory('${subject.id}', '${encodeURIComponent(subject.name).replace(/'/g, "%27")}')" class="px-2 py-1 text-text-muted hover:text-text-high hover:bg-white/10 rounded transition-colors text-xs font-medium flex items-center gap-1" title="Histórico">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Histórico
+                            </button>
                         `;
 
                         if (isSql) {
                             const fileName = sc.name.endsWith('.sql') ? sc.name : sc.name + '.sql';
-                            actionBtn = `
-                            <div class="relative flex flex-col items-center gap-2">
-                                <button data-command="${encoded}" onclick="downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${fileName}')" class="px-3 py-1 bg-accent-solid text-white rounded hover:opacity-90 transition-colors text-xs font-semibold flex items-center gap-1 shrink-0 w-full justify-center" title="Descarregar ficheiro">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
-                                </button>
-                                ${historyBtnHTML}
-                            </div>`;
+                            actionBtn = `${historyBtnHTML} <button data-command="${encoded}" onclick="downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${fileName}')" class="px-2 py-1 text-accent-solid hover:text-white hover:bg-accent-solid/20 rounded transition-colors text-xs font-medium flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download</button>`;
                         } else if (isDownloadLink) {
-                            actionBtn = `
-                            <div class="relative flex flex-col items-center gap-2">
-                                <a href="${displayText}" target="_blank" class="px-3 py-1 bg-bg-panel border border-border-element text-text-high rounded hover:bg-bg-solid-hover transition-colors text-xs font-semibold flex items-center gap-1 shrink-0 w-full justify-center" title="Download">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
-                                </a>
-                                ${historyBtnHTML}
-                            </div>`;
+                            actionBtn = `${historyBtnHTML} <a href="${displayText}" target="_blank" class="px-2 py-1 text-accent-solid hover:text-white hover:bg-accent-solid/20 rounded transition-colors text-xs font-medium flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Acessar</a>`;
                         } else {
-                            actionBtn = `
-                            <div class="relative flex flex-col items-center gap-2">
-                                <button data-command="${encoded}" onclick="copyCommand(decodeURIComponent(this.getAttribute('data-command')), this)" class="px-3 py-1 bg-bg-panel border border-border-element text-text-high rounded hover:bg-bg-solid-hover transition-colors text-xs font-semibold flex items-center gap-1 shrink-0 w-full justify-center" title="Copiar">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copiar
-                                </button>
-                                ${historyBtnHTML}
-                            </div>`;
+                            actionBtn = `${historyBtnHTML} <button data-command="${encoded}" onclick="copyCommand(decodeURIComponent(this.getAttribute('data-command')), this)" class="px-2 py-1 text-text-high bg-white/5 hover:bg-white/10 border border-white/10 rounded transition-colors text-xs font-medium flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copiar</button>`;
                         }
 
                         const hiddenClass = scIdx === 0 ? '' : 'hidden';
+                        const safeText = displayText.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        
                         return `
-                            <div id="panel-${subject.id}-${scIdx}" class="tab-panel-${subject.id} ${hiddenClass}">
+                            <div id="panel-${subject.id}-${scIdx}" class="tab-panel-${subject.id} ${hiddenClass} p-4">
                                 ${descHeaderHTML}
-                                <div class="flex justify-between items-start gap-4">
-                                    ${(() => {
-                                        const lines = displayText.split('\n');
-                                        if (lines.length > 10) {
-                                            const previewText = lines.slice(0, 10).join('\n');
-                                            return `
-                                            <div class="relative w-full flex-grow min-w-0">
-                                                <pre id="pre-preview-${subject.id}-${scIdx}" class="text-xs text-text-muted whitespace-pre-wrap font-mono p-3 pb-8 bg-black/20 rounded-md border border-border-subtle overflow-hidden">${previewText}</pre>
-                                                <div id="pre-expand-overlay-${subject.id}-${scIdx}" class="absolute bottom-2 left-0 right-0 flex items-center justify-center">
-                                                    <button onclick="expandCommand('${subject.id}', '${scIdx}')" class="text-accent-solid text-xs font-bold hover:underline bg-transparent border-none cursor-pointer">Expandir</button>
-                                                </div>
-                                                <pre id="pre-full-${subject.id}-${scIdx}" class="hidden text-xs text-text-muted whitespace-pre-wrap font-mono max-h-[300px] overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-border-subtle">${displayText}</pre>
-                                            </div>
-                                            `;
-                                        } else {
-                                            return `<pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow min-w-0 font-mono overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-border-subtle w-full">${displayText}</pre>`;
-                                        }
-                                    })()}
-                                    ${actionBtn}
+                                <div class="rounded-xl border border-border-subtle bg-bg-panel overflow-hidden shadow-sm">
+                                    <div class="flex items-center justify-between px-4 py-2.5 border-b border-border-subtle bg-black/40">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+                                            <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+                                            <div class="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">${actionBtn}</div>
+                                    </div>
+                                    <pre class="text-[13px] text-text-high whitespace-pre-wrap font-mono overflow-x-auto custom-scrollbar p-4 bg-transparent">${safeText}</pre>
                                 </div>
                             </div>
                         `;
@@ -1593,18 +1578,18 @@
                     <div class="panel border border-border-subtle rounded-md mb-3 bg-white/5">
                         <div class="flex items-center justify-between p-3 cursor-pointer group hover:bg-white/10 transition-colors" onclick="if(event.target.closest('.action-buttons')) return; const content = this.nextElementSibling; content.classList.toggle('hidden'); this.querySelector('.cmd-chevron').classList.toggle('rotate-180'); if(content.classList.contains('hidden')){ content.querySelectorAll('[id^=\\'pre-preview-\\']').forEach(el => el.classList.remove('hidden')); content.querySelectorAll('[id^=\\'pre-expand-overlay-\\']').forEach(el => el.classList.remove('hidden')); content.querySelectorAll('[id^=\\'pre-full-\\']').forEach(el => el.classList.add('hidden')); }">
                             <div class="flex flex-col">
-                                <span class="font-semibold text-text-high">${highlightMatch(subject.name, searchTerm)}</span>
+                                <span class="font-semibold text-text-high">\${highlightMatch(subject.name, searchTerm)}</span>
                             </div>
                             <div class="flex items-center gap-4 action-buttons">
-                                <div class="flex items-center gap-2 overflow-hidden transition-all duration-300 max-w-0 opacity-0 action-drawer" id="drawer-${subject.id}">
-                                    <button onclick="event.stopPropagation(); deleteCommand('${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-red-400 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 rounded transition-colors whitespace-nowrap" title="Excluir">
+                                <div class="flex items-center gap-2 overflow-hidden transition-all duration-300 max-w-0 opacity-0 action-drawer" id="drawer-\${subject.id}">
+                                    <button onclick="event.stopPropagation(); deleteCommand('\${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-red-400 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 rounded transition-colors whitespace-nowrap" title="Excluir">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Excluir
                                     </button>
-                                    <button onclick="event.stopPropagation(); editCommand('${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-accent-solid border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 rounded transition-colors whitespace-nowrap" title="Editar">
+                                    <button onclick="event.stopPropagation(); editCommand('\${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-accent-solid border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 rounded transition-colors whitespace-nowrap" title="Editar">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg> Editar
                                     </button>
                                 </div>
-                                <button onclick="event.stopPropagation(); toggleActionDrawer('drawer-${subject.id}')" class="p-1 hover:bg-bg-solid-hover rounded transition-colors text-text-muted shrink-0" title="Opções">
+                                <button onclick="event.stopPropagation(); toggleActionDrawer('drawer-\${subject.id}')" class="p-1 hover:bg-bg-solid-hover rounded transition-colors text-text-muted shrink-0" title="Opções">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                                 </button>
                                 <svg class="cmd-chevron w-5 h-5 text-text-muted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -1612,10 +1597,10 @@
                         </div>
                         <div class="hidden pt-0 border-t border-border-subtle bg-[color:var(--bg-app)] rounded-b-md">
                             <div class="flex overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden gap-1 pt-3 px-3 border-b border-border-element">
-                                ${tabsHTML}
+                                \${tabsHTML}
                             </div>
                             <div class="panels-container p-3 bg-[#1e293b] rounded-b-md">
-                                ${panelsHTML}
+                                \${panelsHTML}
                             </div>
                         </div>
                     </div>
@@ -1734,6 +1719,12 @@
                             d.classList.add('max-w-0', 'opacity-0');
                             d.classList.remove('max-w-[200px]', 'opacity-100');
                         });
+                    }
+                    if (!e.target.closest('#user-menu-container')) {
+                        const userDropdown = document.getElementById('user-dropdown');
+                        if (userDropdown) {
+                            userDropdown.classList.add('hidden');
+                        }
                     }
                     if (!e.target.closest('header')) {
                         suggestionsContainer.classList.remove('expanded');
