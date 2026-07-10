@@ -1002,8 +1002,10 @@
 
                         if (isUpdate && item.old_content && item.new_content) {
                             try {
-                                const oldStr = formatCommandForDiff(item.old_content.command);
-                                const newStr = formatCommandForDiff(item.new_content.command);
+                                const oldName = item.old_content.name || 'Sem título';
+                                const newName = item.new_content.name || 'Sem título';
+                                const oldStr = `TÍTULO PRINCIPAL: ${oldName}\n\n` + formatCommandForDiff(item.old_content.command);
+                                const newStr = `TÍTULO PRINCIPAL: ${newName}\n\n` + formatCommandForDiff(item.new_content.command);
                                 
                                 const diff = window.Diff.diffLines(oldStr, newStr);
                                 
@@ -1023,7 +1025,8 @@
                             }
                         } else if (!isUpdate && item.new_content) {
                             try {
-                                const newStr = formatCommandForDiff(item.new_content.command);
+                                const newName = item.new_content.name || 'Sem título';
+                                const newStr = `TÍTULO PRINCIPAL: ${newName}\n\n` + formatCommandForDiff(item.new_content.command);
                                 diffHTML = `<div class="mt-3 bg-[#1e293b] rounded p-3 overflow-x-auto text-xs font-mono whitespace-pre-wrap text-text-muted border-l-2 border-green-500 bg-green-500/5">${newStr}</div>`;
                             } catch(e) {}
                         }
@@ -1292,31 +1295,36 @@
                         ` : '';
                         let actionBtn = '';
 
-                        if (isSql) {
-                            const fileName = sc.name.endsWith('.sql') ? sc.name : sc.name + '.sql';
-                            actionBtn = `
-                            <button data-command="${encoded}" onclick="downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${fileName}')" class="px-3 py-1 bg-accent-solid text-white rounded hover:opacity-90 transition-colors text-xs font-semibold flex items-center gap-1 shrink-0" title="Descarregar ficheiro">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
-                            </button>`;
-                        } else if (isDownloadLink) {
-                            actionBtn = `
-                            <div class="flex gap-2 items-center">
-                                <a href="${displayText}" target="_blank" class="px-3 py-1 bg-bg-panel border border-border-element text-text-high rounded hover:bg-bg-solid-hover transition-colors text-xs font-semibold flex items-center gap-1 shrink-0" title="Download">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
-                                </a>
-                            </div>`;
-                        } else {
-                            actionBtn = `
-                            <div class="flex gap-2 items-center">
-
-                                <div class="relative flex flex-col items-center gap-2">
-                                    <button data-command="${encoded}" onclick="copyCommand(decodeURIComponent(this.getAttribute('data-command')), this)" class="px-3 py-1 bg-bg-panel border border-border-element text-text-high rounded hover:bg-bg-solid-hover transition-colors text-xs font-semibold flex items-center gap-1 shrink-0 w-full justify-center" title="Copiar">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copiar
-                                    </button>
+                        const historyBtnHTML = `
                                     <button onclick="event.stopPropagation(); viewHistory('${subject.id}', '${encodeURIComponent(subject.name.replace(/'/g, "\\'"))}')" class="px-3 py-1 bg-orange-500/10 border border-orange-500/30 text-orange-400 rounded hover:bg-orange-500/20 transition-colors text-xs font-semibold flex items-center gap-1 shrink-0 w-full justify-center" title="Histórico">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Histórico
                                     </button>
-                                </div>
+                        `;
+
+                        if (isSql) {
+                            const fileName = sc.name.endsWith('.sql') ? sc.name : sc.name + '.sql';
+                            actionBtn = `
+                            <div class="relative flex flex-col items-center gap-2">
+                                <button data-command="${encoded}" onclick="downloadFile(decodeURIComponent(this.getAttribute('data-command')), '${fileName}')" class="px-3 py-1 bg-accent-solid text-white rounded hover:opacity-90 transition-colors text-xs font-semibold flex items-center gap-1 shrink-0 w-full justify-center" title="Descarregar ficheiro">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
+                                </button>
+                                ${historyBtnHTML}
+                            </div>`;
+                        } else if (isDownloadLink) {
+                            actionBtn = `
+                            <div class="relative flex flex-col items-center gap-2">
+                                <a href="${displayText}" target="_blank" class="px-3 py-1 bg-bg-panel border border-border-element text-text-high rounded hover:bg-bg-solid-hover transition-colors text-xs font-semibold flex items-center gap-1 shrink-0 w-full justify-center" title="Download">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download
+                                </a>
+                                ${historyBtnHTML}
+                            </div>`;
+                        } else {
+                            actionBtn = `
+                            <div class="relative flex flex-col items-center gap-2">
+                                <button data-command="${encoded}" onclick="copyCommand(decodeURIComponent(this.getAttribute('data-command')), this)" class="px-3 py-1 bg-bg-panel border border-border-element text-text-high rounded hover:bg-bg-solid-hover transition-colors text-xs font-semibold flex items-center gap-1 shrink-0 w-full justify-center" title="Copiar">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copiar
+                                </button>
+                                ${historyBtnHTML}
                             </div>`;
                         }
 
@@ -1399,7 +1407,11 @@
                     try {
                         const scs = JSON.parse(cmd.command);
                         if (Array.isArray(scs)) {
-                            subMatches = scs.some(sc => normalizeString(sc.name).includes(searchTerm));
+                            subMatches = scs.some(sc => {
+                                const nameMatches = normalizeString(sc.name).includes(searchTerm);
+                                const descMatches = sc.desc && normalizeString(sc.desc).includes(searchTerm);
+                                return nameMatches || descMatches;
+                            });
                         }
                     } catch (e) {}
                     return subMatches;
