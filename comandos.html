@@ -1036,7 +1036,12 @@
                     window.editingCmdId = null;
                     await loadData();
                 } catch (e) {
-                    window.showCustomAlert('Ocorreu um erro ao salvar no banco de dados. ' + e.message);
+                    if (e.message && e.message.toLowerCase().includes('jwt expired')) {
+                        window.showCustomAlert('Sua sessão expirou por segurança. Faça login novamente.');
+                        document.getElementById('logout-btn')?.click();
+                    } else {
+                        window.showCustomAlert('Ocorreu um erro ao salvar no banco de dados. ' + e.message);
+                    }
                 } finally {
                     saveCommandBtn.textContent = 'Salvar Comando';
                     saveCommandBtn.disabled = false;
@@ -1232,7 +1237,12 @@
                     if (!res.ok) throw new Error('Erro ao excluir');
                     await loadData();
                 } catch (e) {
-                    window.showCustomAlert('Erro: ' + e.message);
+                    if (e.message && e.message.toLowerCase().includes('jwt expired')) {
+                        window.showCustomAlert('Sua sessão expirou por segurança. Faça login novamente.');
+                        document.getElementById('logout-btn')?.click();
+                    } else {
+                        window.showCustomAlert('Erro: ' + e.message);
+                    }
                 } finally {
                     commandToDeleteId = null;
                     document.getElementById('deleteModal').classList.add('hidden');
@@ -1278,7 +1288,12 @@
                     const resComandos = await fetch(`${SUPABASE_URL}/rest/v1/comandos?select=*`, { headers });
 
                     if (!resComandos.ok) {
-                        throw new Error('HTTP error fetching from Supabase');
+                        let errMsg = 'HTTP error fetching from Supabase';
+                        try {
+                            const errData = await resComandos.json();
+                            errMsg = errData.message || errMsg;
+                        } catch(e) {}
+                        throw new Error(errMsg);
                     }
 
                     const rawComandos = await resComandos.json();
@@ -1307,9 +1322,14 @@
                     isDataLoaded = true;
                 } catch (error) {
                     console.error('Erro ao carregar dados', error);
-                    const infoMessage = document.getElementById('infoMessage');
-                    infoMessage.textContent = 'Erro ao carregar banco de dados: ' + error.message;
-                    document.getElementById('infoModal').classList.remove('hidden');
+                    if (error.message && error.message.toLowerCase().includes('jwt expired')) {
+                        window.showCustomAlert('Sua sessão expirou por segurança. Faça login novamente.');
+                        document.getElementById('logout-btn')?.click();
+                    } else {
+                        const infoMessage = document.getElementById('infoMessage');
+                        infoMessage.textContent = 'Erro ao carregar banco de dados: ' + error.message;
+                        document.getElementById('infoModal').classList.remove('hidden');
+                    }
                 } finally {
                     categoriesContainer.classList.remove('loading');
                 }
