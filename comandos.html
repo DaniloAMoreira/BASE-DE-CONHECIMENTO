@@ -443,6 +443,12 @@
                             class="text-2xl sm:text-3xl font-bold pb-1 tab-active transition-colors">Comandos banco de
                             dados</a>
                     </div>
+
+                    <div class="flex gap-6 mb-6 border-b border-border-subtle px-1">
+                        <button id="tabFilterAll" onclick="window.setFilterTab('all')" class="pb-3 text-sm font-semibold text-accent-solid border-b-2 border-accent-solid transition-colors">Todos os Comandos</button>
+                        <button id="tabFilterMine" onclick="window.setFilterTab('mine')" class="pb-3 text-sm font-semibold text-text-muted border-b-2 border-transparent hover:text-text-high transition-colors">Meus Comandos</button>
+                    </div>
+
                     <div class="relative flex gap-2 w-full">
                         <div class="relative flex-grow">
                             <input type="text" id="searchInput" placeholder="Pesquisar por categorias e comandos..."
@@ -489,6 +495,20 @@
 
         let sessionToken = localStorage.getItem('supabaseToken');
         let sessionUser = JSON.parse(localStorage.getItem('supabaseUser') || 'null');
+
+        const parseCommandData = (cmdStr) => {
+            try {
+                const parsed = typeof cmdStr === 'string' ? JSON.parse(cmdStr) : cmdStr;
+                if (Array.isArray(parsed)) {
+                    return { is_private: false, subCommands: parsed };
+                } else if (parsed && typeof parsed === 'object') {
+                    if (Array.isArray(parsed.subCommands)) {
+                        return { is_private: !!parsed.is_private, subCommands: parsed.subCommands };
+                    }
+                }
+            } catch(e) {}
+            return { is_private: false, subCommands: [{ name: 'Comando', text: typeof cmdStr === 'string' ? cmdStr : '' }] };
+        };
 
         function getAuthHeaders() {
             const headers = {
@@ -863,6 +883,7 @@
                     document.querySelector('#addModal h3').textContent = 'Adicionar Novo Comando';
 
                     document.getElementById('commandTitleInput').value = '';
+                    document.getElementById('commandVisibilityInput').value = 'public';
 
                     window.modalSubCommands = [];
                     window.addNewModalSubCommand();
@@ -952,7 +973,8 @@
                 saveCommandBtn.disabled = true;
 
                 try {
-                    const data = { name: title, command: JSON.stringify(subCommands) };
+                    const isPrivate = document.getElementById('commandVisibilityInput').value === 'private';
+                    const data = { name: title, command: JSON.stringify({ is_private: isPrivate, subCommands: subCommands }) };
                     const targetUrl = isEditing 
                         ? `${SUPABASE_URL}/rest/v1/comandos?id=eq.${window.editingCmdId}`
                         : `${SUPABASE_URL}/rest/v1/comandos`;
@@ -991,7 +1013,7 @@
                             action: isEditing ? 'UPDATE' : 'CREATE',
                             user_name: userName,
                             old_content: oldCmd ? { name: oldCmd.name, command: oldCmd.command } : null,
-                            new_content: { name: title, command: JSON.stringify(subCommands), ...(editReason ? { reason: editReason } : {}) }
+                            new_content: { name: title, command: JSON.stringify({ is_private: isPrivate, subCommands: subCommands }), ...(editReason ? { reason: editReason } : {}) }
                         };
 
                         await fetch(`${SUPABASE_URL}/rest/v1/command_history`, {
@@ -1096,7 +1118,8 @@
                         
                         const formatCommandForDiff = (cmdJsonStr) => {
                             try {
-                                const subCommands = typeof cmdJsonStr === 'string' ? JSON.parse(cmdJsonStr) : cmdJsonStr;
+                                const parsedData = parseCommandData(cmdJsonStr);
+                                const subCommands = parsedData.subCommands;
                                 if (!Array.isArray(subCommands)) return typeof cmdJsonStr === 'string' ? cmdJsonStr : JSON.stringify(cmdJsonStr, null, 2);
                                 return subCommands.map((sc, i) => {
                                     let res = `[GAVETA ${i + 1}] ${sc.name || 'Sem título'}`;
@@ -1228,17 +1251,14 @@
                     window.editingCmdCategoryId = targetCmd.categoria_id;
                     document.getElementById('commandTitleInput').value = targetCmd.name;
 
-                    let subCmds = [];
-                    try {
-                        subCmds = JSON.parse(targetCmd.command);
-                        if (!Array.isArray(subCmds)) throw new Error('Not array');
-                    } catch (e) {
-                        subCmds = [{ name: 'Comando', text: targetCmd.command || '' }];
-                    }
+                    const parsedData = parseCommandData(targetCmd.command);
+                    let subCmds = parsedData.subCommands;
 
                     if (subCmds.length === 0) {
                         subCmds = [{ name: '', text: '', desc: '' }];
                     }
+                    
+                    document.getElementById('commandVisibilityInput').value = parsedData.is_private ? 'private' : 'public';
                     
                     window.modalSubCommands = subCmds;
                     window.activeModalTabIndex = 0;
@@ -1263,18 +1283,23 @@
 
                     const rawComandos = await resComandos.json();
 
-                    allComandos = rawComandos;
+                    const userName = sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0] || 'Desconhecido';
+
+                    allComandos = rawComandos.filter(cmd => {
+                        const parsedData = parseCommandData(cmd.command);
+                        if (parsedData.is_private && cmd.created_by_name !== userName) {
+                            return false;
+                        }
+                        return true;
+                    });
+
                     allComandos.sort((a, b) => a.name.localeCompare(b.name));
 
                     const suggestionSet = new Set();
                     allComandos.forEach(sub => {
                         suggestionSet.add(sub.name);
-                        try {
-                            const scs = JSON.parse(sub.command);
-                            if (Array.isArray(scs)) {
-                                scs.forEach(sc => suggestionSet.add(sc.name));
-                            }
-                        } catch (e) {}
+                        const parsedData = parseCommandData(sub.command);
+                        parsedData.subCommands.forEach(sc => suggestionSet.add(sc.name));
                     });
                     allSuggestions = [...suggestionSet];
 
@@ -1397,14 +1422,8 @@
                     const categoryElement = document.createElement('div');
                     
                     const isSql = subject.name.toLowerCase().endsWith('.sql');
-                    let subCommands = [];
-
-                    try {
-                        subCommands = JSON.parse(subject.command);
-                        if (!Array.isArray(subCommands)) throw new Error('Not array');
-                    } catch (e) {
-                        subCommands = [{ name: 'Comando', text: subject.command || '' }];
-                    }
+                    const parsedData = parseCommandData(subject.command);
+                    let subCommands = parsedData.subCommands;
 
                     const tabsHTML = subCommands.map((sc, scIdx) => {
                         const isActive = scIdx === 0;
@@ -1535,20 +1554,46 @@
                 });
             };
 
+            window.currentFilterTab = 'all';
+
+            window.setFilterTab = (tab) => {
+                window.currentFilterTab = tab;
+                
+                const tabAll = document.getElementById('tabFilterAll');
+                const tabMine = document.getElementById('tabFilterMine');
+                
+                if (tab === 'all') {
+                    tabAll.className = "pb-3 text-sm font-semibold text-accent-solid border-b-2 border-accent-solid transition-colors";
+                    tabMine.className = "pb-3 text-sm font-semibold text-text-muted border-b-2 border-transparent hover:text-text-high transition-colors";
+                } else {
+                    tabMine.className = "pb-3 text-sm font-semibold text-accent-solid border-b-2 border-accent-solid transition-colors";
+                    tabAll.className = "pb-3 text-sm font-semibold text-text-muted border-b-2 border-transparent hover:text-text-high transition-colors";
+                }
+                
+                handleSearch(); // Apply filter
+            };
+
             const handleSearch = () => {
                 if (!isDataLoaded) return;
                 const searchTerm = normalizeString(searchInput.value.trim());
-                if (!searchTerm) {
-                    render(allComandos);
-                    return;
-                }
+                
                 const searchResults = allComandos.filter(cmd => {
+                    if (window.currentFilterTab === 'mine') {
+                        const userName = sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0] || 'Desconhecido';
+                        if (cmd.created_by_name !== userName) {
+                            return false;
+                        }
+                    }
+
+                    if (!searchTerm) return true;
+
                     const catNameMatches = normalizeString(cmd.name).includes(searchTerm);
                     if (catNameMatches) return true;
                     
                     let subMatches = false;
                     try {
-                        const scs = JSON.parse(cmd.command);
+                        const parsedData = parseCommandData(cmd.command);
+                        const scs = parsedData.subCommands;
                         if (Array.isArray(scs)) {
                             subMatches = scs.some(sc => {
                                 const nameMatches = normalizeString(sc.name).includes(searchTerm);
@@ -1654,9 +1699,18 @@
             <h3 class="text-xl font-semibold mb-4 text-accent-solid">Adicionar Novo Comando</h3>
             
             <div class="space-y-4 mb-6 overflow-y-auto custom-scrollbar pr-2 flex-grow">
-                <div>
-                    <label class="block text-sm font-medium text-text-muted mb-1">Título do Comando</label>
-                    <input type="text" id="commandTitleInput" placeholder="Ex: Update LC Sistemas..." class="w-full rounded-lg px-3 py-2 bg-bg-panel border border-border-element text-text-high focus:outline-none focus:ring-2 focus:ring-accent">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-medium text-text-muted mb-1">Título do Comando</label>
+                        <input type="text" id="commandTitleInput" placeholder="Ex: Update LC Sistemas..." class="w-full rounded-lg px-3 py-2 bg-bg-panel border border-border-element text-text-high focus:outline-none focus:ring-2 focus:ring-accent">
+                    </div>
+                    <div class="sm:col-span-1">
+                        <label class="block text-sm font-medium text-text-muted mb-1">Visibilidade</label>
+                        <select id="commandVisibilityInput" class="w-full rounded-lg px-3 py-2 bg-[color:var(--bg-app)] border border-border-element text-text-high focus:outline-none focus:ring-2 focus:ring-accent">
+                            <option value="public">Público</option>
+                            <option value="private">Privado</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div>
