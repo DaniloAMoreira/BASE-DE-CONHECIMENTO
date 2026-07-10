@@ -55,26 +55,35 @@
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-b: cubic-bezier(0.34, 1.56, 0.64, 1);
   --t: 0.22s;
+
+  /* Shadows */
+  --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.14);
+  --card-shadow-open: 0 10px 40px var(--glow-sm);
 }
 
 /* LIGHT THEME */
 [data-theme="light"] {
-  --bg: #f2f5fc;
-  --bg-grid: rgba(37, 99, 235, 0.03);
+  --bg: #e8eaf1;
+  --bg-grid: rgba(0, 0, 0, 0); /* No grid in light mode */
   --surface: #ffffff;
-  --surface-2: #eef2ff;
-  --surface-3: #e4eaff;
-  --border: rgba(37, 99, 235, 0.09);
-  --border-md: rgba(37, 99, 235, 0.17);
-  --border-hi: rgba(37, 99, 235, 0.32);
+  --surface-2: #f8fafc;
+  --surface-3: #f1f5f9;
+  --border: rgba(11, 21, 38, 0.05);
+  --border-md: rgba(11, 21, 38, 0.10);
+  --border-hi: rgba(11, 21, 38, 0.16);
   --text: #0b1526;
   --text-2: #4d6289;
-  --text-3: #b4c4de;
+  --text-3: #94a3b8;
   --blue: #2563eb;
   --teal: #0d9488;
-  --glow: rgba(37, 99, 235, 0.09);
-  --glow-sm: rgba(37, 99, 235, 0.04);
+  --glow: rgba(37, 99, 235, 0.06);
+  --glow-sm: rgba(37, 99, 235, 0.03);
   --danger: #dc2626;
+  
+  --card-shadow: none; /* No shadow */
+  --card-shadow-hover: 0 8px 24px rgba(11, 21, 38, 0.04);
+  --card-shadow-open: 0 12px 32px rgba(11, 21, 38, 0.06);
 }
 
 /* ── RESET ── */
@@ -121,6 +130,10 @@ body::before {
   z-index: 0;
   pointer-events: none;
   opacity: 0.55;
+}
+
+[data-theme="light"] #webgl-bg {
+  display: none;
 }
 
 /* ── APP ── */
@@ -371,12 +384,10 @@ body::before {
 #searchInput {
   width: 100%;
   background: var(--surface);
-  border: 1px solid var(--border-md);
+  border: none;
   color: var(--text);
   font-family: 'Fira Code', monospace;
   font-size: 0.875rem;
-  padding: 1rem 3rem 1rem 3rem;
-  border-radius: var(--radius);
   outline: none;
   transition: all var(--t) var(--ease);
 }
@@ -386,9 +397,8 @@ body::before {
 }
 
 #searchInput:focus {
-  border-color: var(--blue);
   background: var(--surface-2);
-  box-shadow: 0 0 0 4px var(--glow-sm), 0 10px 40px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 0 0 4px var(--glow-sm), var(--card-shadow-open);
 }
 
 /* ── SUGGESTIONS ── */
@@ -483,6 +493,7 @@ body::before {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+  box-shadow: var(--card-shadow);
   transition:
     border-color var(--t) var(--ease),
     box-shadow var(--t) var(--ease),
@@ -533,12 +544,12 @@ body::before {
 .category-card:not(.is-open):hover {
   border-color: var(--border-md);
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .category-card.is-open {
   border-color: var(--border-hi);
-  box-shadow: 0 10px 40px var(--glow-sm);
+  box-shadow: var(--card-shadow-open);
 }
 
 /* ── HEADER DO CARD ── */

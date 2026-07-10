@@ -449,15 +449,17 @@
                             dados</a>
                     </div>
 
-                    <div class="flex gap-6 mb-6 border-b border-border-subtle px-1">
-                        <button id="tabFilterAll" onclick="window.setFilterTab('all')" class="pb-3 text-sm font-semibold text-accent-solid border-b-2 border-accent-solid transition-colors">Todos os Comandos</button>
-                        <button id="tabFilterMine" onclick="window.setFilterTab('mine')" class="pb-3 text-sm font-semibold text-text-muted border-b-2 border-transparent hover:text-text-high transition-colors">Meus Comandos</button>
+                    <div class="relative flex gap-6 mb-6 px-1 w-max">
+                        <button id="tabFilterAll" onclick="window.setFilterTab('all')" class="relative z-10 pb-3 text-sm font-semibold text-accent-solid transition-colors">Todos os Comandos</button>
+                        <button id="tabFilterMine" onclick="window.setFilterTab('mine')" class="relative z-10 pb-3 text-sm font-semibold text-text-muted hover:text-text-high transition-colors">Meus Comandos</button>
+                        <div id="tabIndicator" class="absolute bottom-0 left-0 h-0.5 bg-accent-solid transition-all duration-300 pointer-events-none" style="width: 0px; transform: translateX(0px); transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);"></div>
                     </div>
 
-                    <div class="relative flex gap-2 w-full">
+                    <div class="relative flex gap-2 w-full items-center">
                         <div class="relative flex-grow">
-                            <input type="text" id="searchInput" placeholder=""
-                                class="w-full bg-transparent border-transparent pl-10 pr-4 py-3 focus:outline-none focus:border-transparent focus:ring-0 text-text-high transition-all duration-300 placeholder:text-text-muted"
+                            <input type="text" id="searchInput" placeholder="Pesquisar por categorias e comandos..."
+                                class="w-full bg-bg-panel border border-transparent rounded-lg pl-10 pr-4 py-3 focus:border-transparent text-text-high transition-all duration-300 placeholder:text-text-muted"
+                                style="outline: none !important; box-shadow: none !important;"
                                 autocomplete="off">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -711,7 +713,12 @@
                 if (searchInput) {
                     const phrases = [
                         "Pesquisar por categorias...",
+                        "Buscar produtos com preço menor que custo...",
                         "Como zerar o IPI?",
+                        "Tirar caracteres especiais...",
+                        "Ajuste de estoque...",
+                        "ERRO IMENDES...",
+                        "Set Produto...",
                         "Comandos SQL úteis...",
                         "Buscar produtos sem NCM...",
                         "Corrigir tributação..."
@@ -1703,17 +1710,33 @@
                 
                 const tabAll = document.getElementById('tabFilterAll');
                 const tabMine = document.getElementById('tabFilterMine');
+                const indicator = document.getElementById('tabIndicator');
                 
                 if (tab === 'all') {
-                    tabAll.className = "pb-3 text-sm font-semibold text-accent-solid border-b-2 border-accent-solid transition-colors";
-                    tabMine.className = "pb-3 text-sm font-semibold text-text-muted border-b-2 border-transparent hover:text-text-high transition-colors";
+                    tabAll.className = "relative z-10 pb-3 text-sm font-semibold text-accent-solid transition-colors";
+                    tabMine.className = "relative z-10 pb-3 text-sm font-semibold text-text-muted hover:text-text-high transition-colors";
+                    if (indicator && tabAll.offsetWidth) {
+                        indicator.style.width = tabAll.offsetWidth + 'px';
+                        indicator.style.transform = `translateX(${tabAll.offsetLeft}px)`;
+                    }
                 } else {
-                    tabMine.className = "pb-3 text-sm font-semibold text-accent-solid border-b-2 border-accent-solid transition-colors";
-                    tabAll.className = "pb-3 text-sm font-semibold text-text-muted border-b-2 border-transparent hover:text-text-high transition-colors";
+                    tabMine.className = "relative z-10 pb-3 text-sm font-semibold text-accent-solid transition-colors";
+                    tabAll.className = "relative z-10 pb-3 text-sm font-semibold text-text-muted hover:text-text-high transition-colors";
+                    if (indicator && tabMine.offsetWidth) {
+                        indicator.style.width = tabMine.offsetWidth + 'px';
+                        indicator.style.transform = `translateX(${tabMine.offsetLeft}px)`;
+                    }
                 }
                 
                 handleSearch(); // Apply filter
             };
+
+            // Initializar a posição da linha animada ao carregar
+            setTimeout(() => {
+                if (window.setFilterTab && window.currentFilterTab) {
+                    window.setFilterTab(window.currentFilterTab);
+                }
+            }, 100);
 
             const handleSearch = () => {
                 if (!isDataLoaded) return;
