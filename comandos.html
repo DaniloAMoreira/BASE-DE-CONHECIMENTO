@@ -1553,7 +1553,8 @@
                             subMatches = scs.some(sc => {
                                 const nameMatches = normalizeString(sc.name).includes(searchTerm);
                                 const descMatches = sc.desc && normalizeString(sc.desc).includes(searchTerm);
-                                return nameMatches || descMatches;
+                                const textMatches = sc.text && normalizeString(sc.text).includes(searchTerm);
+                                return nameMatches || descMatches || textMatches;
                             });
                         }
                     } catch (e) {}
