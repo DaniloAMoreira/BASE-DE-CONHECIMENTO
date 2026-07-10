@@ -752,9 +752,67 @@
                     <label class="block text-xs font-medium text-text-muted mb-1">Descrição (Obrigatório)</label>
                     <input type="text" value="${(activeSc.desc || '').replace(/"/g, '&quot;')}" class="w-full rounded-md px-3 py-1.5 mb-3 bg-[color:var(--bg-app)] border border-border-element text-text-high focus:outline-none focus:ring-1 focus:ring-accent text-sm" placeholder="Para que serve este comando?" oninput="updateActiveModalTab('desc', this.value)">
                     
+                    <label class="block text-xs font-medium text-text-muted mb-1">Anexo de Mídia (Opcional)</label>
+                    <div class="mb-3 flex items-center gap-3">
+                        ${activeSc.media_url ? `
+                            <div class="relative group shrink-0">
+                                <img src="${activeSc.media_url}" class="h-10 w-10 object-cover rounded border border-border-element bg-black/20" alt="Preview">
+                                <button type="button" onclick="removeMediaModal()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:scale-110 transition-transform" title="Remover Imagem">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                        ` : ''}
+                        <label class="cursor-pointer flex items-center justify-center px-3 py-1.5 bg-[color:var(--bg-app)] border border-border-element rounded-md hover:bg-bg-solid-hover transition-colors text-xs font-medium text-text-high">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <span id="mediaUploadBtnLabel">${activeSc.media_url ? 'Trocar Imagem' : 'Anexar Imagem'}</span>
+                            <input type="file" accept="image/*" class="hidden" onchange="uploadMediaModal(this)">
+                        </label>
+                    </div>
+
                     <label class="block text-xs font-medium text-text-muted mb-1">Comando SQL</label>
                     <textarea rows="4" class="w-full rounded-md px-3 py-1.5 bg-[color:var(--bg-app)] border border-border-element text-text-high focus:outline-none focus:ring-1 focus:ring-accent font-mono text-xs custom-scrollbar flex-grow min-h-[80px]" oninput="updateActiveModalTab('text', this.value)">${activeSc.text || ''}</textarea>
                 `;
+            };
+
+            window.uploadMediaModal = async (fileInput) => {
+                const file = fileInput.files[0];
+                if (!file) return;
+                
+                const activeSc = window.modalSubCommands[window.activeModalTabIndex];
+                const btnLabel = document.getElementById('mediaUploadBtnLabel');
+                const origText = btnLabel.textContent;
+                btnLabel.textContent = 'Enviando...';
+                fileInput.disabled = true;
+
+                try {
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+                    const filePath = `uploads/${fileName}`;
+
+                    const { data, error } = await window.supabase.storage
+                        .from('comandos-midia')
+                        .upload(filePath, file, { cacheControl: '3600', upsert: false });
+
+                    if (error) throw error;
+
+                    const { data: publicUrlData } = window.supabase.storage
+                        .from('comandos-midia')
+                        .getPublicUrl(filePath);
+
+                    activeSc.media_url = publicUrlData.publicUrl;
+                    window.renderModalSubCommands();
+                } catch (e) {
+                    window.showCustomAlert('Erro ao enviar imagem: ' + e.message);
+                } finally {
+                    if(btnLabel) btnLabel.textContent = origText;
+                    if(fileInput) fileInput.disabled = false;
+                }
+            };
+            
+            window.removeMediaModal = () => {
+                const activeSc = window.modalSubCommands[window.activeModalTabIndex];
+                activeSc.media_url = null;
+                window.renderModalSubCommands();
             };
 
             window.addNewModalSubCommand = () => {
@@ -1243,11 +1301,25 @@
             };
 
             
-            window.showDescription = (encodedDesc) => {
+            window.showDescription = (encodedDesc, encodedMedia = '') => {
                 document.getElementById('infoModalTitle').textContent = 'Descrição';
-                const desc = decodeURIComponent(encodedDesc);
+                const descText = decodeURIComponent(encodedDesc);
+                const mediaUrl = encodedMedia ? decodeURIComponent(encodedMedia) : '';
                 const infoMessage = document.getElementById('infoMessage');
-                infoMessage.textContent = desc;
+                
+                infoMessage.innerHTML = '';
+                const p = document.createElement('p');
+                p.className = 'whitespace-pre-wrap';
+                p.textContent = descText;
+                infoMessage.appendChild(p);
+                
+                if (mediaUrl) {
+                    const div = document.createElement('div');
+                    div.className = 'mt-4 border-t border-border-subtle pt-4 flex justify-center bg-black/10 rounded-lg p-2';
+                    div.innerHTML = `<a href="${mediaUrl}" target="_blank" title="Clique para abrir imagem original"><img src="${mediaUrl}" class="max-w-full rounded hover:opacity-90 transition-opacity shadow-sm" style="max-height: 400px; object-fit: contain;"></a>`;
+                    infoMessage.appendChild(div);
+                }
+                
                 document.getElementById('infoModal').classList.remove('hidden');
             };
 
@@ -1296,10 +1368,12 @@
 
                         const encoded = encodeURIComponent(displayText);
                         const encodedDesc = encodeURIComponent(sc.desc || 'Descrição não informada.').replace(/'/g, "%27");
+                        const encodedMedia = sc.media_url ? encodeURIComponent(sc.media_url).replace(/'/g, "%27") : '';
                         const descHeaderHTML = (sc.desc && sc.desc.trim() !== '') ? `
-                            <div class="inline-flex items-center gap-2 mb-2 p-2 -ml-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group w-fit" onclick="showDescription('${encodedDesc}')">
+                            <div class="inline-flex items-center gap-2 mb-2 p-2 -ml-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group w-fit" onclick="showDescription('${encodedDesc}', '${encodedMedia}')">
                                 <div class="w-6 h-6 rounded-full bg-orange-500 group-hover:bg-orange-600 text-white text-xs font-bold flex items-center justify-center shrink-0 group-hover:scale-110 transition-all shadow-md" title="Ver descrição">!</div>
                                 <span class="text-sm font-medium text-text-high group-hover:text-accent-solid transition-colors">Para que serve este comando?</span>
+                                ${sc.media_url ? '<svg class="w-4 h-4 text-orange-400 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>' : ''}
                             </div>
                         ` : '';
                         let actionBtn = '';
