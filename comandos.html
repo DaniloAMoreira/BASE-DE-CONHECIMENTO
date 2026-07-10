@@ -901,11 +901,57 @@
                     return window.showCustomAlert('Adicione pelo menos um subcomando (Gaveta interna).');
                 }
 
+                const isEditing = !!window.editingCmdId;
+                let editReason = null;
+                
+                if (isEditing) {
+                    editReason = await new Promise((resolve) => {
+                        const modal = document.getElementById('reasonModal');
+                        const input = document.getElementById('reasonInput');
+                        const okBtn = document.getElementById('reasonOkBtn');
+                        const cancelBtn = document.getElementById('reasonCancelBtn');
+                        const cancelTopBtn = document.getElementById('reasonCancelTopBtn');
+
+                        input.value = '';
+                        modal.classList.remove('hidden');
+                        input.focus();
+
+                        const onOk = () => {
+                            const reason = input.value.trim();
+                            if (!reason) {
+                                window.showCustomAlert('O motivo da alteração é obrigatório!');
+                                return;
+                            }
+                            cleanup();
+                            resolve(reason);
+                        };
+
+                        const onCancel = () => {
+                            cleanup();
+                            resolve(null);
+                        };
+
+                        const cleanup = () => {
+                            modal.classList.add('hidden');
+                            okBtn.removeEventListener('click', onOk);
+                            cancelBtn.removeEventListener('click', onCancel);
+                            cancelTopBtn.removeEventListener('click', onCancel);
+                        };
+
+                        okBtn.addEventListener('click', onOk);
+                        cancelBtn.addEventListener('click', onCancel);
+                        cancelTopBtn.addEventListener('click', onCancel);
+                    });
+
+                    if (editReason === null) {
+                        return; // User canceled
+                    }
+                }
+
                 saveCommandBtn.textContent = 'Salvando...';
                 saveCommandBtn.disabled = true;
 
                 try {
-                    const isEditing = !!window.editingCmdId;
                     const data = { name: title, command: JSON.stringify(subCommands) };
                     const targetUrl = isEditing 
                         ? `${SUPABASE_URL}/rest/v1/comandos?id=eq.${window.editingCmdId}`
@@ -945,7 +991,7 @@
                             action: isEditing ? 'UPDATE' : 'CREATE',
                             user_name: userName,
                             old_content: oldCmd ? { name: oldCmd.name, command: oldCmd.command } : null,
-                            new_content: { name: title, command: JSON.stringify(subCommands) }
+                            new_content: { name: title, command: JSON.stringify(subCommands), ...(editReason ? { reason: editReason } : {}) }
                         };
 
                         await fetch(`${SUPABASE_URL}/rest/v1/command_history`, {
@@ -1101,6 +1147,10 @@
                                 const newStr = `TÍTULO PRINCIPAL: ${newName}\n\n` + formatCommandForDiff(item.new_content.command);
                                 diffHTML = `<div class="mt-3 bg-[#1e293b] rounded p-3 overflow-x-auto text-xs font-mono whitespace-pre-wrap text-text-muted border-l-2 border-green-500 bg-green-500/5">${escapeHTML(newStr)}</div>`;
                             } catch(e) {}
+                        }
+                        
+                        if (item.new_content && item.new_content.reason) {
+                            diffHTML += `<div class="mt-3 bg-accent-solid/10 border-l-2 border-accent-solid p-3 rounded text-sm text-text-high font-sans"><strong>Motivo da alteração:</strong> <span class="text-text-muted">${escapeHTML(item.new_content.reason)}</span></div>`;
                         }
                         
                         const el = document.createElement('details');
@@ -1575,6 +1625,29 @@
     </script>
 
     <!-- Modal Adicionar Comando -->
+    <div id="reasonModal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] hidden p-4">
+        <div class="bg-bg-panel border border-border-subtle rounded-xl w-full max-w-md shadow-2xl flex flex-col">
+            <div class="flex items-center justify-between p-4 border-b border-border-element bg-black/20 rounded-t-xl">
+                <h3 class="text-base font-bold text-text-high">Motivo da Alteração</h3>
+                <button type="button" id="reasonCancelTopBtn" class="text-text-muted hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-5">
+                <p class="text-sm text-text-muted mb-4">Por que está sendo feita essa alteração? <span class="text-red-400">*</span></p>
+                <textarea id="reasonInput" rows="3" class="w-full rounded-md px-3 py-2 bg-[color:var(--bg-app)] border border-border-element text-text-high focus:outline-none focus:ring-1 focus:ring-accent font-sans text-sm resize-none custom-scrollbar" placeholder="Descreva o motivo..."></textarea>
+            </div>
+            <div class="flex justify-end gap-3 p-4 border-t border-border-element bg-black/10 rounded-b-xl">
+                <button type="button" id="reasonCancelBtn" class="px-4 py-2 text-sm font-medium rounded-md text-text-muted hover:text-white hover:bg-white/5 transition-colors border border-transparent">
+                    Sair
+                </button>
+                <button type="button" id="reasonOkBtn" class="px-5 py-2 text-sm font-medium rounded-md text-white bg-accent-solid hover:bg-opacity-90 transition-all border border-transparent shadow-lg shadow-accent-solid/20">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
         <div class="panel w-full max-w-5xl p-6 flex flex-col max-h-[90vh] shadow-2xl">
             <h3 class="text-xl font-semibold mb-4 text-accent-solid">Adicionar Novo Comando</h3>
