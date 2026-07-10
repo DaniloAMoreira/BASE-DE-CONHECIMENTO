@@ -884,7 +884,8 @@
                 const subCommands = window.modalSubCommands.map(sc => ({
                     name: sc.name.trim(),
                     text: sc.text.trim(),
-                    desc: sc.desc.trim()
+                    desc: sc.desc.trim(),
+                    ...(sc.media_url && { media_url: sc.media_url })
                 }));
 
                 const hasEmptyName = subCommands.some(sc => !sc.name);
@@ -1062,6 +1063,11 @@
                             }
                         };
 
+                        const escapeHTML = (str) => {
+                            if (!str) return '';
+                            return str.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                        };
+
                         if (isUpdate && item.old_content && item.new_content) {
                             try {
                                 const oldName = item.old_content.name || 'Sem título';
@@ -1076,10 +1082,10 @@
                                 diff.forEach(part => {
                                     if (part.added) {
                                         hasChanges = true;
-                                        diffHTML += `<div class="text-green-400 bg-green-500/10 px-2 py-1 whitespace-pre-wrap border-l-2 border-green-500">+ ${part.value}</div>`;
+                                        diffHTML += `<div class="text-green-400 bg-green-500/10 px-2 py-1 whitespace-pre-wrap border-l-2 border-green-500">+ ${escapeHTML(part.value)}</div>`;
                                     } else if (part.removed) {
                                         hasChanges = true;
-                                        diffHTML += `<div class="text-red-400 bg-red-500/10 px-2 py-1 whitespace-pre-wrap border-l-2 border-red-500">- ${part.value}</div>`;
+                                        diffHTML += `<div class="text-red-400 bg-red-500/10 px-2 py-1 whitespace-pre-wrap border-l-2 border-red-500">- ${escapeHTML(part.value)}</div>`;
                                     }
                                 });
                                 if (!hasChanges) {
@@ -1093,7 +1099,7 @@
                             try {
                                 const newName = item.new_content.name || 'Sem título';
                                 const newStr = `TÍTULO PRINCIPAL: ${newName}\n\n` + formatCommandForDiff(item.new_content.command);
-                                diffHTML = `<div class="mt-3 bg-[#1e293b] rounded p-3 overflow-x-auto text-xs font-mono whitespace-pre-wrap text-text-muted border-l-2 border-green-500 bg-green-500/5">${newStr}</div>`;
+                                diffHTML = `<div class="mt-3 bg-[#1e293b] rounded p-3 overflow-x-auto text-xs font-mono whitespace-pre-wrap text-text-muted border-l-2 border-green-500 bg-green-500/5">${escapeHTML(newStr)}</div>`;
                             } catch(e) {}
                         }
                         
