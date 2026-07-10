@@ -456,8 +456,8 @@
 
                     <div class="relative flex gap-2 w-full">
                         <div class="relative flex-grow">
-                            <input type="text" id="searchInput" placeholder="Pesquisar por categorias e comandos..."
-                                class="w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300"
+                            <input type="text" id="searchInput" placeholder=""
+                                class="w-full bg-transparent border-transparent pl-10 pr-4 py-3 focus:outline-none focus:border-transparent focus:ring-0 text-text-high transition-all duration-300 placeholder:text-text-muted"
                                 autocomplete="off">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -647,6 +647,65 @@
             // --- AUTH INIT ---
             if (checkAuth()) {
                 // Initial load handled further down or we can just let it flow
+            }
+
+            // --- Typewriter Effect for Search Input ---
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                const phrases = [
+                    "Pesquisar por categorias...",
+                    "Como zerar o IPI?",
+                    "Comandos SQL úteis...",
+                    "Buscar produtos sem NCM...",
+                    "Corrigir tributação..."
+                ];
+                let currentPhraseIndex = 0;
+                let currentCharacterIndex = 0;
+                let isDeleting = false;
+                let typingTimeout;
+
+                function typeWriter() {
+                    if (searchInput === document.activeElement) return; // Don't animate while focused
+                    
+                    const currentPhrase = phrases[currentPhraseIndex];
+                    
+                    if (isDeleting) {
+                        searchInput.setAttribute('placeholder', currentPhrase.substring(0, currentCharacterIndex - 1));
+                        currentCharacterIndex--;
+                    } else {
+                        searchInput.setAttribute('placeholder', currentPhrase.substring(0, currentCharacterIndex + 1) + '|');
+                        currentCharacterIndex++;
+                    }
+
+                    let typingSpeed = isDeleting ? 30 : 60;
+
+                    if (!isDeleting && currentCharacterIndex === currentPhrase.length) {
+                        searchInput.setAttribute('placeholder', currentPhrase); // Remove cursor when pausing
+                        typingSpeed = 2000;
+                        isDeleting = true;
+                    } else if (isDeleting && currentCharacterIndex === 0) {
+                        isDeleting = false;
+                        currentPhraseIndex = (currentPhraseIndex + 1) % phrases.length;
+                        typingSpeed = 500;
+                    }
+
+                    typingTimeout = setTimeout(typeWriter, typingSpeed);
+                }
+
+                typeWriter();
+
+                searchInput.addEventListener('focus', () => {
+                    clearTimeout(typingTimeout);
+                    searchInput.setAttribute('placeholder', 'Pesquisar...');
+                });
+                
+                searchInput.addEventListener('blur', () => {
+                    if (searchInput.value === '') {
+                        isDeleting = false;
+                        currentCharacterIndex = 0;
+                        typeWriter();
+                    }
+                });
             }
 
             document.getElementById('login-form')?.addEventListener('submit', async (e) => {
