@@ -399,7 +399,7 @@
 
     <div id="main-content" class="relative z-10 hidden opacity-0 transition-opacity duration-500">
         <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
-            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-50 flex items-center gap-4 relative">
+            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-50 flex items-center gap-4">
                 
                 <!-- USER DROPDOWN MENU -->
                 <div id="user-menu-container" class="relative hidden">
@@ -440,8 +440,7 @@
             </div>
             <div>
                 <header class="mb-6">
-                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6 pb-2"
-                        style="border-bottom: 1px solid var(--border-subtle);">
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6 pb-2">
                         <a href="index.html"
                             class="text-2xl sm:text-3xl font-bold pb-1 tab-inactive transition-colors">Base de
                             Conhecimento</a>
@@ -450,7 +449,7 @@
                             dados</a>
                     </div>
 
-                    <div class="flex gap-6 mb-6 px-1">
+                    <div class="flex gap-6 mb-6 border-b border-border-subtle px-1">
                         <button id="tabFilterAll" onclick="window.setFilterTab('all')" class="pb-3 text-sm font-semibold text-accent-solid border-b-2 border-accent-solid transition-colors">Todos os Comandos</button>
                         <button id="tabFilterMine" onclick="window.setFilterTab('mine')" class="pb-3 text-sm font-semibold text-text-muted border-b-2 border-transparent hover:text-text-high transition-colors">Meus Comandos</button>
                     </div>
@@ -1578,18 +1577,18 @@
                     <div class="panel border border-border-subtle rounded-md mb-3 bg-white/5">
                         <div class="flex items-center justify-between p-3 cursor-pointer group hover:bg-white/10 transition-colors" onclick="if(event.target.closest('.action-buttons')) return; const content = this.nextElementSibling; content.classList.toggle('hidden'); this.querySelector('.cmd-chevron').classList.toggle('rotate-180'); if(content.classList.contains('hidden')){ content.querySelectorAll('[id^=\\'pre-preview-\\']').forEach(el => el.classList.remove('hidden')); content.querySelectorAll('[id^=\\'pre-expand-overlay-\\']').forEach(el => el.classList.remove('hidden')); content.querySelectorAll('[id^=\\'pre-full-\\']').forEach(el => el.classList.add('hidden')); }">
                             <div class="flex flex-col">
-                                <span class="font-semibold text-text-high">\${highlightMatch(subject.name, searchTerm)}</span>
+                                <span class="font-semibold text-text-high">${highlightMatch(subject.name, searchTerm)}</span>
                             </div>
                             <div class="flex items-center gap-4 action-buttons">
-                                <div class="flex items-center gap-2 overflow-hidden transition-all duration-300 max-w-0 opacity-0 action-drawer" id="drawer-\${subject.id}">
-                                    <button onclick="event.stopPropagation(); deleteCommand('\${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-red-400 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 rounded transition-colors whitespace-nowrap" title="Excluir">
+                                <div class="flex items-center gap-2 overflow-hidden transition-all duration-300 max-w-0 opacity-0 action-drawer" id="drawer-${subject.id}">
+                                    <button onclick="event.stopPropagation(); deleteCommand('${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-red-400 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 rounded transition-colors whitespace-nowrap" title="Excluir">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Excluir
                                     </button>
-                                    <button onclick="event.stopPropagation(); editCommand('\${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-accent-solid border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 rounded transition-colors whitespace-nowrap" title="Editar">
+                                    <button onclick="event.stopPropagation(); editCommand('${subject.id}')" class="px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-accent-solid border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 rounded transition-colors whitespace-nowrap" title="Editar">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg> Editar
                                     </button>
                                 </div>
-                                <button onclick="event.stopPropagation(); toggleActionDrawer('drawer-\${subject.id}')" class="p-1 hover:bg-bg-solid-hover rounded transition-colors text-text-muted shrink-0" title="Opções">
+                                <button onclick="event.stopPropagation(); toggleActionDrawer('drawer-${subject.id}')" class="p-1 hover:bg-bg-solid-hover rounded transition-colors text-text-muted shrink-0" title="Opções">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                                 </button>
                                 <svg class="cmd-chevron w-5 h-5 text-text-muted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -1597,10 +1596,10 @@
                         </div>
                         <div class="hidden pt-0 border-t border-border-subtle bg-[color:var(--bg-app)] rounded-b-md">
                             <div class="flex overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden gap-1 pt-3 px-3 border-b border-border-element">
-                                \${tabsHTML}
+                                ${tabsHTML}
                             </div>
                             <div class="panels-container p-3 bg-[#1e293b] rounded-b-md">
-                                \${panelsHTML}
+                                ${panelsHTML}
                             </div>
                         </div>
                     </div>
