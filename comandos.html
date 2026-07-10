@@ -789,17 +789,21 @@
                     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
                     const filePath = `uploads/${fileName}`;
 
-                    const { data, error } = await window.supabase.storage
-                        .from('comandos-midia')
-                        .upload(filePath, file, { cacheControl: '3600', upsert: false });
+                    const authHeaders = getAuthHeaders();
+                    authHeaders['Content-Type'] = file.type || 'application/octet-stream';
 
-                    if (error) throw error;
+                    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/comandos-midia/${filePath}`, {
+                        method: 'POST',
+                        headers: authHeaders,
+                        body: file
+                    });
 
-                    const { data: publicUrlData } = window.supabase.storage
-                        .from('comandos-midia')
-                        .getPublicUrl(filePath);
+                    if (!res.ok) {
+                        const errText = await res.text();
+                        throw new Error(`Upload failed: ${res.status} - ${errText}`);
+                    }
 
-                    activeSc.media_url = publicUrlData.publicUrl;
+                    activeSc.media_url = `${SUPABASE_URL}/storage/v1/object/public/comandos-midia/${filePath}`;
                     window.renderModalSubCommands();
                 } catch (e) {
                     window.showCustomAlert('Erro ao enviar imagem: ' + e.message);
@@ -1223,8 +1227,8 @@
                 } catch (error) {
                     console.error('Erro ao carregar dados', error);
                     const infoMessage = document.getElementById('infoMessage');
-                    infoMessage.textContent = 'Não foi possível carregar os comandos do banco de dados.';
-                    infoModal.classList.remove('hidden');
+                    infoMessage.textContent = 'Erro ao carregar banco de dados: ' + error.message;
+                    document.getElementById('infoModal').classList.remove('hidden');
                 } finally {
                     categoriesContainer.classList.remove('loading');
                 }
