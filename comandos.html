@@ -506,7 +506,11 @@
                     return { is_private: false, subCommands: parsed };
                 } else if (parsed && typeof parsed === 'object') {
                     if (Array.isArray(parsed.subCommands)) {
-                        return { is_private: !!parsed.is_private, subCommands: parsed.subCommands };
+                        return { 
+                            is_private: !!parsed.is_private, 
+                            subCommands: parsed.subCommands,
+                            deleted_at: parsed.deleted_at 
+                        };
                     }
                 }
             } catch(e) {}
@@ -1725,6 +1729,12 @@
                     if (!e.target.closest('.dev-menu') && !e.target.closest('button[onclick*="toggleDevMenu"]')) {
                         document.querySelectorAll('.dev-menu').forEach(m => m.classList.add('hidden'));
                     }
+                    if (!e.target.closest('.action-drawer') && !e.target.closest('button[onclick*="toggleActionDrawer"]')) {
+                        document.querySelectorAll('.action-drawer').forEach(d => {
+                            d.classList.add('max-w-0', 'opacity-0');
+                            d.classList.remove('max-w-[200px]', 'opacity-100');
+                        });
+                    }
                     if (!e.target.closest('header')) {
                         suggestionsContainer.classList.remove('expanded');
                     }
@@ -1896,10 +1906,10 @@
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             </div>
             <h3 class="text-xl font-semibold mb-2 text-text-high">Excluir Comando?</h3>
-            <p class="text-text-muted text-sm mb-6">Este comando será movido para a lixeira e excluído permanentemente após 48 horas.</p>
+            <p class="text-text-muted text-sm mb-6">Tem certeza que deseja excluir este comando? Esta ação não pode ser desfeita.</p>
             <div class="flex justify-center gap-3 w-full">
                 <button id="cancelDeleteBtn" class="flex-1 px-4 py-2 bg-bg-panel border border-border-subtle text-text-high rounded-lg hover:bg-bg-solid-hover transition-colors">Cancelar</button>
-                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-lg">Mover p/ Lixeira</button>
+                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-lg">Sim, Excluir</button>
             </div>
         </div>
     </div>
