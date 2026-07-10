@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -245,7 +245,7 @@
             pointer-events: none;
         }
 
-        /* ESTILOS PARA SUGESTÕES QUE EMPURRAM O CONTEÚDO */
+        /* ESTILOS PARA SUGEST├òES QUE EMPURRAM O CONTE├ÜDO */
         #suggestionsContainer {
             display: grid;
             grid-template-rows: 0fr;
@@ -283,7 +283,7 @@
             color: var(--text-high);
         }
 
-        /* ANIMAÇÃO PARA ÍCONE NEURAL */
+        /* ANIMA├ç├âO PARA ├ìCONE NEURAL */
         @keyframes pulse {
 
             0%,
@@ -354,15 +354,15 @@
         <div class="relative z-10 w-full max-w-md bg-bg-panel border border-border-element rounded-2xl shadow-2xl p-8 backdrop-blur-xl">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-accent-solid to-accent-solid-hover mb-2">Base de Conhecimento</h1>
-                <p class="text-text-muted">Faça login para acessar os comandos</p>
+                <p class="text-text-muted">Fa├ºa login para acessar os comandos</p>
             </div>
             
             <form id="login-form" class="space-y-6">
                 <div>
-                    <label for="login-user" class="block text-sm font-medium text-text-muted mb-2">Usuário</label>
-                    <select id="login-user"
+                    <label for="login-user" class="block text-sm font-medium text-text-muted mb-2">Usu├írio</label>
+                    <select id="login-user" required
                         class="w-full bg-bg-app border border-border-element rounded-xl px-4 py-3 text-text-high focus:outline-none focus:ring-2 focus:ring-accent-solid focus:border-transparent transition-all">
-                        <option value="" selected>Selecione seu nome</option>
+                        <option value="" disabled selected>Selecione seu nome</option>
                         <option value="rafael@lcsistemas.com">RAFAEL</option>
                         <option value="matheus@lcsistemas.com">MATHEUS</option>
                         <option value="allany@lcsistemas.com">ALLANY</option>
@@ -377,12 +377,12 @@
                 </div>
                 <div>
                     <label for="login-password" class="block text-sm font-medium text-text-muted mb-2">Senha</label>
-                    <input type="password" id="login-password" required placeholder="••••••••"
+                    <input type="password" id="login-password" required placeholder="ÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇó"
                         class="w-full bg-bg-app border border-border-element rounded-xl px-4 py-3 text-text-high focus:outline-none focus:ring-2 focus:ring-accent-solid focus:border-transparent transition-all">
                 </div>
                 
                 <div id="login-error" class="hidden bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg p-3 text-sm text-center">
-                    Usuário ou senha incorretos.
+                    Usu├írio ou senha incorretos.
                 </div>
 
                 <button type="submit" id="login-btn"
@@ -399,48 +399,43 @@
 
     <div id="main-content" class="relative z-10 hidden opacity-0 transition-opacity duration-500">
         <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
-            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-50 flex items-center gap-4">
+            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-20 flex items-center gap-4">
                 
-                <!-- USER DROPDOWN MENU -->
-                <div id="user-menu-container" class="relative hidden">
-                    <button id="user-info-badge" class="flex items-center gap-3 bg-bg-panel border border-border-element rounded-full py-1.5 pl-2 pr-4 shadow-sm hover:border-border-hover transition-colors focus:outline-none" onclick="document.getElementById('user-dropdown').classList.toggle('hidden')">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-accent-solid to-accent-solid-hover flex items-center justify-center text-white font-bold text-sm" id="user-avatar">
-                            U
-                        </div>
-                        <span class="text-sm font-medium text-text-high" id="user-name-display">User</span>
-                        <svg class="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                    
-                    <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-bg-panel border border-border-element rounded-xl shadow-lg py-2 hidden flex flex-col z-[60]">
-                        <button id="theme-toggle-btn" class="w-full px-4 py-2 text-left text-sm text-text-high hover:bg-bg-solid-hover hover:text-accent-solid transition-colors flex items-center gap-2">
-                            <svg id="theme-icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                            </svg>
-                            <svg id="theme-icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                            </svg>
-                            <span id="theme-toggle-text">Mudar Tema</span>
-                        </button>
-                        
-                        <button id="openTrashModalBtn" class="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-2 hidden">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            Lixeira
-                        </button>
-
-                        <div class="w-full h-px bg-border-element my-1"></div>
-
-                        <button id="logout-btn" class="w-full px-4 py-2 text-left text-sm text-text-high hover:bg-bg-solid-hover hover:text-red-500 transition-colors flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                            </svg>
-                            Sair
-                        </button>
+                <!-- USER BADGE -->
+                <div id="user-info-badge" class="hidden flex items-center gap-3 bg-bg-panel border border-border-element rounded-full py-1.5 pl-2 pr-4 shadow-sm hover:border-border-hover transition-colors">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-accent-solid to-accent-solid-hover flex items-center justify-center text-white font-bold text-sm" id="user-avatar">
+                        U
                     </div>
+                    <span class="text-sm font-medium text-text-high" id="user-name-display">User</span>
+                    <div class="w-px h-4 bg-border-element mx-1"></div>
+                    <button id="logout-btn" class="text-text-muted hover:text-red-500 transition-colors text-xs flex items-center gap-1" title="Sair">
+                        Sair
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                    </button>
                 </div>
+
+                <button id="theme-toggle-btn" title="Alternar Tema"
+                    class="p-2 bg-bg-panel hover:bg-bg-solid-hover border border-border-element/50 rounded-full glow-on-hover">
+                    <svg id="theme-icon-sun" class="w-6 h-6 hidden text-text-muted" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                    <svg id="theme-icon-moon" class="w-6 h-6 text-text-muted" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                        </path>
+                    </svg>
+                </button>
             </div>
             <div>
                 <header class="mb-6">
-                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6 pb-2">
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6 pb-2"
+                        style="border-bottom: 1px solid var(--border-subtle);">
                         <a href="index.html"
                             class="text-2xl sm:text-3xl font-bold pb-1 tab-inactive transition-colors">Base de
                             Conhecimento</a>
@@ -448,16 +443,10 @@
                             class="text-2xl sm:text-3xl font-bold pb-1 tab-active transition-colors">Comandos banco de
                             dados</a>
                     </div>
-
-                    <div class="flex gap-6 mb-6 border-b border-border-subtle px-1">
-                        <button id="tabFilterAll" onclick="window.setFilterTab('all')" class="pb-3 text-sm font-semibold text-accent-solid border-b-2 border-accent-solid transition-colors">Todos os Comandos</button>
-                        <button id="tabFilterMine" onclick="window.setFilterTab('mine')" class="pb-3 text-sm font-semibold text-text-muted border-b-2 border-transparent hover:text-text-high transition-colors">Meus Comandos</button>
-                    </div>
-
                     <div class="relative flex gap-2 w-full">
                         <div class="relative flex-grow">
-                            <input type="text" id="searchInput" placeholder=""
-                                class="w-full bg-transparent border-transparent pl-10 pr-4 py-3 focus:outline-none focus:border-transparent focus:ring-0 text-text-high transition-all duration-300 placeholder:text-text-muted"
+                            <input type="text" id="searchInput" placeholder="Pesquisar por categorias e comandos..."
+                                class="w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300"
                                 autocomplete="off">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -467,7 +456,7 @@
                             </div>
                         </div>
                         
-                        <div class="relative flex gap-2">
+                        <div class="relative">
                             <button id="openAddModalBtn" class="bg-accent-solid text-white p-3 rounded-lg hover:opacity-90 transition-opacity" title="Adicionar Comando">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                             </button>
@@ -482,7 +471,7 @@
 
     <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
         <div class="panel w-full max-w-4xl p-6 flex flex-col max-h-[90vh]">
-            <h3 id="infoModalTitle" class="text-lg font-semibold mb-4 text-accent-solid shrink-0">Informação</h3>
+            <h3 id="infoModalTitle" class="text-lg font-semibold mb-4 text-accent-solid shrink-0">Informa├º├úo</h3>
 
             <div class="overflow-y-auto mb-6 flex-grow custom-scrollbar bg-bg-panel rounded-lg">
                 <p id="infoMessage" class="w-full h-full p-4 m-0"></p>
@@ -501,24 +490,6 @@
         let sessionToken = localStorage.getItem('supabaseToken');
         let sessionUser = JSON.parse(localStorage.getItem('supabaseUser') || 'null');
 
-        const parseCommandData = (cmdStr) => {
-            try {
-                const parsed = typeof cmdStr === 'string' ? JSON.parse(cmdStr) : cmdStr;
-                if (Array.isArray(parsed)) {
-                    return { is_private: false, subCommands: parsed };
-                } else if (parsed && typeof parsed === 'object') {
-                    if (Array.isArray(parsed.subCommands)) {
-                        return { 
-                            is_private: !!parsed.is_private, 
-                            subCommands: parsed.subCommands,
-                            deleted_at: parsed.deleted_at 
-                        };
-                    }
-                }
-            } catch(e) {}
-            return { is_private: false, subCommands: [{ name: 'Comando', text: typeof cmdStr === 'string' ? cmdStr : '' }] };
-        };
-
         function getAuthHeaders() {
             const headers = {
                 'apikey': SUPABASE_ANON_KEY,
@@ -535,19 +506,17 @@
         function checkAuth() {
             const loginOverlay = document.getElementById('login-overlay');
             const mainContent = document.getElementById('main-content');
-            const userMenuContainer = document.getElementById('user-menu-container');
+            const userInfoBadge = document.getElementById('user-info-badge');
             
             if (sessionToken && sessionUser) {
                 if(loginOverlay) loginOverlay.style.display = 'none';
                 if(mainContent) {
                     mainContent.classList.remove('hidden');
-                    // Small delay to allow display:block to apply before animating opacity
-                    setTimeout(() => {
-                        mainContent.classList.remove('opacity-0');
-                    }, 50);
+                    setTimeout(() => { mainContent.classList.remove('opacity-0'); }, 10);
                 }
-                if(userMenuContainer) {
-                    userMenuContainer.classList.remove('hidden');
+                
+                if(userInfoBadge) {
+                    userInfoBadge.classList.remove('hidden');
                     const name = sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || 'User';
                     document.getElementById('user-name-display').textContent = name;
                     document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
@@ -556,19 +525,19 @@
             } else {
                 if(loginOverlay) loginOverlay.style.display = 'flex';
                 if(mainContent) mainContent.classList.add('hidden', 'opacity-0');
-                if(userMenuContainer) userMenuContainer.classList.add('hidden');
+                if(userInfoBadge) userInfoBadge.classList.add('hidden');
                 return false;
             }
         }
 
-        // Função para download virtual
+        // Fun├º├úo para download virtual
         window.downloadFile = (text, fileName) => {
             if (!text || text === 'undefined' || text.trim() === '') {
                 const infoModal = document.getElementById('infoModal');
                 const infoMessage = document.getElementById('infoMessage');
                 infoMessage.style.whiteSpace = 'pre-wrap';
                 infoMessage.style.fontFamily = 'monospace';
-                infoMessage.textContent = 'Aviso: O comando está vazio no JSON. \nInsira o código correspondente no arquivo comandos.json na propriedade "command" para poder efetuar o download.';
+                infoMessage.textContent = 'Aviso: O comando est├í vazio no JSON. \nInsira o c├│digo correspondente no arquivo comandos.json na propriedade "command" para poder efetuar o download.';
                 infoModal.classList.remove('hidden');
                 return;
             }
@@ -585,7 +554,7 @@
             URL.revokeObjectURL(url);
         };
 
-        // Função para copiar com plano B
+        // Fun├º├úo para copiar com plano B
         window.copyCommand = (text, btnElement) => {
             const showNotification = () => {
                 if (btnElement && btnElement.nextElementSibling && btnElement.nextElementSibling.classList.contains('copy-notification')) {
@@ -623,9 +592,9 @@
                 try {
                     const successful = document.execCommand('copy');
                     if (successful) showNotification();
-                    else window.showCustomAlert('Erro: Não foi possível copiar o comando.');
+                    else window.showCustomAlert('Erro: N├úo foi poss├¡vel copiar o comando.');
                 } catch (err) {
-                    console.error('Erro no fallback de cópia', err);
+                    console.error('Erro no fallback de c├│pia', err);
                 }
 
                 document.body.removeChild(textArea);
@@ -651,10 +620,7 @@
 
             document.getElementById('login-form')?.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                let email = document.getElementById('login-user').value;
-                if (!email) {
-                    email = 'admin@lcsistemas.com';
-                }
+                const email = document.getElementById('login-user').value;
                 const password = document.getElementById('login-password').value;
                 const btn = document.getElementById('login-btn');
                 const spinner = document.getElementById('login-spinner');
@@ -686,8 +652,7 @@
                     checkAuth();
                     if(typeof loadData === 'function') loadData();
                 } catch (err) {
-                    console.error('Login Error:', err);
-                    errorDiv.textContent = err.message || 'Usuário ou senha incorretos.';
+                    errorDiv.textContent = 'Usu├írio ou senha incorretos.';
                     errorDiv.classList.remove('hidden');
                 } finally {
                     btn.disabled = false;
@@ -704,69 +669,6 @@
                 checkAuth();
             });
             // --- END AUTH INIT ---
-
-            try {
-                // --- Typewriter Effect for Search Input ---
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput) {
-                    const phrases = [
-                        "Pesquisar por categorias...",
-                        "Como zerar o IPI?",
-                        "Comandos SQL úteis...",
-                        "Buscar produtos sem NCM...",
-                        "Corrigir tributação..."
-                    ];
-                    let currentPhraseIndex = 0;
-                    let currentCharacterIndex = 0;
-                    let isDeleting = false;
-                    let typingTimeout;
-
-                    function typeWriter() {
-                        if (searchInput === document.activeElement) return; // Don't animate while focused
-                        
-                        const currentPhrase = phrases[currentPhraseIndex];
-                        
-                        if (isDeleting) {
-                            searchInput.setAttribute('placeholder', currentPhrase.substring(0, currentCharacterIndex - 1));
-                            currentCharacterIndex--;
-                        } else {
-                            searchInput.setAttribute('placeholder', currentPhrase.substring(0, currentCharacterIndex + 1) + '|');
-                            currentCharacterIndex++;
-                        }
-
-                        let typingSpeed = isDeleting ? 30 : 60;
-
-                        if (!isDeleting && currentCharacterIndex === currentPhrase.length) {
-                            searchInput.setAttribute('placeholder', currentPhrase); // Remove cursor when pausing
-                            typingSpeed = 2000;
-                            isDeleting = true;
-                        } else if (isDeleting && currentCharacterIndex === 0) {
-                            isDeleting = false;
-                            currentPhraseIndex = (currentPhraseIndex + 1) % phrases.length;
-                            typingSpeed = 500;
-                        }
-
-                        typingTimeout = setTimeout(typeWriter, typingSpeed);
-                    }
-
-                    typeWriter();
-
-                    searchInput.addEventListener('focus', () => {
-                        clearTimeout(typingTimeout);
-                        searchInput.setAttribute('placeholder', 'Pesquisar...');
-                    });
-                    
-                    searchInput.addEventListener('blur', () => {
-                        if (searchInput.value === '') {
-                            isDeleting = false;
-                            currentCharacterIndex = 0;
-                            typeWriter();
-                        }
-                    });
-                }
-            } catch(e) {
-                console.error("Typewriter error:", e);
-            }
 
         window.expandCommand = (subjectId, scIdx) => {
             document.getElementById('pre-preview-' + subjectId + '-' + scIdx).classList.add('hidden');
@@ -797,7 +699,7 @@
             const infoModal = document.getElementById('infoModal');
             const infoOkBtn = document.getElementById('infoOkBtn');
 
-            // --- Variáveis de Estado ---
+            // --- Vari├íveis de Estado ---
             let allComandos = [];
             let allSuggestions = [];
             let isDevMode = false;
@@ -805,7 +707,7 @@
             let isDataLoaded = false;
 
 
-            // --- Lógica do Modal Adicionar Comando ---
+            // --- L├│gica do Modal Adicionar Comando ---
             const addModal = document.getElementById('addModal');
             const openAddModalBtn = document.getElementById('openAddModalBtn');
             const cancelAddBtn = document.getElementById('cancelAddBtn');
@@ -813,7 +715,7 @@
             const commandTitleInput = document.getElementById('commandTitleInput');
             const commandTextInput = document.getElementById('commandTextInput');
 
-            // --- Lógica para Gavetas Internas Dinâmicas (Modal) ---
+            // --- L├│gica para Gavetas Internas Din├ómicas (Modal) ---
             
             window.modalSubCommands = [];
             window.activeModalTabIndex = 0;
@@ -847,10 +749,10 @@
                     </div>
                     <input type="text" value="${(activeSc.name || '').replace(/"/g, '&quot;')}" class="w-full rounded-md px-3 py-1.5 mb-3 bg-[color:var(--bg-app)] border border-border-element text-text-high focus:outline-none focus:ring-1 focus:ring-accent text-sm" oninput="updateActiveModalTab('name', this.value)">
                     
-                    <label class="block text-xs font-medium text-text-muted mb-1">Descrição (Obrigatório)</label>
+                    <label class="block text-xs font-medium text-text-muted mb-1">Descri├º├úo (Obrigat├│rio)</label>
                     <input type="text" value="${(activeSc.desc || '').replace(/"/g, '&quot;')}" class="w-full rounded-md px-3 py-1.5 mb-3 bg-[color:var(--bg-app)] border border-border-element text-text-high focus:outline-none focus:ring-1 focus:ring-accent text-sm" placeholder="Para que serve este comando?" oninput="updateActiveModalTab('desc', this.value)">
                     
-                    <label class="block text-xs font-medium text-text-muted mb-1">Anexo de Mídia (Opcional)</label>
+                    <label class="block text-xs font-medium text-text-muted mb-1">Anexo de M├¡dia (Opcional)</label>
                     <div class="mb-3 flex items-center gap-3">
                         ${activeSc.media_url ? `
                             <div class="relative group shrink-0">
@@ -961,7 +863,6 @@
                     document.querySelector('#addModal h3').textContent = 'Adicionar Novo Comando';
 
                     document.getElementById('commandTitleInput').value = '';
-                    document.getElementById('commandVisibilityInput').value = 'public';
 
                     window.modalSubCommands = [];
                     window.addNewModalSubCommand();
@@ -978,81 +879,33 @@
 
             saveCommandBtn.addEventListener('click', async () => {
                 let title = document.getElementById('commandTitleInput').value.trim();
-                if (!title) return window.showCustomAlert('O Título do Comando é obrigatório!');
+                if (!title) return window.showCustomAlert('O T├¡tulo do Comando ├® obrigat├│rio!');
 
                 const subCommands = window.modalSubCommands.map(sc => ({
                     name: sc.name.trim(),
                     text: sc.text.trim(),
-                    desc: sc.desc.trim(),
-                    ...(sc.media_url && { media_url: sc.media_url })
+                    desc: sc.desc.trim()
                 }));
 
                 const hasEmptyName = subCommands.some(sc => !sc.name);
-                if (hasEmptyName) return window.showCustomAlert('O Nome da Aba de todas as gavetas é obrigatório!');
+                if (hasEmptyName) return window.showCustomAlert('O Nome da Aba de todas as gavetas ├® obrigat├│rio!');
                 
                 const hasEmptyDesc = subCommands.some(sc => !sc.desc);
-                if (hasEmptyDesc) return window.showCustomAlert('A descrição de todas as gavetas é obrigatória!');
+                if (hasEmptyDesc) return window.showCustomAlert('A descri├º├úo de todas as gavetas ├® obrigat├│ria!');
 
                 const hasEmptyText = subCommands.some(sc => !sc.text);
-                if (hasEmptyText) return window.showCustomAlert('O Comando SQL de todas as gavetas é obrigatório!');
+                if (hasEmptyText) return window.showCustomAlert('O Comando SQL de todas as gavetas ├® obrigat├│rio!');
 
                  if (subCommands.length === 0) {
                     return window.showCustomAlert('Adicione pelo menos um subcomando (Gaveta interna).');
-                }
-
-                const isEditing = !!window.editingCmdId;
-                let editReason = null;
-                
-                if (isEditing) {
-                    editReason = await new Promise((resolve) => {
-                        const modal = document.getElementById('reasonModal');
-                        const input = document.getElementById('reasonInput');
-                        const okBtn = document.getElementById('reasonOkBtn');
-                        const cancelBtn = document.getElementById('reasonCancelBtn');
-                        const cancelTopBtn = document.getElementById('reasonCancelTopBtn');
-
-                        input.value = '';
-                        modal.classList.remove('hidden');
-                        input.focus();
-
-                        const onOk = () => {
-                            const reason = input.value.trim();
-                            if (!reason) {
-                                window.showCustomAlert('O motivo da alteração é obrigatório!');
-                                return;
-                            }
-                            cleanup();
-                            resolve(reason);
-                        };
-
-                        const onCancel = () => {
-                            cleanup();
-                            resolve(null);
-                        };
-
-                        const cleanup = () => {
-                            modal.classList.add('hidden');
-                            okBtn.removeEventListener('click', onOk);
-                            cancelBtn.removeEventListener('click', onCancel);
-                            cancelTopBtn.removeEventListener('click', onCancel);
-                        };
-
-                        okBtn.addEventListener('click', onOk);
-                        cancelBtn.addEventListener('click', onCancel);
-                        cancelTopBtn.addEventListener('click', onCancel);
-                    });
-
-                    if (editReason === null) {
-                        return; // User canceled
-                    }
                 }
 
                 saveCommandBtn.textContent = 'Salvando...';
                 saveCommandBtn.disabled = true;
 
                 try {
-                    const isPrivate = document.getElementById('commandVisibilityInput').value === 'private';
-                    const data = { name: title, command: JSON.stringify({ is_private: isPrivate, subCommands: subCommands }) };
+                    const isEditing = !!window.editingCmdId;
+                    const data = { name: title, command: JSON.stringify(subCommands) };
                     const targetUrl = isEditing 
                         ? `${SUPABASE_URL}/rest/v1/comandos?id=eq.${window.editingCmdId}`
                         : `${SUPABASE_URL}/rest/v1/comandos`;
@@ -1091,7 +944,7 @@
                             action: isEditing ? 'UPDATE' : 'CREATE',
                             user_name: userName,
                             old_content: oldCmd ? { name: oldCmd.name, command: oldCmd.command } : null,
-                            new_content: { name: title, command: JSON.stringify({ is_private: isPrivate, subCommands: subCommands }), ...(editReason ? { reason: editReason } : {}) }
+                            new_content: { name: title, command: JSON.stringify(subCommands) }
                         };
 
                         await fetch(`${SUPABASE_URL}/rest/v1/command_history`, {
@@ -1114,26 +967,21 @@
                     window.editingCmdId = null;
                     await loadData();
                 } catch (e) {
-                    if (e.message && e.message.toLowerCase().includes('jwt expired')) {
-                        window.showCustomAlert('Sua sessão expirou por segurança. Faça login novamente.');
-                        document.getElementById('logout-btn')?.click();
-                    } else {
-                        window.showCustomAlert('Ocorreu um erro ao salvar no banco de dados. ' + e.message);
-                    }
+                    window.showCustomAlert('Ocorreu um erro ao salvar no banco de dados. ' + e.message);
                 } finally {
                     saveCommandBtn.textContent = 'Salvar Comando';
                     saveCommandBtn.disabled = false;
                 }
             });
 
-            // --- MÓDULOS ---
+            // --- M├ôDULOS ---
             const ThemeSwitcher = (() => { const DOM = { body: document.body, themeToggleBtn: document.getElementById('theme-toggle-btn'), themeIconSun: document.getElementById('theme-icon-sun'), themeIconMoon: document.getElementById('theme-icon-moon') }; const STORAGE_KEY = 'themePreference'; const applyTheme = (theme) => { DOM.body.dataset.theme = theme; localStorage.setItem(STORAGE_KEY, theme); DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); }; const toggleTheme = () => { const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(currentTheme); }; const init = () => { const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; applyTheme(savedTheme); DOM.themeToggleBtn.addEventListener('click', toggleTheme); }; return { init }; })();
             const hideModal = () => infoModal.classList.add('hidden');
             infoOkBtn.addEventListener('click', hideModal);
 
             const initWebGLBackground = () => { const canvas = document.getElementById('webgl-bg'); if (!canvas) return; const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setClearColor(0x000000, 0); const geometry = new THREE.BufferGeometry(); const vertices = []; for (let i = 0; i < 1000; i++) { vertices.push((Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000); } geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); const material = new THREE.PointsMaterial({ size: 2, color: 0x06B6D4 }); const points = new THREE.Points(geometry, material); scene.add(points); camera.position.z = 1000; const animate = () => { requestAnimationFrame(animate); points.rotation.x += 0.0005; points.rotation.y += 0.001; renderer.render(scene, camera); }; animate(); window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }); };
 
-            // --- LÓGICA DE DADOS ---
+            // --- L├ôGICA DE DADOS ---
 
             
 
@@ -1184,7 +1032,7 @@
                     const res = await fetch(`${SUPABASE_URL}/rest/v1/command_history?command_id=eq.${cmdId}&order=created_at.desc`, {
                         headers: getAuthHeaders()
                     });
-                    if (!res.ok) throw new Error('Erro ao buscar histórico');
+                    if (!res.ok) throw new Error('Erro ao buscar hist├│rico');
                     const historyData = await res.json();
                     
                     loading.classList.add('hidden');
@@ -1201,13 +1049,12 @@
                         
                         const formatCommandForDiff = (cmdJsonStr) => {
                             try {
-                                const parsedData = parseCommandData(cmdJsonStr);
-                                const subCommands = parsedData.subCommands;
+                                const subCommands = typeof cmdJsonStr === 'string' ? JSON.parse(cmdJsonStr) : cmdJsonStr;
                                 if (!Array.isArray(subCommands)) return typeof cmdJsonStr === 'string' ? cmdJsonStr : JSON.stringify(cmdJsonStr, null, 2);
                                 return subCommands.map((sc, i) => {
-                                    let res = `[GAVETA ${i + 1}] ${sc.name || 'Sem título'}`;
-                                    if (sc.desc) res += `\nDescrição: ${sc.desc}`;
-                                    if (sc.text) res += `\nCódigo:\n${sc.text}`;
+                                    let res = `[GAVETA ${i + 1}] ${sc.name || 'Sem t├¡tulo'}`;
+                                    if (sc.desc) res += `\nDescri├º├úo: ${sc.desc}`;
+                                    if (sc.text) res += `\nC├│digo:\n${sc.text}`;
                                     return res;
                                 }).join('\n\n------------------------\n\n');
                             } catch(e) {
@@ -1215,17 +1062,12 @@
                             }
                         };
 
-                        const escapeHTML = (str) => {
-                            if (!str) return '';
-                            return str.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-                        };
-
                         if (isUpdate && item.old_content && item.new_content) {
                             try {
-                                const oldName = item.old_content.name || 'Sem título';
-                                const newName = item.new_content.name || 'Sem título';
-                                const oldStr = `TÍTULO PRINCIPAL: ${oldName}\n\n` + formatCommandForDiff(item.old_content.command);
-                                const newStr = `TÍTULO PRINCIPAL: ${newName}\n\n` + formatCommandForDiff(item.new_content.command);
+                                const oldName = item.old_content.name || 'Sem t├¡tulo';
+                                const newName = item.new_content.name || 'Sem t├¡tulo';
+                                const oldStr = `T├ìTULO PRINCIPAL: ${oldName}\n\n` + formatCommandForDiff(item.old_content.command);
+                                const newStr = `T├ìTULO PRINCIPAL: ${newName}\n\n` + formatCommandForDiff(item.new_content.command);
                                 
                                 const diff = window.Diff.diffLines(oldStr, newStr);
                                 
@@ -1234,29 +1076,25 @@
                                 diff.forEach(part => {
                                     if (part.added) {
                                         hasChanges = true;
-                                        diffHTML += `<div class="text-green-400 bg-green-500/10 px-2 py-1 whitespace-pre-wrap border-l-2 border-green-500">+ ${escapeHTML(part.value)}</div>`;
+                                        diffHTML += `<div class="text-green-400 bg-green-500/10 px-2 py-1 whitespace-pre-wrap border-l-2 border-green-500">+ ${part.value}</div>`;
                                     } else if (part.removed) {
                                         hasChanges = true;
-                                        diffHTML += `<div class="text-red-400 bg-red-500/10 px-2 py-1 whitespace-pre-wrap border-l-2 border-red-500">- ${escapeHTML(part.value)}</div>`;
+                                        diffHTML += `<div class="text-red-400 bg-red-500/10 px-2 py-1 whitespace-pre-wrap border-l-2 border-red-500">- ${part.value}</div>`;
                                     }
                                 });
                                 if (!hasChanges) {
-                                    diffHTML += `<div class="text-gray-400 px-2 py-1 italic">Nenhuma alteração textual detectada.</div>`;
+                                    diffHTML += `<div class="text-gray-400 px-2 py-1 italic">Nenhuma altera├º├úo textual detectada.</div>`;
                                 }
                                 diffHTML += '</div>';
                             } catch(e) {
-                                diffHTML = '<div class="text-xs text-red-400 mt-2">Não foi possível calcular as diferenças.</div>';
+                                diffHTML = '<div class="text-xs text-red-400 mt-2">N├úo foi poss├¡vel calcular as diferen├ºas.</div>';
                             }
                         } else if (!isUpdate && item.new_content) {
                             try {
-                                const newName = item.new_content.name || 'Sem título';
-                                const newStr = `TÍTULO PRINCIPAL: ${newName}\n\n` + formatCommandForDiff(item.new_content.command);
-                                diffHTML = `<div class="mt-3 bg-[#1e293b] rounded p-3 overflow-x-auto text-xs font-mono whitespace-pre-wrap text-text-muted border-l-2 border-green-500 bg-green-500/5">${escapeHTML(newStr)}</div>`;
+                                const newName = item.new_content.name || 'Sem t├¡tulo';
+                                const newStr = `T├ìTULO PRINCIPAL: ${newName}\n\n` + formatCommandForDiff(item.new_content.command);
+                                diffHTML = `<div class="mt-3 bg-[#1e293b] rounded p-3 overflow-x-auto text-xs font-mono whitespace-pre-wrap text-text-muted border-l-2 border-green-500 bg-green-500/5">${newStr}</div>`;
                             } catch(e) {}
-                        }
-                        
-                        if (item.new_content && item.new_content.reason) {
-                            diffHTML += `<div class="mt-3 bg-accent-solid/10 border-l-2 border-accent-solid p-3 rounded text-sm text-text-high font-sans"><strong>Motivo da alteração:</strong> <span class="text-text-muted">${escapeHTML(item.new_content.reason)}</span></div>`;
                         }
                         
                         const el = document.createElement('details');
@@ -1282,7 +1120,7 @@
                     });
                 } catch (e) {
                     loading.classList.add('hidden');
-                    window.showCustomAlert('Erro ao carregar o histórico: ' + e.message);
+                    window.showCustomAlert('Erro ao carregar o hist├│rico: ' + e.message);
                 }
             };
 
@@ -1306,32 +1144,16 @@
                 btn.disabled = true;
 
                 try {
-                    const headers = Object.assign(getAuthHeaders(), { 'Prefer': 'return=minimal' });
-                    
-                    // Fetch current command to preserve its JSON
-                    const resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${commandToDeleteId}&select=command`, { headers: getAuthHeaders() });
-                    if (!resCmd.ok) throw new Error('Erro ao buscar o comando');
-                    const cmdDataArr = await resCmd.json();
-                    if (cmdDataArr.length === 0) throw new Error('Comando não encontrado');
-                    
-                    const parsedData = parseCommandData(cmdDataArr[0].command);
-                    parsedData.deleted_at = new Date().toISOString();
+                    const headers = getAuthHeaders();
                     
                     const res = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${commandToDeleteId}`, {
-                        method: 'PATCH',
-                        headers: headers,
-                        body: JSON.stringify({ command: JSON.stringify(parsedData) })
+                        method: 'DELETE',
+                        headers: headers
                     });
-                    
-                    if (!res.ok) throw new Error('Erro ao mover para a lixeira');
+                    if (!res.ok) throw new Error('Erro ao excluir');
                     await loadData();
                 } catch (e) {
-                    if (e.message && e.message.toLowerCase().includes('jwt expired')) {
-                        window.showCustomAlert('Sua sessão expirou por segurança. Faça login novamente.');
-                        document.getElementById('logout-btn')?.click();
-                    } else {
-                        window.showCustomAlert('Erro: ' + e.message);
-                    }
+                    window.showCustomAlert('Erro: ' + e.message);
                 } finally {
                     commandToDeleteId = null;
                     document.getElementById('deleteModal').classList.add('hidden');
@@ -1350,14 +1172,17 @@
                     window.editingCmdCategoryId = targetCmd.categoria_id;
                     document.getElementById('commandTitleInput').value = targetCmd.name;
 
-                    const parsedData = parseCommandData(targetCmd.command);
-                    let subCmds = parsedData.subCommands;
+                    let subCmds = [];
+                    try {
+                        subCmds = JSON.parse(targetCmd.command);
+                        if (!Array.isArray(subCmds)) throw new Error('Not array');
+                    } catch (e) {
+                        subCmds = [{ name: 'Comando', text: targetCmd.command || '' }];
+                    }
 
                     if (subCmds.length === 0) {
                         subCmds = [{ name: '', text: '', desc: '' }];
                     }
-                    
-                    document.getElementById('commandVisibilityInput').value = parsedData.is_private ? 'private' : 'public';
                     
                     window.modalSubCommands = subCmds;
                     window.activeModalTabIndex = 0;
@@ -1377,63 +1202,23 @@
                     const resComandos = await fetch(`${SUPABASE_URL}/rest/v1/comandos?select=*`, { headers });
 
                     if (!resComandos.ok) {
-                        let errMsg = 'HTTP error fetching from Supabase';
-                        try {
-                            const errData = await resComandos.json();
-                            errMsg = errData.message || errMsg;
-                        } catch(e) {}
-                        throw new Error(errMsg);
+                        throw new Error('HTTP error fetching from Supabase');
                     }
 
                     const rawComandos = await resComandos.json();
 
-                    const userName = sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0] || 'Desconhecido';
-                    const isAdmin = sessionUser?.email === 'admin@lcsistemas.com';
-                    
-                    const trashBtn = document.getElementById('openTrashModalBtn');
-                    if (trashBtn) {
-                        if (isAdmin) trashBtn.classList.remove('hidden');
-                        else trashBtn.classList.add('hidden');
-                    }
-
-                    const now = new Date();
-                    window.trashComandos = [];
-                    
-                    allComandos = rawComandos.filter(cmd => {
-                        const parsedData = parseCommandData(cmd.command);
-                        
-                        // Garbage Collection
-                        if (parsedData.deleted_at) {
-                            const deletedAt = new Date(parsedData.deleted_at);
-                            const hoursDiff = (now - deletedAt) / (1000 * 60 * 60);
-                            
-                            if (hoursDiff >= 48) {
-                                // Delete permanently in background
-                                fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${cmd.id}`, {
-                                    method: 'DELETE',
-                                    headers: getAuthHeaders()
-                                }).catch(err => console.error('Failed to garbage collect:', err));
-                                return false; // Exclude from everything
-                            } else {
-                                window.trashComandos.push({ ...cmd, deleted_at: parsedData.deleted_at });
-                                return false; // Exclude from allComandos
-                            }
-                        }
-
-                        // Normal visibility rules
-                        if (parsedData.is_private && cmd.created_by_name !== userName && !isAdmin) {
-                            return false;
-                        }
-                        return true;
-                    });
-
+                    allComandos = rawComandos;
                     allComandos.sort((a, b) => a.name.localeCompare(b.name));
 
                     const suggestionSet = new Set();
                     allComandos.forEach(sub => {
                         suggestionSet.add(sub.name);
-                        const parsedData = parseCommandData(sub.command);
-                        parsedData.subCommands.forEach(sc => suggestionSet.add(sc.name));
+                        try {
+                            const scs = JSON.parse(sub.command);
+                            if (Array.isArray(scs)) {
+                                scs.forEach(sc => suggestionSet.add(sc.name));
+                            }
+                        } catch (e) {}
                     });
                     allSuggestions = [...suggestionSet];
 
@@ -1441,14 +1226,9 @@
                     isDataLoaded = true;
                 } catch (error) {
                     console.error('Erro ao carregar dados', error);
-                    if (error.message && error.message.toLowerCase().includes('jwt expired')) {
-                        window.showCustomAlert('Sua sessão expirou por segurança. Faça login novamente.');
-                        document.getElementById('logout-btn')?.click();
-                    } else {
-                        const infoMessage = document.getElementById('infoMessage');
-                        infoMessage.textContent = 'Erro ao carregar banco de dados: ' + error.message;
-                        document.getElementById('infoModal').classList.remove('hidden');
-                    }
+                    const infoMessage = document.getElementById('infoMessage');
+                    infoMessage.textContent = 'Erro ao carregar banco de dados: ' + error.message;
+                    document.getElementById('infoModal').classList.remove('hidden');
                 } finally {
                     categoriesContainer.classList.remove('loading');
                 }
@@ -1526,7 +1306,7 @@
 
             
             window.showDescription = (encodedDesc, encodedMedia = '') => {
-                document.getElementById('infoModalTitle').textContent = 'Descrição';
+                document.getElementById('infoModalTitle').textContent = 'Descri├º├úo';
                 const descText = decodeURIComponent(encodedDesc);
                 const mediaUrl = encodedMedia ? decodeURIComponent(encodedMedia) : '';
                 const infoMessage = document.getElementById('infoMessage');
@@ -1547,13 +1327,13 @@
                 document.getElementById('infoModal').classList.remove('hidden');
             };
 
-// --- FUNÇÕES DE RENDERIZAÇÃO E BUSCA PRINCIPAL ---
+// --- FUN├ç├òES DE RENDERIZA├ç├âO E BUSCA PRINCIPAL ---
 
             const render = (dataToRender = []) => {
                 const searchTerm = searchInput.value.trim();
                 categoriesContainer.innerHTML = '';
                 if (dataToRender.length === 0) {
-                    const message = searchTerm ? `Nenhum resultado encontrado para "${searchTerm}".` : "A lista de comandos está vazia.";
+                    const message = searchTerm ? `Nenhum resultado encontrado para "${searchTerm}".` : "A lista de comandos est├í vazia.";
                     categoriesContainer.innerHTML = `<div class="text-center text-text-muted py-10">${message}</div>`;
                     return;
                 }
@@ -1561,8 +1341,14 @@
                     const categoryElement = document.createElement('div');
                     
                     const isSql = subject.name.toLowerCase().endsWith('.sql');
-                    const parsedData = parseCommandData(subject.command);
-                    let subCommands = parsedData.subCommands;
+                    let subCommands = [];
+
+                    try {
+                        subCommands = JSON.parse(subject.command);
+                        if (!Array.isArray(subCommands)) throw new Error('Not array');
+                    } catch (e) {
+                        subCommands = [{ name: 'Comando', text: subject.command || '' }];
+                    }
 
                     const tabsHTML = subCommands.map((sc, scIdx) => {
                         const isActive = scIdx === 0;
@@ -1571,11 +1357,10 @@
                     }).join('');
 
                     const panelsHTML = subCommands.map((sc, scIdx) => {
-                        let isSql = sc.name.toLowerCase().endsWith('.sql');
-                        let isDownloadLink = false;
                         let displayText = (sc.text || '').trim();
-                        
-                        if (displayText.startsWith('http')) {
+                        let isDownloadLink = false;
+
+                        if (displayText.startsWith('https://') || displayText.startsWith('http://')) {
                             isDownloadLink = true;
                             if (displayText.includes('drive.google.com/file/d/')) {
                                 const match = displayText.match(/\/file\/d\/([^\/]+)/);
@@ -1586,21 +1371,20 @@
                         }
 
                         const encoded = encodeURIComponent(displayText);
-                        const encodedDesc = encodeURIComponent(sc.desc || 'Descrição não informada.').replace(/'/g, "%27");
+                        const encodedDesc = encodeURIComponent(sc.desc || 'Descri├º├úo n├úo informada.').replace(/'/g, "%27");
                         const encodedMedia = sc.media_url ? encodeURIComponent(sc.media_url).replace(/'/g, "%27") : '';
-                        
                         const descHeaderHTML = (sc.desc && sc.desc.trim() !== '') ? `
                             <div class="inline-flex items-center gap-2 mb-2 p-2 -ml-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group w-fit" onclick="showDescription('${encodedDesc}', '${encodedMedia}')">
-                                <div class="w-6 h-6 rounded-full bg-orange-500 group-hover:bg-orange-600 text-white text-xs font-bold flex items-center justify-center shrink-0 group-hover:scale-110 transition-all shadow-md" title="Ver descrição">!</div>
+                                <div class="w-6 h-6 rounded-full bg-orange-500 group-hover:bg-orange-600 text-white text-xs font-bold flex items-center justify-center shrink-0 group-hover:scale-110 transition-all shadow-md" title="Ver descri├º├úo">!</div>
                                 <span class="text-sm font-medium text-text-high group-hover:text-accent-solid transition-colors">Para que serve este comando?</span>
                                 ${sc.media_url ? '<svg class="w-4 h-4 text-orange-400 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>' : ''}
                             </div>
                         ` : '';
-                        
                         let actionBtn = '';
+
                         const historyBtnHTML = `
-                                    <button onclick="event.stopPropagation(); viewHistory('${subject.id}', '${encodeURIComponent(subject.name.replace(/'/g, "\\'"))}')" class="px-3 py-1 bg-orange-500/10 border border-orange-500/30 text-orange-400 rounded hover:bg-orange-500/20 transition-colors text-xs font-semibold flex items-center gap-1 shrink-0 w-full justify-center" title="Histórico">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Histórico
+                                    <button onclick="event.stopPropagation(); viewHistory('${subject.id}', '${encodeURIComponent(subject.name.replace(/'/g, "\\'"))}')" class="px-3 py-1 bg-orange-500/10 border border-orange-500/30 text-orange-400 rounded hover:bg-orange-500/20 transition-colors text-xs font-semibold flex items-center gap-1 shrink-0 w-full justify-center" title="Hist├│rico">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Hist├│rico
                                     </button>
                         `;
 
@@ -1632,7 +1416,6 @@
                         }
 
                         const hiddenClass = scIdx === 0 ? '' : 'hidden';
-                        
                         return `
                             <div id="panel-${subject.id}-${scIdx}" class="tab-panel-${subject.id} ${hiddenClass}">
                                 ${descHeaderHTML}
@@ -1675,14 +1458,14 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg> Editar
                                     </button>
                                 </div>
-                                <button onclick="event.stopPropagation(); toggleActionDrawer('drawer-${subject.id}')" class="p-1 hover:bg-bg-solid-hover rounded transition-colors text-text-muted shrink-0" title="Opções">
+                                <button onclick="event.stopPropagation(); toggleActionDrawer('drawer-${subject.id}')" class="p-1 hover:bg-bg-solid-hover rounded transition-colors text-text-muted shrink-0" title="Op├º├Áes">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                                 </button>
                                 <svg class="cmd-chevron w-5 h-5 text-text-muted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                         </div>
                         <div class="hidden pt-0 border-t border-border-subtle bg-[color:var(--bg-app)] rounded-b-md">
-                            <div class="flex overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden gap-1 pt-3 px-3 border-b border-border-element">
+                            <div class="flex overflow-x-auto custom-scrollbar gap-1 pt-3 px-3 border-b border-border-element">
                                 ${tabsHTML}
                             </div>
                             <div class="panels-container p-3 bg-[#1e293b] rounded-b-md">
@@ -1696,52 +1479,25 @@
                 });
             };
 
-            window.currentFilterTab = 'all';
-
-            window.setFilterTab = (tab) => {
-                window.currentFilterTab = tab;
-                
-                const tabAll = document.getElementById('tabFilterAll');
-                const tabMine = document.getElementById('tabFilterMine');
-                
-                if (tab === 'all') {
-                    tabAll.className = "pb-3 text-sm font-semibold text-accent-solid border-b-2 border-accent-solid transition-colors";
-                    tabMine.className = "pb-3 text-sm font-semibold text-text-muted border-b-2 border-transparent hover:text-text-high transition-colors";
-                } else {
-                    tabMine.className = "pb-3 text-sm font-semibold text-accent-solid border-b-2 border-accent-solid transition-colors";
-                    tabAll.className = "pb-3 text-sm font-semibold text-text-muted border-b-2 border-transparent hover:text-text-high transition-colors";
-                }
-                
-                handleSearch(); // Apply filter
-            };
-
             const handleSearch = () => {
                 if (!isDataLoaded) return;
                 const searchTerm = normalizeString(searchInput.value.trim());
-                
+                if (!searchTerm) {
+                    render(allComandos);
+                    return;
+                }
                 const searchResults = allComandos.filter(cmd => {
-                    if (window.currentFilterTab === 'mine') {
-                        const userName = sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0] || 'Desconhecido';
-                        if (cmd.created_by_name !== userName) {
-                            return false;
-                        }
-                    }
-
-                    if (!searchTerm) return true;
-
                     const catNameMatches = normalizeString(cmd.name).includes(searchTerm);
                     if (catNameMatches) return true;
                     
                     let subMatches = false;
                     try {
-                        const parsedData = parseCommandData(cmd.command);
-                        const scs = parsedData.subCommands;
+                        const scs = JSON.parse(cmd.command);
                         if (Array.isArray(scs)) {
                             subMatches = scs.some(sc => {
                                 const nameMatches = normalizeString(sc.name).includes(searchTerm);
                                 const descMatches = sc.desc && normalizeString(sc.desc).includes(searchTerm);
-                                const textMatches = sc.text && normalizeString(sc.text).includes(searchTerm);
-                                return nameMatches || descMatches || textMatches;
+                                return nameMatches || descMatches;
                             });
                         }
                     } catch (e) {}
@@ -1750,9 +1506,9 @@
                 render(searchResults);
             };
 
-            // (Listener antigo removido, agora o listener é adicionado no próprio elemento renderizado)
+            // (Listener antigo removido, agora o listener ├® adicionado no pr├│prio elemento renderizado)
 
-            // --- INICIALIZAÇÃO DA APLICAÇÃO ---
+            // --- INICIALIZA├ç├âO DA APLICA├ç├âO ---
             const initializeApp = () => {
                 ThemeSwitcher.init();
                 initWebGLBackground();
@@ -1800,18 +1556,6 @@
                     if (!e.target.closest('.dev-menu') && !e.target.closest('button[onclick*="toggleDevMenu"]')) {
                         document.querySelectorAll('.dev-menu').forEach(m => m.classList.add('hidden'));
                     }
-                    if (!e.target.closest('.action-drawer') && !e.target.closest('button[onclick*="toggleActionDrawer"]')) {
-                        document.querySelectorAll('.action-drawer').forEach(d => {
-                            d.classList.add('max-w-0', 'opacity-0');
-                            d.classList.remove('max-w-[200px]', 'opacity-100');
-                        });
-                    }
-                    if (!e.target.closest('#user-menu-container')) {
-                        const userDropdown = document.getElementById('user-dropdown');
-                        if (userDropdown) {
-                            userDropdown.classList.add('hidden');
-                        }
-                    }
                     if (!e.target.closest('header')) {
                         suggestionsContainer.classList.remove('expanded');
                     }
@@ -1820,133 +1564,19 @@
                 loadData();
             };
 
-                window.renderTrashList = () => {
-                    const list = document.getElementById('trashList');
-                    list.innerHTML = '';
-                    if (!window.trashComandos || window.trashComandos.length === 0) {
-                        list.innerHTML = '<p class="text-text-muted text-center py-8">Nenhum comando na lixeira.</p>';
-                        return;
-                    }
-                    window.trashComandos.forEach(cmd => {
-                        const parsed = parseCommandData(cmd.command);
-                        const deletedAt = new Date(parsed.deleted_at);
-                        const expiresAt = new Date(deletedAt.getTime() + 48 * 60 * 60 * 1000);
-                        
-                        const div = document.createElement('div');
-                        div.className = 'bg-bg-panel border border-border-element p-4 rounded-lg flex justify-between items-center';
-                        div.innerHTML = `
-                            <div>
-                                <h4 class="font-medium text-text-high mb-1">${cmd.name}</h4>
-                                <p class="text-xs text-text-muted">Deletado: ${deletedAt.toLocaleString()}</p>
-                                <p class="text-xs text-red-400">Expira: ${expiresAt.toLocaleString()}</p>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="window.restoreCommand(${cmd.id})" class="p-2 bg-green-500/10 text-green-500 rounded hover:bg-green-500/20 transition-colors" title="Restaurar">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
-                                </button>
-                                <button onclick="window.forceDeleteCommand(${cmd.id})" class="p-2 bg-red-500/10 text-red-500 rounded hover:bg-red-500/20 transition-colors" title="Excluir Permanentemente">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
-                            </div>
-                        `;
-                        list.appendChild(div);
-                    });
-                };
-
-                document.getElementById('openTrashModalBtn')?.addEventListener('click', () => {
-                    window.renderTrashList();
-                    document.getElementById('trashModal').classList.remove('hidden');
-                });
-
-                document.getElementById('closeTrashBtn')?.addEventListener('click', () => {
-                    document.getElementById('trashModal').classList.add('hidden');
-                });
-
-                window.restoreCommand = async (id) => {
-                    try {
-                        const headers = Object.assign(getAuthHeaders(), { 'Prefer': 'return=minimal' });
-                        const resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${id}&select=command`, { headers: getAuthHeaders() });
-                        if (!resCmd.ok) throw new Error('Erro ao buscar o comando');
-                        const cmdDataArr = await resCmd.json();
-                        if (cmdDataArr.length === 0) throw new Error('Comando não encontrado');
-                        
-                        const parsedData = parseCommandData(cmdDataArr[0].command);
-                        delete parsedData.deleted_at;
-                        
-                        const res = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${id}`, {
-                            method: 'PATCH',
-                            headers: headers,
-                            body: JSON.stringify({ command: JSON.stringify(parsedData) })
-                        });
-                        
-                        if (!res.ok) throw new Error('Erro ao restaurar');
-                        await loadData();
-                        window.renderTrashList();
-                    } catch (e) {
-                        window.showCustomAlert('Erro: ' + e.message);
-                    }
-                };
-
-                window.forceDeleteCommand = async (id) => {
-                    if (!confirm('Deseja realmente excluir este comando permanentemente?')) return;
-                    try {
-                        const res = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${id}`, {
-                            method: 'DELETE',
-                            headers: getAuthHeaders()
-                        });
-                        if (!res.ok) throw new Error('Erro ao excluir');
-                        await loadData();
-                        window.renderTrashList();
-                    } catch (e) {
-                        window.showCustomAlert('Erro: ' + e.message);
-                    }
-                };
-
             initializeApp();
         });
     </script>
 
     <!-- Modal Adicionar Comando -->
-    <div id="reasonModal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] hidden p-4">
-        <div class="bg-bg-panel border border-border-subtle rounded-xl w-full max-w-md shadow-2xl flex flex-col">
-            <div class="flex items-center justify-between p-4 border-b border-border-element bg-black/20 rounded-t-xl">
-                <h3 class="text-base font-bold text-text-high">Motivo da Alteração</h3>
-                <button type="button" id="reasonCancelTopBtn" class="text-text-muted hover:text-white transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <div class="p-5">
-                <p class="text-sm text-text-muted mb-4">Por que está sendo feita essa alteração? <span class="text-red-400">*</span></p>
-                <textarea id="reasonInput" rows="3" class="w-full rounded-md px-3 py-2 bg-[color:var(--bg-app)] border border-border-element text-text-high focus:outline-none focus:ring-1 focus:ring-accent font-sans text-sm resize-none custom-scrollbar" placeholder="Descreva o motivo..."></textarea>
-            </div>
-            <div class="flex justify-end gap-3 p-4 border-t border-border-element bg-black/10 rounded-b-xl">
-                <button type="button" id="reasonCancelBtn" class="px-4 py-2 text-sm font-medium rounded-md text-text-muted hover:text-white hover:bg-white/5 transition-colors border border-transparent">
-                    Sair
-                </button>
-                <button type="button" id="reasonOkBtn" class="px-5 py-2 text-sm font-medium rounded-md text-white bg-accent-solid hover:bg-opacity-90 transition-all border border-transparent shadow-lg shadow-accent-solid/20">
-                    OK
-                </button>
-            </div>
-        </div>
-    </div>
-
     <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
         <div class="panel w-full max-w-5xl p-6 flex flex-col max-h-[90vh] shadow-2xl">
             <h3 class="text-xl font-semibold mb-4 text-accent-solid">Adicionar Novo Comando</h3>
             
             <div class="space-y-4 mb-6 overflow-y-auto custom-scrollbar pr-2 flex-grow">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="sm:col-span-2">
-                        <label class="block text-sm font-medium text-text-muted mb-1">Título do Comando</label>
-                        <input type="text" id="commandTitleInput" placeholder="Ex: Update LC Sistemas..." class="w-full rounded-lg px-3 py-2 bg-bg-panel border border-border-element text-text-high focus:outline-none focus:ring-2 focus:ring-accent">
-                    </div>
-                    <div class="sm:col-span-1">
-                        <label class="block text-sm font-medium text-text-muted mb-1">Visibilidade</label>
-                        <select id="commandVisibilityInput" class="w-full rounded-lg px-3 py-2 bg-[color:var(--bg-app)] border border-border-element text-text-high focus:outline-none focus:ring-2 focus:ring-accent">
-                            <option value="public">Público</option>
-                            <option value="private">Privado</option>
-                        </select>
-                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-muted mb-1">T├¡tulo do Comando</label>
+                    <input type="text" id="commandTitleInput" placeholder="Ex: Update LC Sistemas..." class="w-full rounded-lg px-3 py-2 bg-bg-panel border border-border-element text-text-high focus:outline-none focus:ring-2 focus:ring-accent">
                 </div>
 
                 <div>
@@ -1983,36 +1613,10 @@
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             </div>
             <h3 class="text-xl font-semibold mb-2 text-text-high">Excluir Comando?</h3>
-            <p class="text-text-muted text-sm mb-6">Tem certeza que deseja excluir este comando? Esta ação não pode ser desfeita.</p>
+            <p class="text-text-muted text-sm mb-6">Tem certeza que deseja excluir este comando? Esta a├º├úo n├úo pode ser desfeita.</p>
             <div class="flex justify-center gap-3 w-full">
                 <button id="cancelDeleteBtn" class="flex-1 px-4 py-2 bg-bg-panel border border-border-subtle text-text-high rounded-lg hover:bg-bg-solid-hover transition-colors">Cancelar</button>
                 <button id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-lg">Sim, Excluir</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Trash Modal -->
-    <div id="trashModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
-        <div class="panel w-full max-w-2xl h-[80vh] p-0 rounded-xl flex flex-col overflow-hidden">
-            <div class="flex items-center justify-between p-6 border-b border-border-subtle bg-bg-panel shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-500">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-semibold text-text-high">Lixeira</h3>
-                        <p class="text-sm text-text-muted">Comandos excluídos nos últimos 2 dias</p>
-                    </div>
-                </div>
-                <button id="closeTrashBtn" class="text-text-muted hover:text-text-high p-2 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <div class="p-6 overflow-y-auto bg-bg-app flex-1 custom-scrollbar">
-                <div id="trashList" class="space-y-4">
-                    <!-- Deleted commands will be injected here -->
-                </div>
             </div>
         </div>
     </div>
@@ -2041,7 +1645,7 @@
             <div class="flex justify-between items-center mb-4 shrink-0">
                 <h3 class="text-xl font-semibold text-text-high flex items-center gap-2">
                     <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Histórico de Alterações: <span id="historyCommandName" class="text-accent-solid ml-1"></span>
+                    Hist├│rico de Altera├º├Áes: <span id="historyCommandName" class="text-accent-solid ml-1"></span>
                 </h3>
                 <button onclick="document.getElementById('historyModal').classList.add('hidden')" class="text-text-muted hover:text-red-500 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -2053,12 +1657,12 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <p>Carregando histórico...</p>
+                <p>Carregando hist├│rico...</p>
             </div>
             
             <div id="historyEmpty" class="hidden flex-grow flex flex-col items-center justify-center text-text-muted">
                 <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
-                <p>Nenhuma alteração registrada para este comando.</p>
+                <p>Nenhuma altera├º├úo registrada para este comando.</p>
             </div>
             
             <div id="historyListContainer" class="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-4">
