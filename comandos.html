@@ -462,7 +462,10 @@
                             </div>
                         </div>
                         
-                        <div class="relative">
+                        <div class="relative flex gap-2">
+                            <button id="openTrashModalBtn" class="bg-red-500 text-white p-3 rounded-lg hover:opacity-90 transition-opacity hidden" title="Lixeira">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
                             <button id="openAddModalBtn" class="bg-accent-solid text-white p-3 rounded-lg hover:opacity-90 transition-opacity" title="Adicionar Comando">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                             </button>
@@ -1231,13 +1234,24 @@
                 btn.disabled = true;
 
                 try {
-                    const headers = getAuthHeaders();
+                    const headers = Object.assign(getAuthHeaders(), { 'Prefer': 'return=minimal' });
+                    
+                    // Fetch current command to preserve its JSON
+                    const resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${commandToDeleteId}&select=command`, { headers: getAuthHeaders() });
+                    if (!resCmd.ok) throw new Error('Erro ao buscar o comando');
+                    const cmdDataArr = await resCmd.json();
+                    if (cmdDataArr.length === 0) throw new Error('Comando não encontrado');
+                    
+                    const parsedData = parseCommandData(cmdDataArr[0].command);
+                    parsedData.deleted_at = new Date().toISOString();
                     
                     const res = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${commandToDeleteId}`, {
-                        method: 'DELETE',
-                        headers: headers
+                        method: 'PATCH',
+                        headers: headers,
+                        body: JSON.stringify({ command: JSON.stringify(parsedData) })
                     });
-                    if (!res.ok) throw new Error('Erro ao excluir');
+                    
+                    if (!res.ok) throw new Error('Erro ao mover para a lixeira');
                     await loadData();
                 } catch (e) {
                     if (e.message && e.message.toLowerCase().includes('jwt expired')) {
@@ -1302,10 +1316,40 @@
                     const rawComandos = await resComandos.json();
 
                     const userName = sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0] || 'Desconhecido';
+                    const isAdmin = sessionUser?.email === 'admin@lcsistemas.com';
+                    
+                    const trashBtn = document.getElementById('openTrashModalBtn');
+                    if (trashBtn) {
+                        if (isAdmin) trashBtn.classList.remove('hidden');
+                        else trashBtn.classList.add('hidden');
+                    }
 
+                    const now = new Date();
+                    window.trashComandos = [];
+                    
                     allComandos = rawComandos.filter(cmd => {
                         const parsedData = parseCommandData(cmd.command);
-                        if (parsedData.is_private && cmd.created_by_name !== userName) {
+                        
+                        // Garbage Collection
+                        if (parsedData.deleted_at) {
+                            const deletedAt = new Date(parsedData.deleted_at);
+                            const hoursDiff = (now - deletedAt) / (1000 * 60 * 60);
+                            
+                            if (hoursDiff >= 48) {
+                                // Delete permanently in background
+                                fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${cmd.id}`, {
+                                    method: 'DELETE',
+                                    headers: getAuthHeaders()
+                                }).catch(err => console.error('Failed to garbage collect:', err));
+                                return false; // Exclude from everything
+                            } else {
+                                window.trashComandos.push({ ...cmd, deleted_at: parsedData.deleted_at });
+                                return false; // Exclude from allComandos
+                            }
+                        }
+
+                        // Normal visibility rules
+                        if (parsedData.is_private && cmd.created_by_name !== userName && !isAdmin) {
                             return false;
                         }
                         return true;
@@ -1689,6 +1733,88 @@
                 loadData();
             };
 
+                window.renderTrashList = () => {
+                    const list = document.getElementById('trashList');
+                    list.innerHTML = '';
+                    if (!window.trashComandos || window.trashComandos.length === 0) {
+                        list.innerHTML = '<p class="text-text-muted text-center py-8">Nenhum comando na lixeira.</p>';
+                        return;
+                    }
+                    window.trashComandos.forEach(cmd => {
+                        const parsed = parseCommandData(cmd.command);
+                        const deletedAt = new Date(parsed.deleted_at);
+                        const expiresAt = new Date(deletedAt.getTime() + 48 * 60 * 60 * 1000);
+                        
+                        const div = document.createElement('div');
+                        div.className = 'bg-bg-panel border border-border-element p-4 rounded-lg flex justify-between items-center';
+                        div.innerHTML = `
+                            <div>
+                                <h4 class="font-medium text-text-high mb-1">${cmd.name}</h4>
+                                <p class="text-xs text-text-muted">Deletado: ${deletedAt.toLocaleString()}</p>
+                                <p class="text-xs text-red-400">Expira: ${expiresAt.toLocaleString()}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="window.restoreCommand(${cmd.id})" class="p-2 bg-green-500/10 text-green-500 rounded hover:bg-green-500/20 transition-colors" title="Restaurar">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                                </button>
+                                <button onclick="window.forceDeleteCommand(${cmd.id})" class="p-2 bg-red-500/10 text-red-500 rounded hover:bg-red-500/20 transition-colors" title="Excluir Permanentemente">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
+                        `;
+                        list.appendChild(div);
+                    });
+                };
+
+                document.getElementById('openTrashModalBtn')?.addEventListener('click', () => {
+                    window.renderTrashList();
+                    document.getElementById('trashModal').classList.remove('hidden');
+                });
+
+                document.getElementById('closeTrashBtn')?.addEventListener('click', () => {
+                    document.getElementById('trashModal').classList.add('hidden');
+                });
+
+                window.restoreCommand = async (id) => {
+                    try {
+                        const headers = Object.assign(getAuthHeaders(), { 'Prefer': 'return=minimal' });
+                        const resCmd = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${id}&select=command`, { headers: getAuthHeaders() });
+                        if (!resCmd.ok) throw new Error('Erro ao buscar o comando');
+                        const cmdDataArr = await resCmd.json();
+                        if (cmdDataArr.length === 0) throw new Error('Comando não encontrado');
+                        
+                        const parsedData = parseCommandData(cmdDataArr[0].command);
+                        delete parsedData.deleted_at;
+                        
+                        const res = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${id}`, {
+                            method: 'PATCH',
+                            headers: headers,
+                            body: JSON.stringify({ command: JSON.stringify(parsedData) })
+                        });
+                        
+                        if (!res.ok) throw new Error('Erro ao restaurar');
+                        await loadData();
+                        window.renderTrashList();
+                    } catch (e) {
+                        window.showCustomAlert('Erro: ' + e.message);
+                    }
+                };
+
+                window.forceDeleteCommand = async (id) => {
+                    if (!confirm('Deseja realmente excluir este comando permanentemente?')) return;
+                    try {
+                        const res = await fetch(`${SUPABASE_URL}/rest/v1/comandos?id=eq.${id}`, {
+                            method: 'DELETE',
+                            headers: getAuthHeaders()
+                        });
+                        if (!res.ok) throw new Error('Erro ao excluir');
+                        await loadData();
+                        window.renderTrashList();
+                    } catch (e) {
+                        window.showCustomAlert('Erro: ' + e.message);
+                    }
+                };
+
             initializeApp();
         });
     </script>
@@ -1770,10 +1896,36 @@
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             </div>
             <h3 class="text-xl font-semibold mb-2 text-text-high">Excluir Comando?</h3>
-            <p class="text-text-muted text-sm mb-6">Tem certeza que deseja excluir este comando? Esta ação não pode ser desfeita.</p>
+            <p class="text-text-muted text-sm mb-6">Este comando será movido para a lixeira e excluído permanentemente após 48 horas.</p>
             <div class="flex justify-center gap-3 w-full">
                 <button id="cancelDeleteBtn" class="flex-1 px-4 py-2 bg-bg-panel border border-border-subtle text-text-high rounded-lg hover:bg-bg-solid-hover transition-colors">Cancelar</button>
-                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-lg">Sim, Excluir</button>
+                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-lg">Mover p/ Lixeira</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trash Modal -->
+    <div id="trashModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
+        <div class="panel w-full max-w-2xl h-[80vh] p-0 rounded-xl flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between p-6 border-b border-border-subtle bg-bg-panel shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-text-high">Lixeira</h3>
+                        <p class="text-sm text-text-muted">Comandos excluídos nos últimos 2 dias</p>
+                    </div>
+                </div>
+                <button id="closeTrashBtn" class="text-text-muted hover:text-text-high p-2 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto bg-bg-app flex-1 custom-scrollbar">
+                <div id="trashList" class="space-y-4">
+                    <!-- Deleted commands will be injected here -->
+                </div>
             </div>
         </div>
     </div>
