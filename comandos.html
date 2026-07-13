@@ -345,57 +345,166 @@
     <canvas id="webgl-bg"></canvas>
 
     <!-- LOGIN OVERLAY -->
-    <div id="login-overlay" class="fixed inset-0 z-[100] bg-bg-app flex flex-col items-center justify-center p-4">
-        <!-- Optional Background matching the app -->
-        <div class="absolute inset-0 pointer-events-none overflow-hidden flex justify-center items-center opacity-30">
-            <div class="w-[800px] h-[800px] bg-accent-solid rounded-full blur-[150px] opacity-10"></div>
+    <div id="login-overlay" class="fixed inset-0 z-[100] flex flex-row overflow-hidden bg-[#0f172a]">
+        
+        <!-- Left Side (Canvas and Logo) -->
+        <div class="hidden md:flex flex-col w-2/3 h-full relative items-center justify-center">
+            <!-- Canvas de Sinapses -->
+            <canvas id="synapses-canvas" class="absolute inset-0 pointer-events-none opacity-80 z-0"></canvas>
+                     <!-- Container principal centralizado -->
+            <div class="relative z-10 flex items-center justify-center w-full h-full min-h-[500px] p-8">
+                <!-- Imagem Unificada do Gemini -->
+                <img src="teste_imagem_limpa.png" alt="Logo e Texto" class="w-[40rem] h-auto object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] animate-[pulse_5s_infinite_ease-in-out] pointer-events-none" style="opacity: 0.95;">
+            </div>
         </div>
-
-        <div class="relative z-10 w-full max-w-md bg-bg-panel border border-border-element rounded-2xl shadow-2xl p-8 backdrop-blur-xl">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-accent-solid to-accent-solid-hover mb-2">Base de Conhecimento</h1>
-                <p class="text-text-muted">Faça login para acessar os comandos</p>
+        
+        <!-- Right Side (Form Sidebar) -->
+        <div class="w-full md:w-1/3 h-full bg-white flex flex-col justify-center px-12 shadow-[-20px_0_60px_-15px_rgba(0,0,0,0.5)] z-20 relative">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold text-slate-800 mb-3">Login</h1>
+                <p class="text-slate-500 font-medium text-lg">Faça login na sua conta</p>
             </div>
             
             <form id="login-form" class="space-y-6">
                 <div>
-                    <label for="login-user" class="block text-sm font-medium text-text-muted mb-2">Usuário</label>
-                    <select id="login-user"
-                        class="w-full bg-bg-app border border-border-element rounded-xl px-4 py-3 text-text-high focus:outline-none focus:ring-2 focus:ring-accent-solid focus:border-transparent transition-all">
-                        <option value="" selected>Selecione seu nome</option>
-                        <option value="rafael@lcsistemas.com">RAFAEL</option>
-                        <option value="matheus@lcsistemas.com">MATHEUS</option>
-                        <option value="allany@lcsistemas.com">ALLANY</option>
-                        <option value="kleyver@lcsistemas.com">KLEYVER</option>
-                        <option value="carla@lcsistemas.com">CARLA</option>
-                        <option value="nilth@lcsistemas.com">NILTH</option>
-                        <option value="leandro@lcsistemas.com">LEANDRO</option>
-                        <option value="danilo@lcsistemas.com">DANILO</option>
-                        <option value="mauricio@lcsistemas.com">MAURICIO</option>
-                        <option value="herbert@lcsistemas.com">HERBERT</option>
-                    </select>
+                    <label for="login-user" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Usuário</label>
+                    <input type="text" id="login-user" placeholder="Seu nome"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-solid/50 focus:border-accent-solid transition-all font-medium text-base">
                 </div>
                 <div>
-                    <label for="login-password" class="block text-sm font-medium text-text-muted mb-2">Senha</label>
+                    <label for="login-password" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Senha</label>
                     <input type="password" id="login-password" required placeholder="••••••••"
-                        class="w-full bg-bg-app border border-border-element rounded-xl px-4 py-3 text-text-high focus:outline-none focus:ring-2 focus:ring-accent-solid focus:border-transparent transition-all">
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-solid/50 focus:border-accent-solid transition-all font-medium text-base">
                 </div>
                 
-                <div id="login-error" class="hidden bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg p-3 text-sm text-center">
+                <div id="login-error" class="hidden text-red-500 bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-center font-medium">
                     Usuário ou senha incorretos.
                 </div>
 
                 <button type="submit" id="login-btn"
-                    class="w-full bg-gradient-to-r from-accent-solid to-accent-solid-hover text-white font-medium rounded-xl px-4 py-3 hover:shadow-lg hover:shadow-accent-solid/30 focus:outline-none focus:ring-2 focus:ring-accent-solid focus:ring-offset-2 focus:ring-offset-bg-panel transition-all flex justify-center items-center">
-                    <span>Entrar</span>
-                    <svg id="login-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    class="w-full bg-slate-900 text-white font-semibold rounded-2xl px-4 py-4 hover:bg-slate-800 hover:shadow-lg focus:outline-none transition-all duration-300 flex justify-center items-center mt-10">
+                    <span>ENTRAR</span>
+                    <svg id="login-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-current hidden ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                 </button>
+                <div class="mt-4 text-center flex flex-col space-y-3">
+                    <button type="button" id="visitor-login-btn" class="w-full bg-slate-100 text-slate-700 font-semibold rounded-2xl px-4 py-4 hover:bg-slate-200 transition-all duration-300 flex justify-center items-center">
+                        <span>ENTRAR COMO VISITANTE</span>
+                        <svg id="visitor-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-current hidden ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                    <button type="button" id="forgot-password-link" class="text-sm text-slate-500 hover:text-slate-800 transition-colors font-medium">Esqueci minha senha</button>
+                </div>
+            </form>
+            
+            <!-- Formulário Esqueci a Senha -->
+            <form id="forgot-password-form" class="space-y-6 hidden">
+                <div class="text-center mb-6">
+                    <p class="text-slate-600 font-medium text-sm">Digite o seu nome de usuário e a nova senha desejada. Um pedido será enviado ao administrador.</p>
+                </div>
+                <div>
+                    <label for="forgot-user" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Usuário</label>
+                    <input type="text" id="forgot-user" required placeholder="Seu nome"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-solid/50 focus:border-accent-solid transition-all font-medium text-base">
+                </div>
+                <div>
+                    <label for="forgot-new-password" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Nova Senha</label>
+                    <input type="password" id="forgot-new-password" required placeholder="••••••••" minlength="6"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-solid/50 focus:border-accent-solid transition-all font-medium text-base">
+                </div>
+                <div>
+                    <label for="forgot-confirm-password" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Confirmar Nova Senha</label>
+                    <input type="password" id="forgot-confirm-password" required placeholder="••••••••" minlength="6"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-solid/50 focus:border-accent-solid transition-all font-medium text-base">
+                </div>
+                
+                <div id="forgot-error" class="hidden text-red-500 bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-center font-medium"></div>
+                <div id="forgot-success" class="hidden text-green-600 bg-green-50 border border-green-100 rounded-xl p-3 text-sm text-center font-medium">Pedido enviado! Aguardando o administrador aprovar.</div>
+
+                <div class="flex flex-col space-y-3 mt-8">
+                    <button type="submit" id="forgot-btn"
+                        class="w-full bg-slate-900 text-white font-semibold rounded-2xl px-4 py-4 hover:bg-slate-800 hover:shadow-lg focus:outline-none transition-all duration-300 flex justify-center items-center">
+                        <span>SOLICITAR ALTERAÇÃO</span>
+                        <svg id="forgot-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-current hidden ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                    <button type="button" id="back-to-login-btn" class="text-sm text-slate-500 hover:text-slate-800 transition-colors font-medium py-2">Voltar ao Login</button>
+                </div>
             </form>
         </div>
     </div>
+    
+    <script>
+        // Animação de Sinapses para o Login
+        const synapsesCanvas = document.getElementById('synapses-canvas');
+        if (synapsesCanvas) {
+            const ctx = synapsesCanvas.getContext('2d');
+            let width = synapsesCanvas.width = window.innerWidth;
+            let height = synapsesCanvas.height = window.innerHeight;
+            let particles = [];
+            const maxParticles = 70;
+            
+            window.addEventListener('resize', () => {
+                width = synapsesCanvas.width = window.innerWidth;
+                height = synapsesCanvas.height = window.innerHeight;
+            });
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 1.5;
+                    this.vy = (Math.random() - 0.5) * 1.5;
+                    this.radius = Math.random() * 2 + 1;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > width) this.vx = -this.vx;
+                    if (this.y < 0 || this.y > height) this.vy = -this.vy;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 162, 199, 0.8)';
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < maxParticles; i++) {
+                particles.push(new Particle());
+            }
+
+            function animateSynapses() {
+                ctx.clearRect(0, 0, width, height);
+                for (let i = 0; i < maxParticles; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                    for (let j = i + 1; j < maxParticles; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 150) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(0, 162, 199, ${1 - dist / 150})`;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animateSynapses);
+            }
+            animateSynapses();
+        }
+    </script>
 
     <div id="main-content" class="relative z-10 hidden opacity-0 transition-opacity duration-500">
         <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
@@ -653,9 +762,11 @@
 
             document.getElementById('login-form')?.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                let email = document.getElementById('login-user').value;
+                let email = document.getElementById('login-user').value.trim().toLowerCase();
                 if (!email) {
                     email = 'admin@lcsistemas.com';
+                } else if (!email.includes('@')) {
+                    email = email + '@lcsistemas.com';
                 }
                 const password = document.getElementById('login-password').value;
                 const btn = document.getElementById('login-btn');
@@ -690,6 +801,149 @@
                 } catch (err) {
                     console.error('Login Error:', err);
                     errorDiv.textContent = err.message || 'Usuário ou senha incorretos.';
+                    errorDiv.classList.remove('hidden');
+                } finally {
+                    btn.disabled = false;
+                    spinner.classList.add('hidden');
+                }
+            });
+
+            // Toggle forgot password form
+            const loginForm = document.getElementById('login-form');
+            const forgotForm = document.getElementById('forgot-password-form');
+            
+            // Visitor Login
+            document.getElementById('visitor-login-btn')?.addEventListener('click', async () => {
+                const btn = document.getElementById('visitor-login-btn');
+                const spinner = document.getElementById('visitor-spinner');
+                const errorDiv = document.getElementById('login-error');
+                
+                btn.disabled = true;
+                spinner.classList.remove('hidden');
+                errorDiv.classList.add('hidden');
+                
+                try {
+                    const resLogin = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email: 'visitante@lcsistemas.com', password: 'visitante123' })
+                    });
+                    
+                    if (resLogin.ok) {
+                        const data = await resLogin.json();
+                        sessionToken = data.access_token;
+                        sessionUser = data.user;
+                        sessionUser.is_visitor = true; // flag
+                        localStorage.setItem('supabaseToken', sessionToken);
+                        localStorage.setItem('supabaseUser', JSON.stringify(sessionUser));
+                        
+                        checkAuth();
+                        if(typeof loadData === 'function') loadData();
+                    } else {
+                        errorDiv.textContent = 'Conta visitante ainda não configurada no Supabase.';
+                        errorDiv.classList.remove('hidden');
+                    }
+                } catch (err) {
+                    errorDiv.textContent = 'Erro ao entrar como visitante.';
+                    errorDiv.classList.remove('hidden');
+                } finally {
+                    btn.disabled = false;
+                    spinner.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('forgot-password-link')?.addEventListener('click', () => {
+                loginForm.classList.add('hidden');
+                forgotForm.classList.remove('hidden');
+            });
+            
+            document.getElementById('back-to-login-btn')?.addEventListener('click', () => {
+                forgotForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+            });
+            
+            document.getElementById('forgot-password-form')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                let username = document.getElementById('forgot-user').value.trim().toLowerCase();
+                const newPassword = document.getElementById('forgot-new-password').value;
+                const confirmPassword = document.getElementById('forgot-confirm-password').value;
+                
+                const btn = document.getElementById('forgot-btn');
+                const spinner = document.getElementById('forgot-spinner');
+                const errorDiv = document.getElementById('forgot-error');
+                const successDiv = document.getElementById('forgot-success');
+                
+                errorDiv.classList.add('hidden');
+                successDiv.classList.add('hidden');
+                
+                if (newPassword !== confirmPassword) {
+                    errorDiv.textContent = 'As senhas não coincidem.';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+                
+                btn.disabled = true;
+                spinner.classList.remove('hidden');
+                
+                try {
+                    // 1. Inserir pedido no banco (usando anon key)
+                    const resInsert = await fetch(`${SUPABASE_URL}/rest/v1/password_requests`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=representation'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            new_password: newPassword
+                        })
+                    });
+                    
+                    if (!resInsert.ok) {
+                        throw new Error('Erro ao salvar solicitação no banco.');
+                    }
+                    
+                    successDiv.classList.remove('hidden');
+                    
+                    // 2. Fazer login como visitante
+                    // Autologin com conta genérica de visitante (para ter permissão de leitura)
+                    const resLogin = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email: 'visitante@lcsistemas.com', password: 'visitante123' })
+                    });
+                    
+                    if (resLogin.ok) {
+                        const data = await resLogin.json();
+                        sessionToken = data.access_token;
+                        sessionUser = data.user;
+                        // Forçamos uma role customizada no localStorage para identificar o visitante no frontend
+                        sessionUser.is_visitor = true;
+                        localStorage.setItem('supabaseToken', sessionToken);
+                        localStorage.setItem('supabaseUser', JSON.stringify(sessionUser));
+                        
+                        setTimeout(() => {
+                            checkAuth();
+                            if(typeof loadData === 'function') loadData();
+                        }, 1500);
+                    } else {
+                        // Se a conta visitante não existir ainda no Supabase, logamos com um token mockado de leitura
+                        // (Isso falhará caso o Supabase exija token válido no SELECT, mas o usuário deve criar a conta)
+                        errorDiv.textContent = 'Aviso: Conta visitante@lcsistemas.com não criada no Supabase ainda. Acesso limitado.';
+                        errorDiv.classList.remove('hidden');
+                        successDiv.classList.add('hidden');
+                    }
+                    
+                } catch (err) {
+                    console.error('Forgot Password Error:', err);
+                    errorDiv.textContent = err.message || 'Ocorreu um erro ao enviar.';
                     errorDiv.classList.remove('hidden');
                 } finally {
                     btn.disabled = false;
