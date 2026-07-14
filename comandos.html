@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="./favicon.png">
     <title>Comandos de Banco de Dados</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/diff@5.2.0/dist/diff.min.js"></script>
+    <script src="https://cdn.tailwindcss.com" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/diff@5.3.0/dist/diff.min.js" defer></script>
     <script>
         tailwind.config = {
             theme: {
@@ -46,7 +46,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
     <style>
         :root {
             /* DARK MODE (Vivid) - Indigo Neutrals & Blue Accents */
@@ -457,11 +458,11 @@
 
             class Particle {
                 constructor() {
-                    this.x = Math.random() * width;
-                    this.y = Math.random() * height;
-                    this.vx = (Math.random() - 0.5) * 1.5;
-                    this.vy = (Math.random() - 0.5) * 1.5;
-                    this.radius = Math.random() * 2 + 1;
+                    this.x = secureRandom() * width;
+                    this.y = secureRandom() * height;
+                    this.vx = (secureRandom() - 0.5) * 1.5;
+                    this.vy = (secureRandom() - 0.5) * 1.5;
+                    this.radius = secureRandom() * 2 + 1;
                 }
                 update() {
                     this.x += this.vx;
@@ -605,12 +606,17 @@
         </div>
     </div>
 
-    <script>
+    <!-- JS libraries with defer -->
+    <script defer>
+        const secureRandom = () => {
+            const array = new Uint32Array(1);
+            window.crypto.getRandomValues(array);
+            return array[0] / (0xffffffff + 1);
+        };
         const SUPABASE_URL = 'https://jqllbwlfikckavipqtfr.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGxid2xmaWtja2F2aXBxdGZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NzczMDQsImV4cCI6MjA5ODA1MzMwNH0.adNqWBWMY3PlIx_0OG1bMswbVR_TThtCmNWFptxkgRU';
-
-        let sessionToken = localStorage.getItem('supabaseToken');
-        let sessionUser = JSON.parse(localStorage.getItem('supabaseUser') || 'null');
+        let sessionToken = sessionStorage.getItem('supabaseToken');
+        let sessionUser = JSON.parse(sessionStorage.getItem('supabaseUser') || 'null');
 
         const parseCommandData = (cmdStr) => {
             try {
@@ -793,8 +799,8 @@
                     
                     sessionToken = data.access_token;
                     sessionUser = data.user;
-                    localStorage.setItem('supabaseToken', sessionToken);
-                    localStorage.setItem('supabaseUser', JSON.stringify(sessionUser));
+                    sessionStorage.setItem('supabaseToken', sessionToken);
+                    sessionStorage.setItem('supabaseUser', JSON.stringify(sessionUser));
                     
                     checkAuth();
                     if(typeof loadData === 'function') loadData();
@@ -924,10 +930,10 @@
                         const data = await resLogin.json();
                         sessionToken = data.access_token;
                         sessionUser = data.user;
-                        // Forçamos uma role customizada no localStorage para identificar o visitante no frontend
+                        // Forçamos uma role customizada no sessionStorage para identificar o visitante no frontend
                         sessionUser.is_visitor = true;
-                        localStorage.setItem('supabaseToken', sessionToken);
-                        localStorage.setItem('supabaseUser', JSON.stringify(sessionUser));
+                        sessionStorage.setItem('supabaseToken', sessionToken);
+                        sessionStorage.setItem('supabaseUser', JSON.stringify(sessionUser));
                         
                         setTimeout(() => {
                             checkAuth();
@@ -954,8 +960,8 @@
             document.getElementById('logout-btn')?.addEventListener('click', () => {
                 sessionToken = null;
                 sessionUser = null;
-                localStorage.removeItem('supabaseToken');
-                localStorage.removeItem('supabaseUser');
+                sessionStorage.removeItem('supabaseToken');
+                sessionStorage.removeItem('supabaseUser');
                 document.getElementById('login-password').value = '';
                 checkAuth();
             });
@@ -1168,7 +1174,7 @@
 
                 try {
                     const fileExt = file.name.split('.').pop();
-                    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+                    const fileName = `${Date.now()}-${secureRandom().toString(36).substring(2)}.${fileExt}`;
                     const filePath = `uploads/${fileName}`;
 
                     const authHeaders = getAuthHeaders();
@@ -1467,7 +1473,7 @@
             const hideModal = () => infoModal.classList.add('hidden');
             infoOkBtn.addEventListener('click', hideModal);
 
-            const initWebGLBackground = () => { const canvas = document.getElementById('webgl-bg'); if (!canvas) return; const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setClearColor(0x000000, 0); const geometry = new THREE.BufferGeometry(); const vertices = []; for (let i = 0; i < 1000; i++) { vertices.push((Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000); } geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); const material = new THREE.PointsMaterial({ size: 2, color: 0x06B6D4 }); const points = new THREE.Points(geometry, material); scene.add(points); camera.position.z = 1000; const animate = () => { requestAnimationFrame(animate); points.rotation.x += 0.0005; points.rotation.y += 0.001; renderer.render(scene, camera); }; animate(); window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }); };
+            const initWebGLBackground = () => { const canvas = document.getElementById('webgl-bg'); if (!canvas) return; const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setClearColor(0x000000, 0); const geometry = new THREE.BufferGeometry(); const vertices = []; for (let i = 0; i < 1000; i++) { vertices.push((secureRandom() - 0.5) * 2000, (secureRandom() - 0.5) * 2000, (secureRandom() - 0.5) * 2000); } geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); const material = new THREE.PointsMaterial({ size: 2, color: 0x06B6D4 }); const points = new THREE.Points(geometry, material); scene.add(points); camera.position.z = 1000; const animate = () => { requestAnimationFrame(animate); points.rotation.x += 0.0005; points.rotation.y += 0.001; renderer.render(scene, camera); }; animate(); window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }); };
 
             // --- LÓGICA DE DADOS ---
 
