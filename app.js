@@ -1972,7 +1972,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     const category = categories.find(c => c.id === categoryId);
                     if (category) {
                         category.expanded = !category.expanded;
-                        handleSearch();
+                        const subjectList = header.nextElementSibling;
+                        const icon = header.querySelector('svg');
+                        if (subjectList) {
+                            subjectList.classList.toggle('expanded');
+                        }
+                        if (icon) {
+                            icon.classList.toggle('rotate-180');
+                        }
                     }
                 }
             });

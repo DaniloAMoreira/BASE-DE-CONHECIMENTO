@@ -54,7 +54,7 @@ tailwind.config = {
 
 <body class="antialiased text-text-high-high bg-bg-app">
 
-    <canvas id="site-synapses-canvas" class="fixed inset-0 pointer-events-none opacity-80 z-[-1]"></canvas>
+    <canvas id="site-synapses-canvas" class="fixed inset-0 pointer-events-none opacity-80 z-0"></canvas>
 
     <!-- LOGIN OVERLAY -->
     <div id="login-overlay" class="fixed inset-0 z-[100] flex flex-row overflow-hidden bg-[#0f172a]">
@@ -206,8 +206,7 @@ tailwind.config = {
                     <div class="relative flex gap-2 w-full items-center">
                         <div class="relative flex-grow">
                             <input type="text" id="cmdSearchInput" placeholder="Pesquisar por categorias e comandos..."
-                                class="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-lg pl-10 pr-4 py-3 focus:border-white/20 hover:bg-white/10 focus:bg-white/10 text-white transition-all duration-300 placeholder:text-white/50"
-                                style="outline: none !important; box-shadow: none !important;"
+                                class="glass-input w-full rounded-xl pl-10 pr-4 py-3 text-white transition-all duration-300 placeholder:text-white/50 focus:outline-none"
                                 autocomplete="off">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -236,8 +235,7 @@ tailwind.config = {
                     <div class="relative flex gap-2 w-full items-center">
                         <div class="relative flex-grow">
                             <input type="text" id="baseSearchInput" placeholder="Pesquisar por categorias e assuntos..."
-                                class="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-lg pl-10 pr-4 py-3 focus:border-white/20 hover:bg-white/10 focus:bg-white/10 text-white transition-all duration-300 placeholder:text-white/50"
-                                style="outline: none !important; box-shadow: none !important;"
+                                class="glass-input w-full rounded-xl pl-10 pr-4 py-3 text-white transition-all duration-300 placeholder:text-white/50 focus:outline-none"
                                 autocomplete="off">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">

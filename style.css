@@ -298,3 +298,19 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+
+/* Premium Glassmorphism for Search Inputs */
+.glass-input {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
+}
+.glass-input:focus {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
