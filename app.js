@@ -1510,10 +1510,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                                 </button>
                                 `}
-                                <svg class="cmd-chevron w-5 h-5 text-text-muted transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                <svg class="cmd-chevron w-5 h-5 text-text-muted transition-transform duration-300 ${searchTerm.length > 0 ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                         </div>
-                        <div class="hidden pt-0 border-t border-border-subtle bg-[color:var(--bg-app)] rounded-b-md">
+                        <div class="${searchTerm.length > 0 ? '' : 'hidden'} pt-0 border-t border-border-subtle bg-[color:var(--bg-app)] rounded-b-md">
                             <div class="flex overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden gap-1 pt-3 px-3 border-b border-border-element">
                                 ${tabsHTML}
                             </div>
@@ -1925,7 +1925,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 dataToRender.forEach(category => {
-                    const isExpanded = category.expanded || false;
+                    const isExpanded = searchTerm.length > 0 ? true : (category.expanded || false);
                     const categoryElement = document.createElement('div');
                     categoryElement.className = 'panel rounded-lg';
                     const subjectsToDisplay = category.subjectsToDisplay || category.subjects;
