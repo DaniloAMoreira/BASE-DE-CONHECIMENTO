@@ -1822,7 +1822,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('DOMContentLoaded', () => {
             // --- Elementos do DOM ---
             const searchInput = document.getElementById('baseSearchInput');
-            const categoriesContainer = document.getElementById('categoriesContainer');
+            const categoriesContainer = document.getElementById('baseCategoriesContainer');
             const suggestionsContainer = document.getElementById('baseSuggestionsContainer');
             const infoModal = document.getElementById('infoModal');
             const infoMessage = document.getElementById('infoMessage');
