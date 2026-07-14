@@ -206,12 +206,12 @@
             overflow: hidden;
         }
 
-        #cmdSuggestionsContainer, #baseSuggestionsContainer.expanded {
+        #cmdSuggestionsContainer.expanded, #baseSuggestionsContainer.expanded {
             grid-template-rows: 1fr;
             margin-bottom: 1rem;
         }
 
-        #cmdSuggestionsContainer, #baseSuggestionsContainer>div {
+        #cmdSuggestionsContainer > div, #baseSuggestionsContainer > div {
             min-height: 0;
         }
 
