@@ -630,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="mb-3 flex items-center gap-3">
                         ${activeSc.media_url ? `
                             <div class="relative group shrink-0">
-                                <img src="${activeSc.media_url}" class="h-10 w-10 object-cover rounded border border-border-element bg-black/20" alt="Preview">
+                                <img src="${activeSc.media_url}" class="h-10 w-10 object-cover rounded border border-border-element bg-black/5" alt="Preview">
                                 <button type="button" onclick="removeMediaModal()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:scale-110 transition-transform" title="Remover Imagem">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
@@ -955,7 +955,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // --- MÓDULOS ---
-            const ThemeSwitcher = (() => { const DOM = { body: document.body, themeToggleBtn: document.getElementById('theme-toggle-btn'), themeIconSun: document.getElementById('theme-icon-sun'), themeIconMoon: document.getElementById('theme-icon-moon') }; const STORAGE_KEY = 'themePreference'; const applyTheme = (theme) => { DOM.body.dataset.theme = theme; localStorage.setItem(STORAGE_KEY, theme); DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); }; const toggleTheme = () => { const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(currentTheme); }; const init = () => { const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; applyTheme(savedTheme); DOM.themeToggleBtn.addEventListener('click', toggleTheme); }; return { init }; })();
+            const ThemeSwitcher = (() => { const DOM = { body: document.body, themeToggleBtn: document.getElementById('theme-toggle-btn'), themeIconSun: document.getElementById('theme-icon-sun'), themeIconMoon: document.getElementById('theme-icon-moon') }; const STORAGE_KEY = 'themePreference'; const applyTheme = (theme) => { DOM.body.dataset.theme = theme; localStorage.setItem(STORAGE_KEY, theme); DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); }; const toggleTheme = () => { const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(currentTheme); }; const init = () => { const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; applyTheme(savedTheme); DOM.themeToggleBtn.onclick = toggleTheme; }; return { init }; })();
             const hideModal = () => infoModal.classList.add('hidden');
             infoOkBtn.addEventListener('click', hideModal);
 
@@ -1057,7 +1057,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 
                                 const diff = window.Diff.diffLines(oldStr, newStr);
                                 
-                                diffHTML = '<div class="mt-3 bg-[#1e293b] rounded p-2 overflow-x-auto text-xs font-mono">';
+                                diffHTML = '<div class="mt-3 bg-bg-panel-active rounded p-2 overflow-x-auto text-xs font-mono">';
                                 let hasChanges = false;
                                 diff.forEach(part => {
                                     if (part.added) {
@@ -1079,7 +1079,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             try {
                                 const newName = item.new_content.name || 'Sem título';
                                 const newStr = `TÍTULO PRINCIPAL: ${newName}\n\n` + formatCommandForDiff(item.new_content.command);
-                                diffHTML = `<div class="mt-3 bg-[#1e293b] rounded p-3 overflow-x-auto text-xs font-mono whitespace-pre-wrap text-text-muted border-l-2 border-green-500 bg-green-500/5">${escapeHTML(newStr)}</div>`;
+                                diffHTML = `<div class="mt-3 bg-bg-panel-active rounded p-3 overflow-x-auto text-xs font-mono whitespace-pre-wrap text-text-muted border-l-2 border-green-500 bg-green-500/5">${escapeHTML(newStr)}</div>`;
                             } catch(e) {}
                         }
                         
@@ -1088,7 +1088,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         
                         const el = document.createElement('details');
-                        el.className = 'group bg-black/20 border border-border-subtle rounded-lg mb-3 last:mb-0';
+                        el.className = 'group bg-black/5 border border-border-subtle rounded-lg mb-3 last:mb-0';
                         el.innerHTML = `
                             <summary class="flex justify-between items-start p-4 cursor-pointer hover:bg-white/5 transition-colors list-none rounded-lg [&::-webkit-details-marker]:hidden">
                                 <div>
@@ -1345,9 +1345,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 document.querySelectorAll('.tab-btn-' + subjectId).forEach((btn, idx) => {
                     if (idx === index) {
-                        btn.className = `tab-btn-${subjectId} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 bg-[#1e293b] text-white border-border-element border-b-0 z-10 relative`;
+                        btn.className = `tab-btn-${subjectId} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 bg-bg-panel-active text-text-high border-border-element border-b-0 z-10 relative`;
                     } else {
-                        btn.className = `tab-btn-${subjectId} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 bg-transparent border-border-element text-text-muted hover:bg-[#1e293b]/50 hover:text-white`;
+                        btn.className = `tab-btn-${subjectId} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 bg-transparent border-border-element text-text-muted hover:bg-bg-panel hover:text-text-high`;
                     }
                 });
             };
@@ -1394,7 +1394,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const tabsHTML = subCommands.map((sc, scIdx) => {
                         const isActive = scIdx === 0;
-                        const btnClass = isActive ? 'bg-[#1e293b] text-white border-border-element border-b-0 z-10 relative' : 'bg-transparent border-border-element text-text-muted hover:bg-[#1e293b]/50 hover:text-white';
+                        const btnClass = isActive ? 'bg-bg-panel-active text-text-high border-border-element border-b-0 z-10 relative' : 'bg-transparent border-border-element text-text-muted hover:bg-bg-panel hover:text-text-high';
                         return `<button onclick="switchTab(event, '${subject.id}', ${scIdx})" class="tab-btn-${subject.id} px-4 py-2 rounded-t-md rounded-b-none text-sm font-medium transition-colors border shrink-0 ${btnClass}" style="margin-bottom: -1px;">${highlightMatch(sc.name, searchTerm)}</button>`;
                     }).join('');
 
@@ -1473,15 +1473,15 @@ document.addEventListener('DOMContentLoaded', () => {
                                             const previewText = lines.slice(0, 10).join('\n');
                                             return `
                                             <div class="relative w-full flex-grow min-w-0">
-                                                <pre id="pre-preview-${subject.id}-${scIdx}" class="text-xs text-text-muted whitespace-pre-wrap font-mono p-3 pb-8 bg-black/20 rounded-md border border-border-subtle overflow-hidden">${formatComment(previewText)}</pre>
+                                                <pre id="pre-preview-${subject.id}-${scIdx}" class="text-xs text-text-muted whitespace-pre-wrap font-mono p-3 pb-8 bg-black/5 rounded-md border border-border-subtle overflow-hidden">${formatComment(previewText)}</pre>
                                                 <div id="pre-expand-overlay-${subject.id}-${scIdx}" class="absolute bottom-2 left-0 right-0 flex items-center justify-center">
                                                     <button onclick="expandCommand('${subject.id}', '${scIdx}')" class="text-accent-solid text-xs font-bold hover:underline bg-transparent border-none cursor-pointer">Expandir</button>
                                                 </div>
-                                                <pre id="pre-full-${subject.id}-${scIdx}" class="hidden text-xs text-text-muted whitespace-pre-wrap font-mono max-h-[300px] overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-border-subtle">${formatComment(displayText)}</pre>
+                                                <pre id="pre-full-${subject.id}-${scIdx}" class="hidden text-xs text-text-muted whitespace-pre-wrap font-mono max-h-[300px] overflow-y-auto custom-scrollbar p-3 bg-black/5 rounded-md border border-border-subtle">${formatComment(displayText)}</pre>
                                             </div>
                                             `;
                                         } else {
-                                            return `<pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow min-w-0 font-mono overflow-y-auto custom-scrollbar p-3 bg-black/20 rounded-md border border-border-subtle w-full">${formatComment(displayText)}</pre>`;
+                                            return `<pre class="text-xs text-text-muted whitespace-pre-wrap flex-grow min-w-0 font-mono overflow-y-auto custom-scrollbar p-3 bg-black/5 rounded-md border border-border-subtle w-full">${formatComment(displayText)}</pre>`;
                                         }
                                     })()}
                                     ${actionBtn}
@@ -1517,7 +1517,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="flex overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden gap-1 pt-3 px-3 border-b border-border-element">
                                 ${tabsHTML}
                             </div>
-                            <div class="panels-container p-3 bg-[#1e293b] rounded-b-md">
+                            <div class="panels-container p-3 bg-bg-panel-active rounded-b-md">
                                 ${panelsHTML}
                             </div>
                         </div>
@@ -1835,7 +1835,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let isDataLoaded = false;
 
             // --- MÓDULOS (Tema, Modal, WebGL) ---
-            const ThemeSwitcher = (() => { const DOM = { body: document.body, themeToggleBtn: document.getElementById('theme-toggle-btn'), themeIconSun: document.getElementById('theme-icon-sun'), themeIconMoon: document.getElementById('theme-icon-moon') }; const STORAGE_KEY = 'themePreference'; const applyTheme = (theme) => { DOM.body.dataset.theme = theme; localStorage.setItem(STORAGE_KEY, theme); DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); }; const toggleTheme = () => { const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(currentTheme); }; const init = () => { const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; applyTheme(savedTheme); DOM.themeToggleBtn.addEventListener('click', toggleTheme); }; return { init }; })();
+            const ThemeSwitcher = (() => { const DOM = { body: document.body, themeToggleBtn: document.getElementById('theme-toggle-btn'), themeIconSun: document.getElementById('theme-icon-sun'), themeIconMoon: document.getElementById('theme-icon-moon') }; const STORAGE_KEY = 'themePreference'; const applyTheme = (theme) => { DOM.body.dataset.theme = theme; localStorage.setItem(STORAGE_KEY, theme); DOM.themeIconSun.classList.toggle('hidden', theme === 'dark'); DOM.themeIconMoon.classList.toggle('hidden', theme === 'light'); }; const toggleTheme = () => { const currentTheme = DOM.body.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(currentTheme); }; const init = () => { const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark'; applyTheme(savedTheme); DOM.themeToggleBtn.onclick = toggleTheme; }; return { init }; })();
             const showModal = (message) => { infoMessage.textContent = message; infoModal.classList.remove('hidden'); }; const hideModal = () => infoModal.classList.add('hidden'); infoOkBtn.addEventListener('click', hideModal);
             
 

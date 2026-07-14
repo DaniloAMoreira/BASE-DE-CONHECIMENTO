@@ -4,7 +4,7 @@
             --bg-subtle: #0c1527;
             --bg-panel: #14254b;
             --bg-panel-hover: #1b3266;
-            --bg-panel-active: #244388;
+            --bg-panel-active: #1e293b;
             
             --border-subtle: #1f3870;
             --border-element: #2b4d99;
@@ -196,7 +196,7 @@
         }
 
         /* ESTILOS PARA SUGESTÕES QUE EMPURRAM O CONTEÚDO */
-        #suggestionsContainer {
+        #cmdSuggestionsContainer, #baseSuggestionsContainer {
             display: grid;
             grid-template-rows: 0fr;
             transition: grid-template-rows 0.3s ease-in-out;
@@ -206,12 +206,12 @@
             overflow: hidden;
         }
 
-        #suggestionsContainer.expanded {
+        #cmdSuggestionsContainer, #baseSuggestionsContainer.expanded {
             grid-template-rows: 1fr;
             margin-bottom: 1rem;
         }
 
-        #suggestionsContainer>div {
+        #cmdSuggestionsContainer, #baseSuggestionsContainer>div {
             min-height: 0;
         }
 
