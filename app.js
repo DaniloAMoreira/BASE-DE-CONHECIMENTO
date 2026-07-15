@@ -641,6 +641,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span id="mediaUploadBtnLabel">${activeSc.media_url ? 'Trocar Imagem' : 'Anexar Imagem'}</span>
                             <input type="file" accept="image/*" class="hidden" onchange="uploadMediaModal(this)">
                         </label>
+                        <label class="flex items-center gap-2 cursor-pointer ml-4">
+                            <input type="checkbox" class="rounded border-border-element bg-[color:var(--bg-app)] text-accent focus:ring-accent w-4 h-4" ${activeSc.requires_backup ? 'checked' : ''} onchange="updateActiveModalTab('requires_backup', this.checked)">
+                            <span class="text-xs font-medium text-text-high">Comando obrigatório backup</span>
+                        </label>
                     </div>
 
                     <label class="block text-xs font-medium text-text-muted mb-1">Comando SQL</label>
@@ -772,7 +776,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: sc.name.trim(),
                     text: sc.text.trim(),
                     desc: sc.desc.trim(),
-                    ...(sc.media_url && { media_url: sc.media_url })
+                    ...(sc.media_url && { media_url: sc.media_url }),
+                    ...(sc.requires_backup && { requires_backup: sc.requires_backup })
                 }));
 
                 const hasEmptyName = subCommands.some(sc => !sc.name);
@@ -1219,9 +1224,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     const isAdmin = sessionUser?.email === 'admin@lcsistemas.com';
                     
                     const trashBtn = document.getElementById('openTrashModalBtn');
+                    const pwdReqBtn = document.getElementById('openPasswordRequestsBtn');
+                    
                     if (trashBtn) {
                         if (isAdmin) trashBtn.classList.remove('hidden');
                         else trashBtn.classList.add('hidden');
+                    }
+                    if (pwdReqBtn) {
+                        if (isAdmin) pwdReqBtn.classList.remove('hidden');
+                        else pwdReqBtn.classList.add('hidden');
                     }
 
                     const now = new Date();
@@ -1419,9 +1430,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         const descHeaderHTML = (sc.desc && sc.desc.trim() !== '') ? `
                             <div class="inline-flex items-center gap-2 mb-2 p-2 -ml-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group w-fit" onclick="showDescription('${encodedDesc}', '${encodedMedia}')">
-                                <div class="w-6 h-6 rounded-full bg-orange-500 group-hover:bg-orange-600 text-white text-xs font-bold flex items-center justify-center shrink-0 group-hover:scale-110 transition-all shadow-md" title="Ver descrição">!</div>
+                                <div class="w-6 h-6 rounded-full bg-yellow-400 group-hover:bg-yellow-500 text-black text-xs font-bold flex items-center justify-center shrink-0 group-hover:scale-110 transition-all shadow-md" title="Ver descrição">!</div>
                                 <span class="text-sm font-medium text-text-high group-hover:text-accent-solid transition-colors">Para que serve este comando?</span>
-                                ${sc.media_url ? '<svg class="w-4 h-4 text-orange-400 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>' : ''}
+                                ${sc.media_url ? '<svg class="w-4 h-4 text-yellow-400 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>' : ''}
                             </div>
                         ` : '';
                         
@@ -1464,6 +1475,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         return `
                             <div id="panel-${subject.id}-${scIdx}" class="tab-panel-${subject.id} ${hiddenClass}">
                                 ${descHeaderHTML}
+                                ${sc.requires_backup ? `
+                                <div class="flex items-center gap-2 mb-3 -mt-1 w-fit">
+                                    <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    <span class="text-xs font-bold text-orange-500 uppercase tracking-wide">Obrigatório fazer o backup</span>
+                                </div>
+                                ` : ''}
                                 <div class="flex justify-between items-start gap-4">
                                     ${(() => {
                                         const lines = displayText.split('\n');
@@ -1490,9 +1507,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         `;
                     }).join('');
 
+                    const requiresBackup = subCommands.some(sc => sc.requires_backup);
                     categoryElement.innerHTML = `
-                    <div class="panel border border-border-subtle rounded-md mb-3 bg-white/5">
-                        <div class="flex items-center justify-between p-3 cursor-pointer group hover:bg-white/10 transition-colors" onclick="if(event.target.closest('.action-buttons')) return; const content = this.nextElementSibling; content.classList.toggle('hidden'); this.querySelector('.cmd-chevron').classList.toggle('rotate-180'); if(content.classList.contains('hidden')){ content.querySelectorAll('[id^=\\'pre-preview-\\']').forEach(el => el.classList.remove('hidden')); content.querySelectorAll('[id^=\\'pre-expand-overlay-\\']').forEach(el => el.classList.remove('hidden')); content.querySelectorAll('[id^=\\'pre-full-\\']').forEach(el => el.classList.add('hidden')); }">
+                    <div class="panel border border-border-subtle rounded-md mb-3 bg-white/5 overflow-hidden">
+                        <div class="relative flex items-center justify-between p-3 cursor-pointer group hover:bg-white/10 transition-colors" onclick="if(event.target.closest('.action-buttons')) return; const content = this.nextElementSibling; content.classList.toggle('hidden'); this.querySelector('.cmd-chevron').classList.toggle('rotate-180'); if(content.classList.contains('hidden')){ content.querySelectorAll('[id^=\\'pre-preview-\\']').forEach(el => el.classList.remove('hidden')); content.querySelectorAll('[id^=\\'pre-expand-overlay-\\']').forEach(el => el.classList.remove('hidden')); content.querySelectorAll('[id^=\\'pre-full-\\']').forEach(el => el.classList.add('hidden')); }">
+                            ${requiresBackup ? '<div class="absolute left-0 top-0 bottom-0 w-1 bg-orange-500 z-10"></div>' : ''}
                             <div class="flex flex-col">
                                 <span class="font-semibold text-text-high">${highlightMatch(subject.name, searchTerm)}</span>
                             </div>
@@ -2090,3 +2109,116 @@ document.addEventListener('DOMContentLoaded', () => {
         navComandosTab.addEventListener('click', () => switchTab('comandos'));
     }
 });
+
+document.getElementById('openPasswordRequestsBtn')?.addEventListener('click', (e) => {
+    e.stopPropagation(); // Previne que o clique propague e feche outras coisas acidentalmente
+    document.getElementById('user-dropdown')?.classList.add('hidden'); // Fecha o menu do usuário
+    window.renderPasswordRequests();
+    document.getElementById('passwordRequestsModal').classList.remove('hidden');
+});
+
+document.getElementById('closePasswordRequestsBtn')?.addEventListener('click', () => {
+    document.getElementById('passwordRequestsModal').classList.add('hidden');
+});
+
+window.renderPasswordRequests = async () => {
+    const list = document.getElementById('passwordRequestsList');
+    if (!list) return;
+    
+    list.innerHTML = '<p class=\"text-text-muted text-center py-4\">Carregando...</p>';
+    
+    try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/password_requests?select=*`, { headers: getAuthHeaders() });
+        if (!res.ok) throw new Error('Erro ao buscar solicitações.');
+        
+        const requests = await res.json();
+        
+        if (requests.length === 0) {
+            list.innerHTML = '<p class=\"text-text-muted text-center py-4\">Nenhuma solicitação pendente.</p>';
+            return;
+        }
+        
+        list.innerHTML = requests.map(req => `
+            <div class="bg-bg-app border border-border-element p-4 rounded-lg flex items-center justify-between">
+                <div>
+                    <p class="text-text-high font-medium">Usuário: <span class="text-accent">${req.username}</span></p>
+                    <p class="text-text-muted text-sm">Nova senha: <span class="font-mono bg-black/20 px-1 rounded">${req.new_password}</span></p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="rejectPasswordRequest('${req.id}')" class="px-3 py-1.5 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30 transition-colors text-sm font-medium">Recusar</button>
+                    <button onclick="acceptPasswordRequest('${req.id}', '${req.username}', '${req.new_password.replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-green-500/20 text-green-500 rounded hover:bg-green-500/30 transition-colors text-sm font-medium">Aceitar</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error('Error fetching password requests:', err);
+        list.innerHTML = `<p class=\"text-red-500 text-center py-4\">${err.message}</p>`;
+    }
+};
+
+window.acceptPasswordRequest = async (id, username, newPassword) => {
+    try {
+        // Chamando a RPC para mudar a senha
+        const resRpc = await fetch(`${SUPABASE_URL}/rest/v1/rpc/update_user_password`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ target_username: username, new_password: newPassword })
+        });
+        
+        if (!resRpc.ok) {
+            const errData = await resRpc.json().catch(()=>({}));
+            throw new Error(errData.message || 'Erro ao atualizar senha via RPC (update_user_password).');
+        }
+        
+        // Deleta a solicitação da tabela
+        const resDel = await fetch(`${SUPABASE_URL}/rest/v1/password_requests?id=eq.${id}`, {
+            method: 'DELETE',
+            headers: {
+                ...getAuthHeaders(),
+                'Prefer': 'return=representation'
+            }
+        });
+        
+        if (!resDel.ok) throw new Error('Senha alterada, mas o banco de dados retornou erro ao apagar solicitação.');
+        
+        const deletedData = await resDel.json().catch(() => []);
+        if (!deletedData || deletedData.length === 0) {
+            throw new Error('A senha foi alterada via RPC, mas a solicitação NÃO foi apagada. Verifique as Políticas RLS (DELETE) da tabela password_requests no Supabase.');
+        }
+        
+        window.showCustomAlert('Senha atualizada com sucesso!');
+        window.renderPasswordRequests();
+    } catch(err) {
+        console.error('Error accepting password request:', err);
+        window.showCustomAlert('Erro: ' + err.message);
+    }
+};
+
+window.rejectPasswordRequest = async (id) => {
+    const confirmed = await window.showCustomConfirm('Tem certeza que deseja recusar e apagar este pedido de troca de senha?');
+    if (!confirmed) return;
+    
+    try {
+        const resDel = await fetch(`${SUPABASE_URL}/rest/v1/password_requests?id=eq.${id}`, {
+            method: 'DELETE',
+            headers: {
+                ...getAuthHeaders(),
+                'Prefer': 'return=representation'
+            }
+        });
+        
+        if (!resDel.ok) throw new Error('Erro ao apagar solicitação.');
+        
+        const deletedData = await resDel.json().catch(() => []);
+        if (!deletedData || deletedData.length === 0) {
+            throw new Error('A solicitação NÃO foi apagada no banco. Verifique as Políticas RLS (DELETE) da tabela password_requests no Supabase.');
+        }
+        
+        window.showCustomAlert('Solicitação recusada e excluída.');
+        window.renderPasswordRequests();
+    } catch(err) {
+        console.error('Error rejecting password request:', err);
+        window.showCustomAlert('Erro: ' + err.message);
+    }
+};
+
