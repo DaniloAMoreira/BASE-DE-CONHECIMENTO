@@ -283,6 +283,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     checkAuth();
                     if(typeof loadData === 'function') loadData();
+                    if(typeof window.loadHorasData === 'function') {
+                        window.loadHorasData().then(() => {
+                            if (typeof window.renderHorasExtras === 'function') window.renderHorasExtras();
+                        });
+                    }
                 } catch (err) {
                     console.error('Login Error:', err);
                     errorDiv.textContent = err.message || 'Usuário ou senha incorretos.';
@@ -2080,34 +2085,58 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     const navBaseTab = document.getElementById('nav-base-tab');
     const navComandosTab = document.getElementById('nav-comandos-tab');
+    const navHorasTab = document.getElementById('nav-horas-tab');
     
     const viewBase = document.getElementById('view-base');
     const viewComandos = document.getElementById('view-comandos');
+    const viewHoras = document.getElementById('view-horas');
     
     function switchTab(tab) {
+        if (viewBase) viewBase.classList.add('hidden');
+        if (viewComandos) viewComandos.classList.add('hidden');
+        if (viewHoras) viewHoras.classList.add('hidden');
+
+        [navBaseTab, navComandosTab, navHorasTab].forEach(btn => {
+            if (btn) {
+                btn.classList.remove('tab-active');
+                btn.classList.add('tab-inactive');
+            }
+        });
+
         if (tab === 'base') {
-            viewBase.classList.remove('hidden');
-            viewComandos.classList.add('hidden');
-            
-            navBaseTab.classList.add('tab-active');
-            navBaseTab.classList.remove('tab-inactive');
-            navComandosTab.classList.add('tab-inactive');
-            navComandosTab.classList.remove('tab-active');
+            if (viewBase) viewBase.classList.remove('hidden');
+            if (navBaseTab) {
+                navBaseTab.classList.add('tab-active');
+                navBaseTab.classList.remove('tab-inactive');
+            }
+        } else if (tab === 'horas') {
+            if (viewHoras) viewHoras.classList.remove('hidden');
+            if (navHorasTab) {
+                navHorasTab.classList.add('tab-active');
+                navHorasTab.classList.remove('tab-inactive');
+            }
+            if (typeof window.loadHorasData === 'function') {
+                window.loadHorasData().then(() => {
+                    if (typeof window.renderHorasExtras === 'function') {
+                        window.renderHorasExtras();
+                    }
+                });
+            } else if (typeof window.renderHorasExtras === 'function') {
+                window.renderHorasExtras();
+            }
         } else {
-            viewComandos.classList.remove('hidden');
-            viewBase.classList.add('hidden');
-            
-            navComandosTab.classList.add('tab-active');
-            navComandosTab.classList.remove('tab-inactive');
-            navBaseTab.classList.add('tab-inactive');
-            navBaseTab.classList.remove('tab-active');
+            if (viewComandos) viewComandos.classList.remove('hidden');
+            if (navComandosTab) {
+                navComandosTab.classList.add('tab-active');
+                navComandosTab.classList.remove('tab-inactive');
+            }
         }
     }
     
-    if (navBaseTab && navComandosTab) {
-        navBaseTab.addEventListener('click', () => switchTab('base'));
-        navComandosTab.addEventListener('click', () => switchTab('comandos'));
-    }
+    if (navBaseTab) navBaseTab.addEventListener('click', () => switchTab('base'));
+    if (navComandosTab) navComandosTab.addEventListener('click', () => switchTab('comandos'));
+    if (navHorasTab) navHorasTab.addEventListener('click', () => switchTab('horas'));
+    window.switchAppTab = switchTab;
 });
 
 document.getElementById('openPasswordRequestsBtn')?.addEventListener('click', (e) => {
@@ -2221,4 +2250,1225 @@ window.rejectPasswordRequest = async (id) => {
         window.showCustomAlert('Erro: ' + err.message);
     }
 };
+
+// ==========================================================================
+// ==================== ATENDIMENTOS HORAS EXTRAS MODULE ====================
+// ==========================================================================
+
+(function() {
+    let horasData = [];
+    let currentShiftFilter = 'all';
+    let currentSearchQuery = '';
+    let currentSort = 'date_desc';
+    let invalidCards = new Set(JSON.parse(localStorage.getItem('invalid_horas_cards') || '[]'));
+
+    window.toggleCardInvalid = function(key, event) {
+        if (event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+        const strKey = String(key);
+        if (invalidCards.has(strKey)) {
+            invalidCards.delete(strKey);
+        } else {
+            invalidCards.add(strKey);
+        }
+        localStorage.setItem('invalid_horas_cards', JSON.stringify(Array.from(invalidCards)));
+        window.renderHorasExtras();
+    };
+
+    function normalizeStr(str) {
+        if (!str) return '';
+        return String(str)
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]/g, " ")
+            .trim();
+    }
+
+    function matchAgent(userStr, agentName) {
+        if (!userStr || !agentName) return false;
+        const u = normalizeStr(userStr);
+        const a = normalizeStr(agentName);
+        if (u === a) return true;
+        if (a.includes(u) || u.includes(a)) return true;
+        const uTokens = u.split(/\s+/).filter(Boolean);
+        const aTokens = a.split(/\s+/).filter(Boolean);
+        if (uTokens.length >= 2 && uTokens.every(t => aTokens.includes(t))) return true;
+        if (aTokens.length >= 2 && aTokens.every(t => uTokens.includes(t))) return true;
+        if (uTokens.length === 1 && aTokens[0] === uTokens[0]) return true;
+        return false;
+    }
+
+    function getSessionInfo() {
+        const u = sessionUser || JSON.parse(sessionStorage.getItem('supabaseUser') || 'null');
+        const email = (u?.email || '').toLowerCase();
+        const rawName = u?.user_metadata?.name || email.split('@')[0] || '';
+        const isAdmin = email.startsWith('admin') || normalizeStr(rawName) === 'admin';
+        return { email, rawName, isAdmin };
+    }
+
+    function parseDateTime(val) {
+        if (!val) return null;
+        if (typeof val === 'number') {
+            const utc_days = Math.floor(val - 25569);
+            const utc_value = utc_days * 86400;
+            const fractional_day = val - Math.floor(val) + 0.0000001;
+            let total_seconds = Math.floor(86400 * fractional_day);
+            const seconds = total_seconds % 60;
+            total_seconds -= seconds;
+            const hours = Math.floor(total_seconds / 3600);
+            const minutes = Math.floor((total_seconds % 3600) / 60);
+            const d = new Date(utc_value * 1000);
+            d.setUTCHours(hours, minutes, seconds);
+            return d;
+        }
+        if (val instanceof Date) return val;
+        const s = String(val).trim();
+        const isoMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2}):(\d{2})/);
+        if (isoMatch) {
+            return new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]), Number(isoMatch[4]), Number(isoMatch[5]), Number(isoMatch[6]));
+        }
+        const brMatch = s.match(/^(\d{2})\/(\d{2})\/(\d{4})[T\s](\d{2}):(\d{2})(?::(\d{2}))?/);
+        if (brMatch) {
+            return new Date(Number(brMatch[3]), Number(brMatch[2]) - 1, Number(brMatch[1]), Number(brMatch[4]), Number(brMatch[5]), Number(brMatch[6] || 0));
+        }
+        const parsed = new Date(s);
+        return isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    function calculateOvertimeRecords(rawRows) {
+        if (!rawRows || !rawRows.length) return [];
+        const headerRow = rawRows[0].map(c => String(c || '').toLowerCase().trim());
+        const findCol = (terms, fallback) => {
+            for (const t of terms) {
+                const idx = headerRow.findIndex(h => h === t);
+                if (idx !== -1) return idx;
+            }
+            for (const t of terms) {
+                const idx = headerRow.findIndex(h => h.includes(t));
+                if (idx !== -1) return idx;
+            }
+            return fallback;
+        };
+
+        const colId = findCol(['id', 'protocolo'], 0);
+        const colStatus = findCol(['status conversa'], 1);
+        const colSolicitante = findCol(['nome do solicitante', 'solicitante'], 2);
+        const colEmail = findCol(['e-mail do solicitante', 'email'], 3);
+        const colTel = findCol(['telefone do solicitante', 'telefone'], 4);
+        const colOrg = findCol(['organização do solicitante', 'organizacao do solicitante', 'organização', 'organizacao'], 5);
+        const colEntrada = findCol(['data e hora de entrada', 'data de entrada', 'entrada'], 6);
+        const colEncerramento = findCol(['data e hora de encerramento', 'horário de encerramento', 'horario de encerramento', 'encerramento'], 7);
+        const colEspera = findCol(['tempo de espera'], 8);
+        const colDuracao = findCol(['duração da conversa', 'duracao da conversa', 'duração', 'duracao'], 9);
+        const colResponsavel = findCol(['responsável da conversa', 'responsavel da conversa', 'responsável do ticket', 'responsavel do ticket', 'responsável', 'responsavel'], 10);
+        const colTicket = findCol(['ticket da conversa', 'número do ticket', 'numero do ticket', 'ticket', 'numero'], 17);
+        const colMensagem = findCol(['primeira mensagem do cliente', 'descrição do atendimento', 'descricao do atendimento', 'assunto do ticket', 'assunto', 'mensagem'], 21);
+
+        const pad = (n) => String(n).padStart(2, '0');
+        const byAgentDay = {};
+
+        for (let i = 1; i < rawRows.length; i++) {
+            const r = rawRows[i];
+            const resp = String(r[colResponsavel] || '').trim();
+            if (!resp || resp === '-' || resp.toLowerCase() === 'none') continue;
+            if (!r[colEncerramento]) continue;
+
+            const dt = parseDateTime(r[colEncerramento]);
+            if (!dt) continue;
+
+            const hour = dt.getHours();
+            const minute = dt.getMinutes();
+            const second = dt.getSeconds();
+            const timeMin = hour * 60 + minute + (second / 60);
+
+            const date_iso = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+            const date_str = `${pad(dt.getDate())}/${pad(dt.getMonth() + 1)}/${dt.getFullYear()}`;
+            const time_str = `${pad(hour)}:${pad(minute)}:${pad(second)}`;
+
+            const dtEntrada = parseDateTime(r[colEntrada]);
+            const entradaStr = dtEntrada ? `${pad(dtEntrada.getDate())}/${pad(dtEntrada.getMonth() + 1)}/${dtEntrada.getFullYear()} ${pad(dtEntrada.getHours())}:${pad(dtEntrada.getMinutes())}:${pad(dtEntrada.getSeconds())}` : String(r[colEntrada] || '').trim();
+            const encerramentoStr = `${date_str} ${time_str}`;
+
+            let ticketVal = String(r[colTicket] || '').trim();
+            if (!ticketVal || ticketVal === '-' || ticketVal.toLowerCase() === 'none') {
+                ticketVal = String(r[colId] || '').trim();
+            }
+
+            const rawItem = {
+                protocolo: String(r[colId] || '').trim(),
+                ticket: ticketVal,
+                responsavel: resp,
+                solicitante: String(r[colSolicitante] || '').trim(),
+                email: String(r[colEmail] || '').trim(),
+                telefone: String(r[colTel] || '').trim(),
+                organizacao: String(r[colOrg] || '').trim(),
+                status_conversa: String(r[colStatus] || '').trim(),
+                entrada: entradaStr,
+                encerramento: encerramentoStr,
+                espera: String(r[colEspera] || '').trim(),
+                duracao: String(r[colDuracao] || '').trim(),
+                mensagem: String(r[colMensagem] || '').trim(),
+                timestamp: dt.toISOString(),
+                date_iso,
+                date_str,
+                time_str,
+                _dt: dt.getTime(),
+                _timeMin: timeMin,
+                _hour: hour,
+                _dow: dt.getDay()
+            };
+
+            // Agrupamento estrito por atendente e data: DOIS DIAS NUNCA SE REPETEM!
+            const k = `${resp}|${date_iso}`;
+            if (!byAgentDay[k]) byAgentDay[k] = [];
+            byAgentDay[k].push(rawItem);
+        }
+
+        // Para cada dia do atendente: avalia APENAS o último atendimento (a hora de saída)
+        const finalRecords = [];
+        for (const k in byAgentDay) {
+            const items = byAgentDay[k];
+            items.sort((a, b) => a._dt - b._dt);
+            const lastTicket = items[items.length - 1];
+            const dow = lastTicket._dow; // 0 = Domingo, 6 = Sábado, 1-5 = Segunda a Sexta
+            const timeMin = lastTicket._timeMin;
+            const hour = lastTicket._hour;
+
+            let shift_type = null;
+            let shift_code = null;
+            let standard_time = null;
+            let extra_minutes = 0;
+
+            if (dow === 0) {
+                // Domingo: saída 13:00 (tolerância > 13:15)
+                if (timeMin > 13 * 60 + 15) {
+                    shift_type = 'Domingo (13:00)';
+                    shift_code = 'domingo_13';
+                    standard_time = '13:00';
+                    extra_minutes = timeMin - (13 * 60);
+                }
+            } else if (dow === 6) {
+                // Sábado: saída 12:00 (manhã) ou 18:00 (tarde)
+                if (hour < 15) {
+                    if (timeMin > 12 * 60 + 15) {
+                        shift_type = 'Sábado Manhã (12:00)';
+                        shift_code = 'sabado_12';
+                        standard_time = '12:00';
+                        extra_minutes = timeMin - (12 * 60);
+                    }
+                } else {
+                    if (timeMin > 18 * 60 + 15) {
+                        shift_type = 'Sábado Tarde (18:00)';
+                        shift_code = 'sabado_18';
+                        standard_time = '18:00';
+                        extra_minutes = timeMin - (18 * 60);
+                    }
+                }
+            } else {
+                // Segunda a Sexta: saída 18:00 ou Plantão 19:00 (Almoço NÃO conta)
+                if (hour >= 19) {
+                    // Plantão (saída 19:00, tolerância > 19:15)
+                    if (timeMin > 19 * 60 + 15) {
+                        shift_type = 'Plantão (19:00)';
+                        shift_code = 'plantao_19';
+                        standard_time = '19:00';
+                        extra_minutes = timeMin - (19 * 60);
+                    }
+                } else {
+                    // Fim de Expediente normal (saída 18:00, tolerância > 18:15)
+                    if (timeMin > 18 * 60 + 15) {
+                        shift_type = 'Fim de Expediente (18:00)';
+                        shift_code = 'expediente_18';
+                        standard_time = '18:00';
+                        extra_minutes = timeMin - (18 * 60);
+                    }
+                }
+            }
+
+            if (shift_type) {
+                lastTicket.shift_type = shift_type;
+                lastTicket.shift_code = shift_code;
+                lastTicket.standard_time = standard_time;
+                lastTicket.extra_minutes = Math.round(extra_minutes);
+                delete lastTicket._dt;
+                delete lastTicket._timeMin;
+                delete lastTicket._hour;
+                delete lastTicket._dow;
+                finalRecords.push(lastTicket);
+            }
+        }
+
+        finalRecords.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+        return finalRecords;
+    }
+
+    async function loadHorasData() {
+        // 1. Prioridade: Buscar registros atualizados no banco de dados Supabase
+        try {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/horas_extras?select=*&order=timestamp.desc`, {
+                headers: getAuthHeaders()
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    horasData = data;
+                    localStorage.setItem('relatorio_horas_extras_custom', JSON.stringify({
+                        imported_at: new Date().toISOString(),
+                        source_file: 'Banco de Dados (Supabase)',
+                        total_records: data.length,
+                        records: data
+                    }));
+                    updateSourceText(`Fonte: Banco de Dados Supabase (${data.length} atendimentos registrados)`);
+                    populateAgentSelect();
+                    return;
+                }
+            }
+        } catch(e) {
+            console.log('Conexão ao Supabase horas_extras indisponível, recorrendo ao cache:', e);
+        }
+
+        // 2. Segunda prioridade: Cache no localStorage
+        const custom = localStorage.getItem('relatorio_horas_extras_custom');
+        if (custom) {
+            try {
+                const parsed = JSON.parse(custom);
+                const records = parsed.records || parsed;
+                if (records && records.length) {
+                    horasData = records;
+                    updateSourceText(parsed.source_file ? `Planilha em cache: ${parsed.source_file}` : 'Planilha importada pelo Administrador');
+                    populateAgentSelect();
+                    return;
+                }
+            } catch(e) {
+                console.error('Error loading custom horas extras:', e);
+            }
+        }
+
+        // 3. Fallback: arquivo estático ou dados padrões embutidos
+        try {
+            const res = await fetch('./horas_extras.json');
+            if (res.ok) {
+                const json = await res.json();
+                horasData = json.records || [];
+                updateSourceText('Fonte: Total de conversas-2026911-2158.xlsx (Base Padrão)');
+                populateAgentSelect();
+                return;
+            }
+        } catch(e) {
+            console.log('Fetch blocked or offline (file:// protocol), using embedded fallback:', e);
+        }
+
+        if (window.DEFAULT_HORAS_EXTRAS && window.DEFAULT_HORAS_EXTRAS.records) {
+            horasData = window.DEFAULT_HORAS_EXTRAS.records;
+            updateSourceText('Fonte: Total de conversas-2026911-2158.xlsx (Base Padrão)');
+        } else {
+            horasData = [];
+        }
+        populateAgentSelect();
+    }
+    window.loadHorasData = loadHorasData;
+
+    function updateSourceText(text) {
+        const el = document.getElementById('horasSourceText');
+        if (el) el.textContent = text;
+    }
+
+    function populateAgentSelect() {
+        const select = document.getElementById('adminAgentSelect');
+        if (!select) return;
+        const agents = Array.from(new Set(horasData.map(r => r.responsavel).filter(Boolean))).sort();
+        const currentVal = select.value || 'all';
+        select.innerHTML = '<option value="all">Equipe Completa (Todos os Atendentes)</option>';
+        agents.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a;
+            opt.textContent = a;
+            select.appendChild(opt);
+        });
+        select.value = currentVal;
+    }
+
+    function formatHoursMinutes(totalMin) {
+        const h = Math.floor(totalMin / 60);
+        const m = totalMin % 60;
+        return `${h}h ${String(m).padStart(2, '0')}m`;
+    }
+
+    window.setHorasShiftTab = function(shiftCode) {
+        currentShiftFilter = shiftCode;
+        const tabIds = {
+            'all': 'horasTabAll',
+            'expediente_18': 'horasTabExp18',
+            'plantao_19': 'horasTabPlantao19',
+            'weekend': 'horasTabWeekend'
+        };
+        Object.entries(tabIds).forEach(([code, id]) => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            if (code === shiftCode) {
+                btn.className = 'relative z-10 pb-3 text-sm font-semibold text-accent-solid transition-colors cursor-pointer border-b-2 border-accent-solid';
+            } else {
+                btn.className = 'relative z-10 pb-3 text-sm font-semibold text-text-muted hover:text-text-high transition-colors cursor-pointer border-b-2 border-transparent';
+            }
+        });
+        window.renderHorasExtras();
+    };
+
+    function extractRevendaInfo(r) {
+        const s = String(r.solicitante || '').trim();
+        if (!s || s === '-' || s.toLowerCase() === 'none') {
+            const org = String(r.organizacao || '').trim();
+            if (org && org.toLowerCase() !== 'octachat') return { revenda: org, contato: '' };
+            return { revenda: 'Revenda não informada', contato: '' };
+        }
+        if (s.includes(' - ')) {
+            const parts = s.split(' - ');
+            const contato = parts[0].trim();
+            const revenda = parts.slice(1).join(' - ').trim();
+            return { revenda: revenda || contato, contato };
+        }
+        return { revenda: s, contato: '' };
+    }
+
+    window.renderHorasExtras = function() {
+        const { email, rawName, isAdmin } = getSessionInfo();
+        const adminAgentContainer = document.getElementById('adminAgentContainer');
+        const adminUploadContainer = document.getElementById('adminUploadContainer');
+
+        let activeAgent = 'all';
+
+        if (isAdmin) {
+            if (adminAgentContainer) adminAgentContainer.classList.remove('hidden');
+            if (adminUploadContainer) adminUploadContainer.classList.remove('hidden');
+            const select = document.getElementById('adminAgentSelect');
+            activeAgent = select ? select.value : 'all';
+        } else {
+            if (adminAgentContainer) adminAgentContainer.classList.add('hidden');
+            if (adminUploadContainer) adminUploadContainer.classList.add('hidden');
+            const allAgents = Array.from(new Set(horasData.map(r => r.responsavel).filter(Boolean)));
+            const matched = allAgents.find(a => matchAgent(rawName, a) || matchAgent(email.split('@')[0], a));
+            activeAgent = matched || rawName || 'Atendente';
+        }
+
+        let filtered = horasData.filter(r => {
+            if (activeAgent !== 'all') {
+                if (r.responsavel !== activeAgent && !matchAgent(activeAgent, r.responsavel)) {
+                    return false;
+                }
+            }
+
+            if (currentShiftFilter !== 'all') {
+                if (currentShiftFilter === 'weekend') {
+                    if (r.shift_code !== 'sabado_12' && r.shift_code !== 'sabado_18' && r.shift_code !== 'domingo_13') {
+                        return false;
+                    }
+                } else if (r.shift_code !== currentShiftFilter) {
+                    return false;
+                }
+            }
+            if (currentSearchQuery) {
+                const q = currentSearchQuery.toLowerCase();
+                const matchTicket = (r.ticket || '').toLowerCase().includes(q);
+                const matchProtocolo = (r.protocolo || '').toLowerCase().includes(q);
+                const matchSolicitante = (r.solicitante || '').toLowerCase().includes(q);
+                const matchResponsavel = (r.responsavel || '').toLowerCase().includes(q);
+                const matchMensagem = (r.mensagem || '').toLowerCase().includes(q);
+                if (!matchTicket && !matchProtocolo && !matchSolicitante && !matchResponsavel && !matchMensagem) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        // Ordenação mais recente primeiro
+        filtered.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+
+        const activeFiltered = filtered.filter(r => !invalidCards.has(String(r.protocolo || r.ticket)));
+        const totalMin = activeFiltered.reduce((acc, r) => acc + (r.extra_minutes || 0), 0);
+        const totalTickets = activeFiltered.length;
+
+        const countText = document.getElementById('horasCountText');
+        const timeText = document.getElementById('horasTimeText');
+        if (countText) {
+            countText.textContent = `${totalTickets} atendimento${totalTickets !== 1 ? 's' : ''}`;
+        }
+        if (timeText) {
+            timeText.textContent = formatHoursMinutes(totalMin);
+            timeText.style.color = '#f97316';
+        }
+
+        const listContainer = document.getElementById('horasTicketsList');
+        if (!listContainer) return;
+
+        if (filtered.length === 0) {
+            let emptyExplanation = 'Nenhum atendimento ultrapassou a tolerância de 15 minutos para os filtros selecionados.';
+            listContainer.innerHTML = `
+                <div class="panel p-10 text-center rounded-xl border border-border-element bg-bg-panel/40">
+                    <div class="w-12 h-12 mx-auto rounded-full bg-orange-500/10 text-orange-400 flex items-center justify-center mb-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-bold text-text-high">Nenhum atendimento encontrado</h3>
+                    <p class="text-xs text-text-muted mt-1 max-w-md mx-auto">
+                        ${emptyExplanation}
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        listContainer.innerHTML = filtered.map(r => {
+            const cardKey = String(r.protocolo || r.ticket);
+            const isInvalid = invalidCards.has(cardKey);
+
+            return `
+            <div class="panel rounded-xl p-4 border transition-all flex flex-col gap-2 shadow-sm ${isInvalid ? 'border-dashed border-red-500/35 bg-red-950/15' : 'border-border-element hover:border-border-hover'}">
+                <!-- Parte Superior: Nome por extenso que vem no próprio Excel + Botão de Olho Aberto / Fechado -->
+                <div class="flex items-center justify-between gap-2">
+                    <div class="text-xs font-bold truncate ${isInvalid ? 'line-through text-text-muted opacity-40' : 'text-text-high'}">
+                        ${r.solicitante || r.organizacao || 'Não informado'}
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        ${isInvalid ? `
+                            <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40 shadow-sm">
+                                Desconsiderado
+                            </span>
+                        ` : ''}
+                        <button type="button" onclick="window.toggleCardInvalid('${cardKey}', event)" class="p-1.5 rounded-lg transition-all cursor-pointer shadow-sm flex items-center justify-center ${isInvalid ? 'bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 hover:scale-105 ring-1 ring-red-500/20' : 'text-text-muted hover:text-accent-solid hover:bg-white/5'}" title="${isInvalid ? 'Reativar atendimento' : 'Desconsiderar atendimento'}">
+                            ${isInvalid ? `
+                                <!-- Olho Fechado / Riscado bem aparente para clicar de novo -->
+                                <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                                    <line x1="2" y1="2" x2="22" y2="22"></line>
+                                </svg>
+                            ` : `
+                                <!-- Olho Aberto -->
+                                <svg class="w-4 h-4 text-text-muted hover:text-accent-solid transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            `}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Linha Principal do Card (esmaecida quando desconsiderado) -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isInvalid ? 'opacity-35 grayscale' : ''}">
+                    <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+                        <!-- Ticket # -->
+                        <span class="font-bold text-text-high text-sm font-mono flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-accent-solid" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+                            </svg>
+                            #${r.ticket}
+                        </span>
+
+                        <!-- Protocolo: minimalista, 'Protocolo' e o número na frente -->
+                        <span class="font-mono text-xs text-text-muted flex items-center gap-1.5 bg-bg-app border border-border-element px-2.5 py-0.5 rounded-full">
+                            <span>Protocolo</span>
+                            <strong class="text-text-high font-semibold">${r.protocolo || '-'}</strong>
+                        </span>
+
+                        <!-- Tag de Minutos Extras além do horário -->
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono font-bold">
+                            +${r.extra_minutes} min além das ${r.standard_time}
+                        </span>
+
+                        ${isAdmin && activeAgent === 'all' ? `
+                            <span class="text-xs px-2 py-0.5 rounded bg-bg-app text-text-muted border border-border-subtle">
+                                ${r.responsavel}
+                            </span>
+                        ` : ''}
+
+                        <!-- Data e Horário -->
+                        <span class="text-xs text-text-muted flex items-center gap-1 font-mono">
+                            <svg class="w-3.5 h-3.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            ${r.date_str} às ${r.time_str}
+                        </span>
+                    </div>
+
+                    <div class="flex items-center shrink-0 self-end sm:self-auto">
+                        <button type="button" onclick="window.openHorasTicketModal('${r.protocolo || r.ticket}')" class="px-3.5 py-1.5 bg-bg-panel border border-border-element hover:border-accent-solid text-text-high hover:text-accent-solid rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm">
+                            <svg class="w-4 h-4 text-accent-solid" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Detalhes
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `;
+        }).join('');
+    };
+
+    window.openHorasTicketModal = function(key) {
+        const record = horasData.find(r => String(r.protocolo) === String(key) || String(r.ticket) === String(key));
+        if (!record) return;
+
+        const numEl = document.getElementById('modalTicketNumero');
+        const protoEl = document.getElementById('modalTicketProtocolo');
+        const turnoEl = document.getElementById('modalTicketTurno');
+        const extraBadgeEl = document.getElementById('modalTicketExtraBadge');
+        const respEl = document.getElementById('modalTicketResponsavel');
+        const solicEl = document.getElementById('modalTicketSolicitante');
+        const orgEl = document.getElementById('modalTicketOrganizacao');
+        const entEl = document.getElementById('modalTicketEntrada');
+        const encEl = document.getElementById('modalTicketEncerramento');
+        const durEl = document.getElementById('modalTicketDuracao');
+        const espEl = document.getElementById('modalTicketEspera');
+        const descEl = document.getElementById('modalTicketDescricao');
+
+        if (numEl) numEl.textContent = record.ticket;
+        if (protoEl) protoEl.textContent = record.protocolo || '-';
+        if (turnoEl) turnoEl.textContent = `${record.shift_type} • Encerrado às ${record.time_str}`;
+        if (extraBadgeEl) extraBadgeEl.textContent = `+${record.extra_minutes} min além das ${record.standard_time}`;
+        if (respEl) respEl.textContent = record.responsavel || '-';
+        if (solicEl) solicEl.textContent = record.solicitante || '-';
+        if (orgEl) orgEl.textContent = record.organizacao ? `Organização: ${record.organizacao}` : '';
+        if (entEl) entEl.textContent = record.entrada || '-';
+        if (encEl) encEl.textContent = `${record.encerramento || record.time_str} (+${record.extra_minutes} min)`;
+        if (durEl) durEl.textContent = record.duracao || '-';
+        if (espEl) espEl.textContent = record.espera || '-';
+        if (descEl) descEl.textContent = record.mensagem || record.descricao || '(Sem mensagem ou descrição registrada)';
+
+        const modal = document.getElementById('horasTicketModal');
+        if (modal) modal.classList.remove('hidden');
+    };
+
+    window.exportHorasExtrasToExcel = async function() {
+        if (typeof ExcelJS === 'undefined') {
+            window.showCustomAlert('Aguarde o carregamento da biblioteca ExcelJS ou verifique a conexão com a internet.');
+            return;
+        }
+
+        const { email, rawName, isAdmin } = getSessionInfo();
+        let activeAgent = 'all';
+
+        if (isAdmin) {
+            const select = document.getElementById('adminAgentSelect');
+            activeAgent = select ? select.value : 'all';
+        } else {
+            const allAgents = Array.from(new Set(horasData.map(r => r.responsavel).filter(Boolean)));
+            const matched = allAgents.find(a => matchAgent(rawName, a) || matchAgent(email.split('@')[0], a));
+            activeAgent = matched || rawName || 'Atendente';
+        }
+
+        let filtered = horasData.filter(r => {
+            if (activeAgent !== 'all') {
+                if (r.responsavel !== activeAgent && !matchAgent(activeAgent, r.responsavel)) {
+                    return false;
+                }
+            }
+
+            if (currentShiftFilter !== 'all') {
+                if (currentShiftFilter === 'weekend') {
+                    if (r.shift_code !== 'sabado_12' && r.shift_code !== 'sabado_18' && r.shift_code !== 'domingo_13') {
+                        return false;
+                    }
+                } else if (r.shift_code !== currentShiftFilter) {
+                    return false;
+                }
+            }
+            if (currentSearchQuery) {
+                const q = currentSearchQuery.toLowerCase();
+                const matchTicket = (r.ticket || '').toLowerCase().includes(q);
+                const matchProtocolo = (r.protocolo || '').toLowerCase().includes(q);
+                const matchSolicitante = (r.solicitante || '').toLowerCase().includes(q);
+                const matchResponsavel = (r.responsavel || '').toLowerCase().includes(q);
+                const matchMensagem = (r.mensagem || '').toLowerCase().includes(q);
+                if (!matchTicket && !matchProtocolo && !matchSolicitante && !matchResponsavel && !matchMensagem) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        // REGRA ESSENCIAL: Itens com olhinho inativado (invalidCards) NÃO entram no Excel!
+        const activeFiltered = filtered.filter(r => !invalidCards.has(String(r.protocolo || r.ticket)));
+
+        if (activeFiltered.length === 0) {
+            window.showCustomAlert('Nenhum atendimento ativo disponível para exportação com os filtros atuais.');
+            return;
+        }
+
+        // Ordenação cronológica (do primeiro ao último dia do mês) para a folha mensal
+        activeFiltered.sort((a, b) => (a.timestamp || a.date_iso || '').localeCompare(b.timestamp || b.date_iso || ''));
+
+        // Determinar Nome do Atendente
+        let displayAgentName = 'Danilo Abreu';
+        if (activeAgent !== 'all') {
+            displayAgentName = activeAgent;
+        } else if (activeFiltered.length > 0) {
+            const uniqueResps = Array.from(new Set(activeFiltered.map(r => r.responsavel).filter(Boolean)));
+            if (uniqueResps.length === 1) {
+                displayAgentName = uniqueResps[0];
+            } else {
+                displayAgentName = rawName || 'Equipe';
+            }
+        }
+
+        // Determinar Mês e Ano de referência
+        const mesesNomes = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        let refDate = new Date();
+        const firstWithDate = activeFiltered.find(r => r.date_iso || r.timestamp || r.date_str);
+        if (firstWithDate) {
+            if (firstWithDate.date_iso) {
+                const [y, m, d] = firstWithDate.date_iso.split('-').map(Number);
+                refDate = new Date(y, m - 1, d);
+            } else if (firstWithDate.date_str) {
+                const [d, m, y] = firstWithDate.date_str.split('/').map(Number);
+                refDate = new Date(y, m - 1, d);
+            }
+        }
+        const mesExtenso = mesesNomes[refDate.getMonth()];
+        const anoExtenso = refDate.getFullYear();
+        const sheetName = `${mesExtenso} ${anoExtenso}`;
+        const monthYearSubtitle = `${mesExtenso} / ${anoExtenso}`;
+
+        const wb = new ExcelJS.Workbook();
+        wb.creator = 'Sistema Base de Conhecimento';
+        wb.lastModifiedBy = 'Sistema Base de Conhecimento';
+        wb.created = new Date();
+        wb.modified = new Date();
+
+        const ws = wb.addWorksheet(sheetName, {
+            views: [{ showGridLines: true }]
+        });
+
+        // Largura das colunas A a F
+        ws.columns = [
+            { key: 'A', width: 14.0 },
+            { key: 'B', width: 15.0 },
+            { key: 'C', width: 15.0 },
+            { key: 'D', width: 15.0 },
+            { key: 'E', width: 15.0 },
+            { key: 'F', width: 82.5 }
+        ];
+
+        const borderThin = {
+            top: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+            bottom: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+            left: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+            right: { style: 'thin', color: { argb: 'FFBFBFBF' } }
+        };
+
+        // Linha 1: Título estilizado
+        ws.mergeCells('A1:F1');
+        const r1 = ws.getRow(1);
+        r1.height = 33.75;
+        const c1 = ws.getCell('A1');
+        c1.value = `HORAS EXTRAS — ${displayAgentName.toUpperCase()}`;
+        c1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC000' } };
+        c1.font = { name: 'Arial', size: 18, bold: true, color: { argb: 'FF404040' } };
+        c1.alignment = { horizontal: 'center', vertical: 'middle' };
+
+        // Linha 2: Subtítulo
+        ws.mergeCells('A2:F2');
+        const r2 = ws.getRow(2);
+        r2.height = 19.5;
+        const c2 = ws.getCell('A2');
+        c2.value = `Controle mensal — ${monthYearSubtitle}`;
+        c2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } };
+        c2.font = { name: 'Arial', size: 11, italic: true, color: { argb: 'FF404040' } };
+        c2.alignment = { horizontal: 'center', vertical: 'middle' };
+
+        // Linha 3: Cabeçalhos
+        const r3 = ws.getRow(3);
+        r3.height = 30.0;
+        const headers = ['Protocolo', 'Data', 'Hora prevista', 'Hora saída', 'Horas extras', 'Observações'];
+        headers.forEach((h, idx) => {
+            const colLetter = String.fromCharCode(65 + idx);
+            const cell = ws.getCell(`${colLetter}3`);
+            cell.value = h;
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF7030A0' } };
+            cell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+            cell.border = borderThin;
+        });
+
+        const totalSlots = Math.max(25, activeFiltered.length);
+        const parseTimeToDayFraction = (timeStr) => {
+            if (!timeStr) return null;
+            const parts = String(timeStr).trim().split(':');
+            if (parts.length < 2) return null;
+            const h = parseInt(parts[0], 10) || 0;
+            const m = parseInt(parts[1], 10) || 0;
+            const s = parseInt(parts[2] || 0, 10) || 0;
+            return (h / 24) + (m / 1440) + (s / 86400);
+        };
+
+        for (let i = 0; i < totalSlots; i++) {
+            const rowNum = 4 + i;
+            const row = ws.getRow(rowNum);
+            row.height = 19.5;
+
+            const isZebra = (i % 2 === 1);
+            const zebraFill = isZebra ? { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE9DFF3' } } : null;
+            const rec = activeFiltered[i] || null;
+
+            for (let colIdx = 0; colIdx < 6; colIdx++) {
+                const colLetter = String.fromCharCode(65 + colIdx);
+                const cell = ws.getCell(`${colLetter}${rowNum}`);
+                if (zebraFill) cell.fill = zebraFill;
+                cell.border = borderThin;
+                cell.font = { name: 'Arial', size: 11, color: { argb: 'FF404040' } };
+
+                if (colLetter === 'A') {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    if (rec) {
+                        const proto = String(rec.protocolo || rec.ticket || '').trim();
+                        const numProto = Number(proto);
+                        cell.value = (!isNaN(numProto) && proto.length >= 8) ? numProto : proto;
+                        cell.numFmt = '0';
+                    }
+                } else if (colLetter === 'B') {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    if (rec) {
+                        if (rec.date_iso) {
+                            const [y, m, d] = rec.date_iso.split('-').map(Number);
+                            cell.value = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+                        } else if (rec.date_str) {
+                            const [d, m, y] = rec.date_str.split('/').map(Number);
+                            cell.value = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+                        }
+                        cell.numFmt = 'dd/mm/yyyy';
+                    }
+                } else if (colLetter === 'C') {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    if (rec) {
+                        const timeFrac = parseTimeToDayFraction(rec.standard_time || '18:00');
+                        cell.value = timeFrac;
+                        cell.numFmt = 'hh:mm';
+                    }
+                } else if (colLetter === 'D') {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    if (rec) {
+                        const timeFrac = parseTimeToDayFraction(rec.time_str || rec.encerramento);
+                        cell.value = timeFrac;
+                        cell.numFmt = 'hh:mm';
+                    }
+                } else if (colLetter === 'E') {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    cell.numFmt = '[h]:mm';
+                    const formulaStr = `IF(OR(C${rowNum}="",D${rowNum}=""),"",D${rowNum}-C${rowNum})`;
+                    if (rec && rec.extra_minutes != null) {
+                        cell.value = {
+                            formula: formulaStr,
+                            result: rec.extra_minutes / 1440
+                        };
+                    } else {
+                        cell.value = { formula: formulaStr };
+                    }
+                } else if (colLetter === 'F') {
+                    cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                    if (rec) {
+                        cell.value = rec.observacoes || (rec.mensagem && rec.mensagem !== '...' && rec.mensagem !== '-' ? rec.mensagem : (rec.solicitante ? `Atendimento: ${rec.solicitante}` : ''));
+                    }
+                }
+            }
+        }
+
+        // Linha TOTAL
+        const totalRow = 4 + totalSlots;
+        const rTot = ws.getRow(totalRow);
+        rTot.height = 24.0;
+
+        const grayFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } };
+        ['A', 'B', 'C', 'F'].forEach(c => {
+            const cell = ws.getCell(`${c}${totalRow}`);
+            cell.fill = grayFill;
+            cell.border = borderThin;
+        });
+
+        const cD = ws.getCell(`D${totalRow}`);
+        cD.value = 'TOTAL';
+        cD.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF7030A0' } };
+        cD.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+        cD.alignment = { horizontal: 'right', vertical: 'middle' };
+        cD.border = borderThin;
+
+        const totalMinutes = activeFiltered.reduce((acc, r) => acc + (r.extra_minutes || 0), 0);
+        const cE = ws.getCell(`E${totalRow}`);
+        cE.value = {
+            formula: `SUM(E4:E${totalRow - 1})`,
+            result: totalMinutes / 1440
+        };
+        cE.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC000' } };
+        cE.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FF404040' } };
+        cE.alignment = { horizontal: 'center', vertical: 'middle' };
+        cE.numFmt = '[h]:mm';
+        cE.border = borderThin;
+
+        // Linha "Como usar:"
+        const instTitleRow = totalRow + 2;
+        const cInst = ws.getCell(`A${instTitleRow}`);
+        cInst.value = 'Como usar:';
+        cInst.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF7030A0' } };
+
+        // 4 Linhas de instruções mescladas A:F
+        const instructions = [
+            '• Preencha Protocolo, Data, Hora prevista e Hora saída. As horas devem estar no formato hh:mm (ex.: 18:00).',
+            '• A coluna "Horas extras" é calculada automaticamente (Hora saída − Hora prevista).',
+            '• Selecione a Situação na lista suspensa (Aprovado, Pendente, Reprovado).',
+            '• O TOTAL soma automaticamente todas as horas extras do mês.'
+        ];
+
+        instructions.forEach((text, idx) => {
+            const rNum = instTitleRow + 1 + idx;
+            ws.mergeCells(`A${rNum}:F${rNum}`);
+            const cell = ws.getCell(`A${rNum}`);
+            cell.value = text;
+            cell.font = { name: 'Arial', size: 10, color: { argb: 'FF404040' } };
+            cell.alignment = { horizontal: 'left', vertical: 'middle' };
+        });
+
+        try {
+            const buffer = await wb.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const safeAgent = displayAgentName.replace(/[^a-zA-Z0-9_-]/g, '_');
+            a.download = `Horas extras - ${safeAgent} - ${mesExtenso}_${anoExtenso}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Erro ao gerar planilha Excel:', err);
+            window.showCustomAlert('Erro ao exportar planilha Excel: ' + (err.message || 'Falha na geração do arquivo.'));
+        }
+    };
+
+    function parseHorasExtrasTemplate(rawRows) {
+        if (!rawRows || !rawRows.length) return null;
+        let headerRowIdx = -1;
+        let detectedAgent = '';
+
+        for (let i = 0; i < Math.min(10, rawRows.length); i++) {
+            const row = rawRows[i] || [];
+            const firstCell = String(row[0] || '').toLowerCase();
+            if (firstCell.includes('horas extras')) {
+                const parts = String(row[0]).split(/[—\-]/);
+                if (parts.length > 1) detectedAgent = parts[1].trim();
+            }
+            const rowStr = row.map(c => String(c || '').toLowerCase()).join(';');
+            if (rowStr.includes('protocolo') && (rowStr.includes('hora prevista') || rowStr.includes('hora saída') || rowStr.includes('hora saida'))) {
+                headerRowIdx = i;
+                break;
+            }
+        }
+
+        if (headerRowIdx === -1) return null;
+
+        const pad = n => String(n).padStart(2, '0');
+        const records = [];
+
+        for (let i = headerRowIdx + 1; i < rawRows.length; i++) {
+            const row = rawRows[i] || [];
+            const proto = String(row[0] || '').trim();
+            const dateRaw = row[1];
+            if (!proto || proto.toLowerCase() === 'total' || proto.toLowerCase().startsWith('como usar')) break;
+            if (!dateRaw && !row[2] && !row[3]) continue;
+
+            let dateStr = '';
+            let dateIso = '';
+
+            if (typeof dateRaw === 'number') {
+                const dateObj = new Date(Math.round((dateRaw - 25569) * 86400 * 1000));
+                dateStr = `${pad(dateObj.getUTCDate())}/${pad(dateObj.getUTCMonth() + 1)}/${dateObj.getUTCFullYear()}`;
+                dateIso = `${dateObj.getUTCFullYear()}-${pad(dateObj.getUTCMonth() + 1)}-${pad(dateObj.getUTCDate())}`;
+            } else if (dateRaw) {
+                dateStr = String(dateRaw).trim();
+                const parts = dateStr.split(/[\/\-]/);
+                if (parts.length === 3) {
+                    if (parts[2].length === 4) {
+                        dateIso = `${parts[2]}-${pad(parts[1])}-${pad(parts[0])}`;
+                    }
+                }
+            }
+
+            const formatFractionToTime = (val) => {
+                if (typeof val === 'number') {
+                    const totalSeconds = Math.round(val * 86400);
+                    const h = Math.floor(totalSeconds / 3600);
+                    const m = Math.floor((totalSeconds % 3600) / 60);
+                    const s = totalSeconds % 60;
+                    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+                }
+                if (typeof val === 'string') {
+                    return val.trim();
+                }
+                return '18:00:00';
+            };
+
+            const prevTimeStr = formatFractionToTime(row[2]);
+            const saidaTimeStr = formatFractionToTime(row[3]);
+
+            const prevMinutes = (parseInt(prevTimeStr.split(':')[0] || '18', 10) * 60) + parseInt(prevTimeStr.split(':')[1] || '0', 10);
+            const saidaMinutes = (parseInt(saidaTimeStr.split(':')[0] || '18', 10) * 60) + parseInt(saidaTimeStr.split(':')[1] || '0', 10);
+            const extraMin = Math.max(0, saidaMinutes - prevMinutes);
+
+            let shift_code = 'expediente_18';
+            let shift_type = 'Fim de Expediente (18:00)';
+            if (prevMinutes >= 19 * 60) {
+                shift_code = 'plantao_19';
+                shift_type = 'Plantão (19:00)';
+            } else if (prevMinutes <= 13 * 60) {
+                shift_code = 'weekend';
+                shift_type = 'Fim de Semana';
+            }
+
+            records.push({
+                protocolo: proto,
+                ticket: proto,
+                responsavel: detectedAgent || 'Danilo Abreu',
+                solicitante: row[5] || 'Atendimento',
+                date_str: dateStr,
+                date_iso: dateIso,
+                time_str: saidaTimeStr,
+                standard_time: prevTimeStr.slice(0, 5),
+                extra_minutes: extraMin,
+                mensagem: row[5] || '',
+                observacoes: row[5] || '',
+                shift_code,
+                shift_type,
+                timestamp: dateIso ? `${dateIso}T${saidaTimeStr}` : ''
+            });
+        }
+
+        return records.length ? records : null;
+    }
+
+    window.handleHorasFileInput = function(event) {
+        const input = event.target;
+        if (input && input.files && input.files[0]) {
+            handleExcelFile(input.files[0]);
+            input.value = '';
+        }
+    };
+
+    function handleExcelFile(file) {
+        if (!file) return;
+        if (typeof XLSX === 'undefined') {
+            window.showCustomAlert('Erro: Biblioteca de leitura do Excel (SheetJS) ainda não foi carregada. Verifique a conexão ou recarregue a página.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const rawJson = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                // Tenta primeiro o modelo estruturado de Horas Extras, se não for tenta o modelo de chamados brutos
+                let processed = parseHorasExtrasTemplate(rawJson);
+                if (!processed || processed.length === 0) {
+                    processed = calculateOvertimeRecords(rawJson);
+                }
+
+                if (!processed || processed.length === 0) {
+                    window.showCustomAlert('Aviso: Nenhum atendimento elegível a hora extra foi identificado nesta planilha. Verifique o formato do arquivo.');
+                    return;
+                }
+
+                const cleanRecords = processed.map(r => ({
+                    protocolo: r.protocolo ? String(r.protocolo) : null,
+                    ticket: r.ticket ? String(r.ticket) : null,
+                    responsavel: String(r.responsavel || 'Atendente'),
+                    solicitante: r.solicitante ? String(r.solicitante) : null,
+                    email: r.email ? String(r.email) : null,
+                    telefone: r.telefone ? String(r.telefone) : null,
+                    organizacao: r.organizacao ? String(r.organizacao) : null,
+                    status_conversa: r.status_conversa ? String(r.status_conversa) : null,
+                    entrada: r.entrada ? String(r.entrada) : null,
+                    encerramento: r.encerramento ? String(r.encerramento) : null,
+                    espera: r.espera ? String(r.espera) : null,
+                    duracao: r.duracao ? String(r.duracao) : null,
+                    mensagem: r.mensagem ? String(r.mensagem) : null,
+                    timestamp: r.timestamp ? String(r.timestamp) : null,
+                    date_iso: r.date_iso || (r.date_str ? r.date_str.split('/').reverse().join('-') : new Date().toISOString().split('T')[0]),
+                    date_str: r.date_str ? String(r.date_str) : null,
+                    time_str: r.time_str ? String(r.time_str) : null,
+                    shift_type: r.shift_type ? String(r.shift_type) : null,
+                    shift_code: r.shift_code ? String(r.shift_code) : null,
+                    standard_time: r.standard_time ? String(r.standard_time) : null,
+                    extra_minutes: typeof r.extra_minutes === 'number' ? Math.round(r.extra_minutes) : 0
+                }));
+
+                let dbSynced = false;
+                try {
+                    // Limpa lote anterior no Supabase
+                    await fetch(`${SUPABASE_URL}/rest/v1/horas_extras?extra_minutes=gte.0`, {
+                        method: 'DELETE',
+                        headers: getAuthHeaders()
+                    });
+
+                    // Insere o novo lote apurado no Supabase
+                    const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/horas_extras`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify(cleanRecords)
+                    });
+
+                    if (insertRes.ok) {
+                        dbSynced = true;
+                    } else {
+                        console.warn('Resposta Supabase ao salvar horas_extras:', await insertRes.text());
+                    }
+                } catch(dbErr) {
+                    console.error('Falha de conexão com Supabase horas_extras:', dbErr);
+                }
+
+                const savedObj = {
+                    imported_at: new Date().toISOString(),
+                    source_file: file.name,
+                    total_records: cleanRecords.length,
+                    records: cleanRecords
+                };
+
+                localStorage.setItem('relatorio_horas_extras_custom', JSON.stringify(savedObj));
+                horasData = cleanRecords;
+                updateSourceText(`Planilha: ${file.name} (${cleanRecords.length} atendimentos apurados ${dbSynced ? '• Salvo no Banco' : ''})`);
+                populateAgentSelect();
+                window.renderHorasExtras();
+
+                const successMsg = dbSynced
+                    ? `Sucesso! A planilha "${file.name}" foi processada e salva no Banco de Dados com êxito.\n\nForam registrados ${cleanRecords.length} atendimentos elegíveis a hora extra e sincronizados para todos os usuários.`
+                    : `Sucesso! A planilha "${file.name}" foi processada com êxito.\n\nForam apurados ${cleanRecords.length} atendimentos elegíveis a hora extra.`;
+
+                window.showCustomAlert(successMsg);
+            } catch(err) {
+                console.error('Error parsing Excel:', err);
+                window.showCustomAlert('Erro ao processar a planilha Excel: ' + (err.message || 'Arquivo inválido.'));
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initLunchControls();
+        loadHorasData();
+
+        const searchInput = document.getElementById('horasSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                currentSearchQuery = e.target.value.trim();
+                window.renderHorasExtras();
+            });
+        }
+
+        document.querySelectorAll('.horas-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.horas-filter-btn').forEach(b => {
+                    b.classList.remove('bg-accent-solid', 'text-white');
+                    b.classList.add('bg-bg-app', 'border', 'border-border-element', 'text-text-muted');
+                });
+                btn.classList.add('bg-accent-solid', 'text-white');
+                btn.classList.remove('bg-bg-app', 'border', 'border-border-element', 'text-text-muted');
+                currentShiftFilter = btn.getAttribute('data-shift');
+                window.renderHorasExtras();
+            });
+        });
+
+        const sortSelect = document.getElementById('horasSortSelect');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => {
+                currentSort = e.target.value;
+                window.renderHorasExtras();
+            });
+        }
+
+        const agentSelect = document.getElementById('adminAgentSelect');
+        if (agentSelect) {
+            agentSelect.addEventListener('change', () => {
+                window.renderHorasExtras();
+            });
+        }
+
+        const fileInput = document.getElementById('horasFileInput');
+        const importBtn = document.getElementById('btnImportarExcel');
+        if (importBtn && fileInput) {
+            importBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleExcelFile(e.target.files[0]);
+                    fileInput.value = '';
+                }
+            });
+        }
+
+        const exportBtn = document.getElementById('btnExportarHorasExcel');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                if (window.exportHorasExtrasToExcel) window.exportHorasExtrasToExcel();
+            });
+        }
+
+        const dropzone = document.getElementById('horasDropzone');
+        if (dropzone) {
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.classList.add('border-accent-solid', 'bg-accent-solid/10');
+            });
+            dropzone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-accent-solid', 'bg-accent-solid/10');
+            });
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-accent-solid', 'bg-accent-solid/10');
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleExcelFile(e.dataTransfer.files[0]);
+                }
+            });
+            dropzone.addEventListener('click', (e) => {
+                if (e.target !== importBtn && fileInput) fileInput.click();
+            });
+        }
+
+        const resetBtn = document.getElementById('btnResetHoras');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', async () => {
+                localStorage.removeItem('relatorio_horas_extras_custom');
+                try {
+                    await fetch(`${SUPABASE_URL}/rest/v1/horas_extras?extra_minutes=gte.0`, {
+                        method: 'DELETE',
+                        headers: getAuthHeaders()
+                    });
+                } catch(e) {}
+                await loadHorasData();
+                window.renderHorasExtras();
+                window.showCustomAlert('Os dados foram restaurados para a planilha padrão inicial.');
+            });
+        }
+
+        const horasModal = document.getElementById('horasTicketModal');
+        if (horasModal) {
+            horasModal.addEventListener('click', (e) => {
+                if (e.target === horasModal) {
+                    horasModal.classList.add('hidden');
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !horasModal.classList.contains('hidden')) {
+                    horasModal.classList.add('hidden');
+                }
+            });
+        }
+    });
+})();
+
+
 

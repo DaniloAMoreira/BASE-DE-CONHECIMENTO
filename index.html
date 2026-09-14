@@ -49,6 +49,10 @@ tailwind.config = {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+    <script src="xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+    <script src="exceljs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" defer></script>
     <link href="style.css?v=4" rel="stylesheet">
 </head>
 
@@ -195,8 +199,9 @@ tailwind.config = {
             <div>
                 
 <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6 pb-2">
-    <button id="nav-base-tab" class="text-2xl sm:text-3xl font-bold pb-1 tab-inactive transition-colors cursor-pointer focus:outline-none">Base de Conhecimento</button>
-    <button id="nav-comandos-tab" class="text-2xl sm:text-3xl font-bold pb-1 tab-active transition-colors cursor-pointer focus:outline-none">Comandos banco de dados</button>
+    <button id="nav-base-tab" class="text-xl sm:text-2xl lg:text-3xl font-bold pb-1 tab-inactive transition-colors cursor-pointer focus:outline-none">Base de Conhecimento</button>
+    <button id="nav-comandos-tab" class="text-xl sm:text-2xl lg:text-3xl font-bold pb-1 tab-active transition-colors cursor-pointer focus:outline-none">Comandos banco de dados</button>
+    <button id="nav-horas-tab" class="text-xl sm:text-2xl lg:text-3xl font-bold pb-1 tab-inactive transition-colors cursor-pointer focus:outline-none">Atendimentos Horas Extras</button>
 </div>
 
 <div id="view-comandos">
@@ -257,6 +262,68 @@ tailwind.config = {
                     <div id="baseSuggestionsContainer" class="mt-1"></div>
                 </header>
                 <main id="baseCategoriesContainer" class="space-y-3"></main>
+</div>
+<div id="view-horas" class="hidden">
+    <header class="mb-6">
+        <!-- Sub-tabs: Todos | Saída (18h) | Plantão (19h) | Fim de Semana -->
+        <div class="relative flex flex-wrap gap-4 sm:gap-6 mb-4 px-1 w-full items-center justify-between">
+            <div class="flex gap-4 sm:gap-6 items-center flex-wrap pt-1">
+                <button id="horasTabAll" onclick="window.setHorasShiftTab('all')" class="relative z-10 pb-3 text-sm font-semibold text-accent-solid transition-colors cursor-pointer border-b-2 border-accent-solid">Todos os Atendimentos</button>
+                <button id="horasTabExp18" onclick="window.setHorasShiftTab('expediente_18')" class="relative z-10 pb-3 text-sm font-semibold text-text-muted hover:text-text-high transition-colors cursor-pointer border-b-2 border-transparent">Saída (18h)</button>
+                <button id="horasTabPlantao19" onclick="window.setHorasShiftTab('plantao_19')" class="relative z-10 pb-3 text-sm font-semibold text-text-muted hover:text-text-high transition-colors cursor-pointer border-b-2 border-transparent">Plantão (19h)</button>
+                <button id="horasTabWeekend" onclick="window.setHorasShiftTab('weekend')" class="relative z-10 pb-3 text-sm font-semibold text-text-muted hover:text-text-high transition-colors cursor-pointer border-b-2 border-transparent">Fim de Semana</button>
+            </div>
+            
+            <!-- Coluna Direita: Total de Horas e Exportação -->
+            <div class="flex items-center gap-2.5">
+                <div id="horasSummaryBadge" class="text-xs font-semibold px-3.5 py-2 rounded-lg bg-bg-panel border border-border-element text-text-high flex items-center gap-2 shadow-sm">
+                    <span id="horasCountText">0 atendimentos</span>
+                    <span class="text-border-element">•</span>
+                    <span id="horasTimeText" class="text-orange-400 font-mono font-bold text-sm" style="color: #f97316;">0h 00m</span>
+                </div>
+                <button type="button" id="btnExportarHorasExcel" onclick="window.exportHorasExtrasToExcel()" class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer hover:shadow hover:scale-[1.02]" title="Exportar atendimentos ativos para planilha Excel (.xlsx)">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span>Exportar Excel</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="relative flex gap-2 w-full items-center">
+            <div class="relative flex-grow">
+                <input type="text" id="horasSearchInput" placeholder="Pesquisar por ticket, assunto ou solicitante..."
+                    class="glass-input w-full rounded-xl pl-10 pr-4 py-3 text-text-high transition-all duration-300 placeholder:text-text-muted focus:outline-none"
+                    autocomplete="off">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Admin Select Agent (Shown only for Admin) -->
+            <div id="adminAgentContainer" class="hidden relative">
+                <select id="adminAgentSelect" class="glass-input rounded-xl px-4 py-3 text-sm font-semibold text-text-high bg-bg-panel border border-border-element focus:outline-none focus:ring-1 focus:ring-accent-solid cursor-pointer">
+                    <option value="all">Equipe Completa</option>
+                </select>
+            </div>
+            
+            <!-- Import Button (Upload Planilha Excel Base - Apenas Admin) -->
+            <div id="adminUploadContainer" class="hidden relative flex gap-2">
+                <input type="file" id="horasFileInput" accept=".xlsx,.xls,.csv" class="hidden" onchange="window.handleHorasFileInput && window.handleHorasFileInput(event)">
+                <button type="button" id="btnImportarExcel" onclick="document.getElementById('horasFileInput').click()" class="bg-accent-solid text-white p-3 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1.5 text-sm font-semibold cursor-pointer" title="Importar Planilha Excel (.xlsx, .csv)">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Tickets List (Matches categoriesContainer space-y-3) -->
+    <main id="horasTicketsList" class="space-y-3"></main>
 </div>
             </div>
         </div>
@@ -485,6 +552,83 @@ tailwind.config = {
         </div>
     </div>
 
+    <!-- Modal Detalhes do Atendimento de Hora Extra -->
+    <div id="horasTicketModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] hidden p-4 sm:p-6">
+        <div class="panel w-full max-w-3xl p-6 rounded-xl flex flex-col max-h-[85vh] shadow-2xl">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center pb-3 mb-4 border-b border-border-element shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-accent-solid/10 text-accent-solid flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-text-high flex items-center gap-2 flex-wrap">
+                            <span>Ticket #<span id="modalTicketNumero" class="text-accent-solid">-</span></span>
+                            <span class="text-xs px-2 py-0.5 rounded bg-bg-app border border-border-element text-text-muted font-mono">Protocolo: <strong id="modalTicketProtocolo" class="text-text-high font-semibold">-</strong></span>
+                            <span id="modalTicketExtraBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25 font-mono font-bold">+0 min</span>
+                        </h3>
+                        <p id="modalTicketTurno" class="text-xs text-text-muted mt-0.5">Turno • Horário</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('horasTicketModal').classList.add('hidden')" class="text-text-muted hover:text-red-500 transition-colors p-1.5 rounded-md hover:bg-white/5">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Modal Content (Scrollable) -->
+            <div class="space-y-4 overflow-y-auto custom-scrollbar flex-grow pr-1">
+                <!-- Info Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="bg-bg-panel border border-border-element p-3 rounded-lg">
+                        <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">Atendente Responsável</span>
+                        <span id="modalTicketResponsavel" class="text-sm font-semibold text-text-high mt-0.5 block">-</span>
+                    </div>
+                    <div class="bg-bg-panel border border-border-element p-3 rounded-lg">
+                        <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">Solicitante</span>
+                        <span id="modalTicketSolicitante" class="text-sm font-semibold text-text-high mt-0.5 block">-</span>
+                        <span id="modalTicketOrganizacao" class="text-xs text-text-muted mt-0.5 block"></span>
+                    </div>
+                    <div class="bg-bg-panel border border-border-element p-3 rounded-lg">
+                        <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">Data e Horário de Abertura</span>
+                        <span id="modalTicketEntrada" class="text-sm font-mono text-text-high mt-0.5 block">-</span>
+                    </div>
+                    <div class="bg-bg-panel border border-border-element p-3 rounded-lg">
+                        <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">Horário de Encerramento</span>
+                        <span id="modalTicketEncerramento" class="text-sm font-mono text-amber-400 font-bold mt-0.5 block">-</span>
+                    </div>
+                </div>
+
+                <!-- Duração e Tempo de Espera -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="bg-bg-panel border border-border-element p-3 rounded-lg">
+                        <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">Duração do Atendimento</span>
+                        <span id="modalTicketDuracao" class="text-xs font-mono text-text-high mt-0.5 block">-</span>
+                    </div>
+                    <div class="bg-bg-panel border border-border-element p-3 rounded-lg">
+                        <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">Tempo de Espera</span>
+                        <span id="modalTicketEspera" class="text-xs font-mono text-text-high mt-0.5 block">-</span>
+                    </div>
+                </div>
+
+                <!-- Primeira Mensagem / Assunto -->
+                <div class="bg-bg-panel border border-border-element p-3.5 rounded-lg">
+                    <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block mb-1.5">Primeira Mensagem / Descrição do Atendimento</span>
+                    <div id="modalTicketDescricao" class="text-sm text-text-high whitespace-pre-wrap font-sans leading-relaxed max-h-48 overflow-y-auto custom-scrollbar p-1">-</div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-4 mt-2 border-t border-border-element flex justify-end shrink-0">
+                <button type="button" onclick="document.getElementById('horasTicketModal').classList.add('hidden')" class="px-5 py-2 bg-accent-solid hover:opacity-90 text-white rounded-lg text-sm font-semibold transition-opacity">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="horas_extras_data.js"></script>
     <script src="app.js" defer></script>
 </body>
 

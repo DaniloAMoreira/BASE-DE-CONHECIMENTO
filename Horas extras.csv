@@ -1,0 +1,35 @@
+HORAS EXTRAS — DANILO ABREU;;;;;
+Controle mensal — Julho / 2026;;;;;
+Protocolo;Data;Hora prevista;Hora saída;Horas extras;Observações
+26070265063;02/07/2026;18:00:00;18:19:00;0:19;Aguardando resposta da revenda sobre a situação
+26070465282;04/07/2026;18:00:00;18:23:00;0:23;Aguardando resposta da revenda sobre a situação
+26070565288;05/0702026;13:00:00;13:38:00;0:38;Verificação final do problema para tentar solucionar
+26070765577;07/07/2026;19:00:00;19:29:00;0:29;Aguardo do tempo de Inatividade
+26071866780;18/07/2026;12:00:00;12:48:00;0:48;Prioridade de resolução devido o estabelecimento estar parado
+26072167153;21/07/2026;19:00:00;19:22:00;0:22;Teste de procedimento paliativo para revenda utilizar devido o horario de atendimento
+26072367427;23/07/2026;18:00:00;18:18:00;0:18;Repasse da situação do erro para a revenda para correção posterior
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;;;
+;;;TOTAL;3:17;
+;;;;;
+Como usar:;;;;;
+• Preencha Protocolo, Data, Hora prevista e Hora saída. As horas devem estar no formato hh:mm (ex.: 18:00).;;;;;
+"• A coluna ""Horas extras"" é calculada automaticamente (Hora saída ? Hora prevista).";;;;;
+• Selecione a Situação na lista suspensa (Aprovado, Pendente, Reprovado).;;;;;
+• O TOTAL soma automaticamente todas as horas extras do mês.;;;;;
