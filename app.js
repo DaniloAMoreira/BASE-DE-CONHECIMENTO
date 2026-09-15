@@ -2277,6 +2277,51 @@ window.rejectPasswordRequest = async (id) => {
         window.renderHorasExtras();
     };
 
+    window.copyProtocolo = function(protocolo, event, element) {
+        if (event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+        if (!protocolo || protocolo === '-') return;
+
+        const strProto = String(protocolo).trim();
+
+        const performCopy = () => {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(strProto);
+            }
+            const ta = document.createElement('textarea');
+            ta.value = strProto;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            return Promise.resolve();
+        };
+
+        performCopy().then(() => {
+            if (element) {
+                const originalHtml = element.innerHTML;
+                element.innerHTML = `
+                    <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span class="text-emerald-400 font-semibold text-xs">Copiado!</span>
+                `;
+                element.classList.add('border-emerald-500/50', 'bg-emerald-500/10');
+
+                setTimeout(() => {
+                    element.innerHTML = originalHtml;
+                    element.classList.remove('border-emerald-500/50', 'bg-emerald-500/10');
+                }, 1500);
+            }
+        }).catch(err => {
+            console.error('Falha ao copiar protocolo:', err);
+        });
+    };
+
     function normalizeStr(str) {
         if (!str) return '';
         return String(str)
@@ -2338,7 +2383,24 @@ window.rejectPasswordRequest = async (id) => {
         return isNaN(parsed.getTime()) ? null : parsed;
     }
 
-    function calculateOvertimeRecords(rawRows) {
+    // Configurações de Conexão Supabase e Octadesk API
+    const SUPABASE_URL = 'https://jqllbwlfikckavipqtfr.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGxid2xmaWtja2F2aXBxdGZyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MjQ3NzMwNCwiZXhwIjoyMDk4MDUzMzA0fQ.pFfkF8M7kWsPEbNP22UISbsS6VBgBxy0cobkZ5v92e8';
+
+    const OCTADESK_API_URL = 'https://o206721-2cb.api004.octadesk.services';
+    const OCTADESK_API_KEY = '3f627d9a-59a0-4d90-b5c2-0f5d735a2084.f2f72996-f08d-4055-8ed4-919b83c6798b';
+
+    function getSupabaseHeaders() {
+        return {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+        };
+    }
+
+    // Converte linhas brutas da planilha Excel para a estrutura intermediária de atendimento
+    function rawItemsFromExcel(rawRows) {
         if (!rawRows || !rawRows.length) return [];
         const headerRow = rawRows[0].map(c => String(c || '').toLowerCase().trim());
         const findCol = (terms, fallback) => {
@@ -2368,7 +2430,7 @@ window.rejectPasswordRequest = async (id) => {
         const colMensagem = findCol(['primeira mensagem do cliente', 'descrição do atendimento', 'descricao do atendimento', 'assunto do ticket', 'assunto', 'mensagem'], 21);
 
         const pad = (n) => String(n).padStart(2, '0');
-        const byAgentDay = {};
+        const items = [];
 
         for (let i = 1; i < rawRows.length; i++) {
             const r = rawRows[i];
@@ -2397,7 +2459,7 @@ window.rejectPasswordRequest = async (id) => {
                 ticketVal = String(r[colId] || '').trim();
             }
 
-            const rawItem = {
+            items.push({
                 protocolo: String(r[colId] || '').trim(),
                 ticket: ticketVal,
                 responsavel: resp,
@@ -2419,15 +2481,101 @@ window.rejectPasswordRequest = async (id) => {
                 _timeMin: timeMin,
                 _hour: hour,
                 _dow: dt.getDay()
-            };
+            });
+        }
+        return items;
+    }
 
-            // Agrupamento estrito por atendente e data: DOIS DIAS NUNCA SE REPETEM!
-            const k = `${resp}|${date_iso}`;
-            if (!byAgentDay[k]) byAgentDay[k] = [];
-            byAgentDay[k].push(rawItem);
+    // Converte objeto de chat da API da Octadesk para a mesma estrutura intermediária
+    function convertOctadeskChatToRawItem(chat) {
+        if (!chat) return null;
+        const resp = chat.agent?.name ? String(chat.agent.name).trim() : '';
+        if (!resp || resp === '-' || resp.toLowerCase() === 'none') return null;
+
+        const encerramentoRaw = chat.closedAt || chat.bot?.closedAt;
+        if (!encerramentoRaw) return null;
+
+        const dt = new Date(encerramentoRaw);
+        if (isNaN(dt.getTime())) return null;
+
+        const pad = (n) => String(n).padStart(2, '0');
+        const hour = dt.getHours();
+        const minute = dt.getMinutes();
+        const second = dt.getSeconds();
+        const timeMin = hour * 60 + minute + (second / 60);
+
+        const date_iso = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+        const date_str = `${pad(dt.getDate())}/${pad(dt.getMonth() + 1)}/${dt.getFullYear()}`;
+        const time_str = `${pad(hour)}:${pad(minute)}:${pad(second)}`;
+
+        const dtEntrada = chat.createdAt ? new Date(chat.createdAt) : null;
+        const entradaStr = (dtEntrada && !isNaN(dtEntrada.getTime()))
+            ? `${pad(dtEntrada.getDate())}/${pad(dtEntrada.getMonth() + 1)}/${dtEntrada.getFullYear()} ${pad(dtEntrada.getHours())}:${pad(dtEntrada.getMinutes())}:${pad(dtEntrada.getSeconds())}`
+            : `${date_str} ${time_str}`;
+        const encerramentoStr = `${date_str} ${time_str}`;
+
+        let esperaStr = '-';
+        if (chat.assignedToAgentDate && chat.createdAt) {
+            const diffMs = new Date(chat.assignedToAgentDate) - new Date(chat.createdAt);
+            if (diffMs > 0) {
+                const sec = Math.floor((diffMs / 1000) % 60);
+                const min = Math.floor((diffMs / (1000 * 60)) % 60);
+                const hrs = Math.floor(diffMs / (1000 * 60 * 60));
+                esperaStr = `${hrs}:${pad(min)}:${pad(sec)}`;
+            }
         }
 
-        // Para cada dia do atendente: avalia APENAS o último atendimento (a hora de saída)
+        let duracaoStr = '-';
+        if (chat.closedAt && chat.assignedToAgentDate) {
+            const diffMs = new Date(chat.closedAt) - new Date(chat.assignedToAgentDate);
+            if (diffMs > 0) {
+                const sec = Math.floor((diffMs / 1000) % 60);
+                const min = Math.floor((diffMs / (1000 * 60)) % 60);
+                const hrs = Math.floor(diffMs / (1000 * 60 * 60));
+                duracaoStr = `${hrs}:${pad(min)}:${pad(sec)}`;
+            }
+        }
+
+        const phoneContact = chat.contact?.phoneContacts?.[0];
+        const phoneStr = phoneContact ? ((phoneContact.countryCode ? '+' + phoneContact.countryCode : '') + (phoneContact.number || '')) : '';
+        const protocolVal = String(chat.number || chat.id || '').trim();
+
+        return {
+            protocolo: protocolVal,
+            ticket: protocolVal,
+            responsavel: resp,
+            solicitante: String(chat.contact?.name || '').trim(),
+            email: String(chat.contact?.email || '').trim(),
+            telefone: phoneStr,
+            organizacao: String(chat.contact?.organization?.name || 'Octachat').trim(),
+            status_conversa: 'Realizada',
+            entrada: entradaStr,
+            encerramento: encerramentoStr,
+            espera: esperaStr,
+            duracao: duracaoStr,
+            mensagem: chat.summary || (chat.lastMessageDate ? 'Atendimento via Chat' : 'Conversa encerrada'),
+            timestamp: dt.toISOString(),
+            date_iso,
+            date_str,
+            time_str,
+            _dt: dt.getTime(),
+            _timeMin: timeMin,
+            _hour: hour,
+            _dow: dt.getDay()
+        };
+    }
+
+    // Motor de Elegibilidade de Horas Extras (Regras de Negócio e Apuração do Último Atendimento do Dia)
+    function filterEligibleOvertime(rawItems) {
+        if (!rawItems || !rawItems.length) return [];
+
+        const byAgentDay = {};
+        for (const item of rawItems) {
+            const k = `${item.responsavel}|${item.date_iso}`;
+            if (!byAgentDay[k]) byAgentDay[k] = [];
+            byAgentDay[k].push(item);
+        }
+
         const finalRecords = [];
         for (const k in byAgentDay) {
             const items = byAgentDay[k];
@@ -2505,11 +2653,178 @@ window.rejectPasswordRequest = async (id) => {
         return finalRecords;
     }
 
+    // Função de compatibilidade mantida para chamadas legadas
+    function calculateOvertimeRecords(rawRows) {
+        const items = rawItemsFromExcel(rawRows);
+        return filterEligibleOvertime(items);
+    }
+
+    // Sincronização Unificada com Supabase (Deduplicação Inteligente: Se igual, ignora; se novo, insere)
+    async function syncRecordsWithSupabase(candidateRecords, sourceName = '') {
+        if (!candidateRecords || !candidateRecords.length) {
+            return { total: 0, inserted: 0, ignored: 0 };
+        }
+
+        // 1. Busca registros atuais no Supabase para comparação
+        let existing = [];
+        try {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/horas_extras?select=id,protocolo,responsavel,date_iso`, {
+                headers: getSupabaseHeaders()
+            });
+            if (res.ok) {
+                existing = await res.json();
+            }
+        } catch(e) {
+            console.warn('Erro ao consultar Supabase para deduplicação:', e);
+        }
+
+        const existingProtocols = new Set((existing || []).map(r => String(r.protocolo || '').trim()));
+        const existingAgentDays = new Set((existing || []).map(r => `${r.responsavel}|${r.date_iso}`));
+
+        // 2. Filtra apenas o que é novo (se igual, ignora)
+        const toInsert = [];
+        let ignoredCount = 0;
+
+        for (const r of candidateRecords) {
+            const proto = String(r.protocolo || '').trim();
+            const agentDay = `${r.responsavel}|${r.date_iso}`;
+
+            if (proto && existingProtocols.has(proto)) {
+                ignoredCount++;
+                continue;
+            }
+            if (agentDay && existingAgentDays.has(agentDay)) {
+                ignoredCount++;
+                continue;
+            }
+
+            toInsert.push({
+                protocolo: proto,
+                ticket: String(r.ticket || proto),
+                responsavel: String(r.responsavel || ''),
+                solicitante: String(r.solicitante || ''),
+                email: String(r.email || ''),
+                telefone: String(r.telefone || ''),
+                organizacao: String(r.organizacao || ''),
+                status_conversa: String(r.status_conversa || 'Realizada'),
+                entrada: String(r.entrada || ''),
+                encerramento: String(r.encerramento || ''),
+                espera: String(r.espera || '-'),
+                duracao: String(r.duracao || '-'),
+                mensagem: String(r.mensagem || ''),
+                timestamp: r.timestamp || new Date().toISOString(),
+                date_iso: r.date_iso,
+                date_str: r.date_str,
+                time_str: r.time_str,
+                shift_type: r.shift_type,
+                shift_code: r.shift_code,
+                standard_time: r.standard_time,
+                extra_minutes: Math.round(r.extra_minutes || 0)
+            });
+
+            if (proto) existingProtocols.add(proto);
+            if (agentDay) existingAgentDays.add(agentDay);
+        }
+
+        // 3. Insere no Supabase os registros novos
+        let insertedCount = 0;
+        if (toInsert.length > 0) {
+            try {
+                const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/horas_extras`, {
+                    method: 'POST',
+                    headers: getSupabaseHeaders(),
+                    body: JSON.stringify(toInsert)
+                });
+                if (insertRes.ok) {
+                    insertedCount = toInsert.length;
+                    console.log(`[Supabase] Inseridos ${insertedCount} novos atendimentos de horas extras.`);
+                } else {
+                    console.error('Falha ao inserir no Supabase:', await insertRes.text());
+                }
+            } catch(e) {
+                console.error('Erro de rede ao salvar novos registros:', e);
+            }
+        }
+
+        // 4. Recarrega o banco de dados completo para a memória e atualiza interface
+        await loadHorasData();
+        window.renderHorasExtras();
+
+        return {
+            total: candidateRecords.length,
+            inserted: insertedCount,
+            ignored: ignoredCount
+        };
+    }
+
+    // Consumo Automático e Manual da API Octadesk
+    async function syncOctadeskHorasExtras(isManual = false) {
+        const syncBtn = document.getElementById('btnSyncOctadesk');
+        const syncIcon = document.getElementById('syncOctadeskIcon');
+        if (syncIcon) syncIcon.classList.add('animate-spin');
+        if (syncBtn) syncBtn.disabled = true;
+
+        try {
+            console.log('[Octadesk Sync] Consultando atendimentos encerrados na API...');
+            const url = `${OCTADESK_API_URL}/chat?filters[0][property]=status&filters[0][operator]=eq&filters[0][value]=closed&sort[property]=closedAt&sort[direction]=desc&limit=100`;
+            const res = await fetch(url, {
+                headers: {
+                    'x-api-key': OCTADESK_API_KEY
+                }
+            });
+
+            if (!res.ok) {
+                throw new Error(`Status ${res.status} ao conectar à Octadesk`);
+            }
+
+            const chats = await res.json();
+            if (!Array.isArray(chats)) {
+                throw new Error('Formato inesperado de dados da API Octadesk');
+            }
+
+            const rawItems = chats.map(convertOctadeskChatToRawItem).filter(Boolean);
+            const eligible = filterEligibleOvertime(rawItems);
+            const result = await syncRecordsWithSupabase(eligible, 'Octadesk API');
+
+            console.log(`[Octadesk Sync] Concluído. Total elegíveis: ${result.total}, Inseridos: ${result.inserted}, Ignorados (já existentes): ${result.ignored}`);
+
+            if (isManual) {
+                if (result.inserted > 0) {
+                    window.showCustomAlert(`Sincronização Octadesk concluída com sucesso!\n\n• ${result.inserted} novos atendimentos com hora extra adicionados ao Supabase.\n• ${result.ignored} atendimentos já existentes ignorados.`);
+                } else {
+                    window.showCustomAlert(`Sincronização Octadesk concluída!\n\nTodos os atendimentos recentes elegíveis já estão sincronizados no Banco de Dados. Nenhuma duplicata encontrada.`);
+                }
+            }
+        } catch(err) {
+            console.error('[Octadesk Sync Error]:', err);
+            if (isManual) {
+                window.showCustomAlert('Erro ao sincronizar com a Octadesk: ' + (err.message || 'Verifique a conexão.'));
+            }
+        } finally {
+            if (syncIcon) syncIcon.classList.remove('animate-spin');
+            if (syncBtn) syncBtn.disabled = false;
+        }
+    }
+    window.syncOctadeskNow = function(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        syncOctadeskHorasExtras(true);
+    };
+
+    // Sincronização periódica a cada 30 minutos
+    const THIRTY_MINUTES_MS = 30 * 60 * 1000;
+    setInterval(() => {
+        console.log('[Octadesk Sync] Disparando verificação periódica de 30 minutos...');
+        syncOctadeskHorasExtras(false);
+    }, THIRTY_MINUTES_MS);
+
     async function loadHorasData() {
         // 1. Prioridade: Buscar registros atualizados no banco de dados Supabase
         try {
             const res = await fetch(`${SUPABASE_URL}/rest/v1/horas_extras?select=*&order=timestamp.desc`, {
-                headers: getAuthHeaders()
+                headers: getSupabaseHeaders()
             });
             if (res.ok) {
                 const data = await res.json();
@@ -2527,7 +2842,7 @@ window.rejectPasswordRequest = async (id) => {
                 }
             }
         } catch(e) {
-            console.log('Conexão ao Supabase horas_extras indisponível, recorrendo ao cache:', e);
+            console.warn('Conexão ao Supabase horas_extras indisponível, recorrendo ao cache:', e);
         }
 
         // 2. Segunda prioridade: Cache no localStorage
@@ -2557,11 +2872,40 @@ window.rejectPasswordRequest = async (id) => {
         if (el) el.textContent = text;
     }
 
+    function formatHoursMinutes(totalMin) {
+        const h = Math.floor(totalMin / 60);
+        const m = totalMin % 60;
+        return `${h}h ${String(m).padStart(2, '0')}m`;
+    }
+
     function populateAgentSelect() {
         const select = document.getElementById('adminAgentSelect');
+        const optionsList = document.getElementById('adminAgentOptionsList');
+        const currentNameEl = document.getElementById('adminAgentCurrentName');
+        const currentAvatarEl = document.getElementById('adminAgentCurrentAvatar');
         if (!select) return;
-        const agents = Array.from(new Set(horasData.map(r => r.responsavel).filter(Boolean))).sort();
+
+        // Calcular estatísticas por atendente
+        const agentStats = {};
+        let totalExtraMin = 0;
+        let validRecordsCount = 0;
+
+        horasData.forEach(r => {
+            const resp = r.responsavel;
+            if (!resp) return;
+            validRecordsCount++;
+            totalExtraMin += (r.extra_minutes || 0);
+            if (!agentStats[resp]) {
+                agentStats[resp] = { count: 0, extraMinutes: 0 };
+            }
+            agentStats[resp].count++;
+            agentStats[resp].extraMinutes += (r.extra_minutes || 0);
+        });
+
+        const agents = Object.keys(agentStats).sort();
         const currentVal = select.value || 'all';
+
+        // Atualiza o select oculto para compatibilidade com o resto do código
         select.innerHTML = '<option value="all">Equipe Completa (Todos os Atendentes)</option>';
         agents.forEach(a => {
             const opt = document.createElement('option');
@@ -2570,13 +2914,131 @@ window.rejectPasswordRequest = async (id) => {
             select.appendChild(opt);
         });
         select.value = currentVal;
+
+        // Atualiza o botão gatilho do dropdown customizado
+        const updateTriggerDisplay = (val) => {
+            if (!currentNameEl || !currentAvatarEl) return;
+            if (val === 'all') {
+                currentNameEl.innerHTML = `<span class="font-semibold text-text-high">Equipe Completa</span> <span class="text-xs text-text-muted font-normal ml-1">(${validRecordsCount})</span>`;
+                currentAvatarEl.className = 'w-7 h-7 rounded-full bg-accent-solid/20 text-accent-solid border border-accent-solid/30 flex items-center justify-center text-xs font-bold shrink-0';
+                currentAvatarEl.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>`;
+            } else {
+                const stats = agentStats[val] || { count: 0, extraMinutes: 0 };
+                const initial = val.trim().charAt(0).toUpperCase();
+                currentNameEl.innerHTML = `<span class="font-semibold text-text-high truncate">${val}</span> <span class="text-xs text-text-muted font-normal ml-1 whitespace-nowrap">(${stats.count} • ${formatHoursMinutes(stats.extraMinutes)})</span>`;
+                currentAvatarEl.className = 'w-7 h-7 rounded-full bg-gradient-to-br from-accent-solid to-accent-solid-hover text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-sm';
+                currentAvatarEl.textContent = initial;
+            }
+        };
+
+        updateTriggerDisplay(currentVal);
+
+        if (!optionsList) return;
+
+        // Renderiza as opções customizadas
+        const renderDropdownList = (query = '') => {
+            const q = query.toLowerCase().trim();
+            let html = '';
+
+            const isAllSelected = (select.value === 'all');
+            if (!q || 'equipe completa todos os atendentes'.includes(q)) {
+                html += `
+                <button type="button" onclick="window.selectAdminAgent('all')" class="w-full text-left px-3 py-2 rounded-lg flex items-center justify-between gap-2 transition-all cursor-pointer ${isAllSelected ? 'bg-accent-solid/15 text-accent-solid font-semibold border border-accent-solid/30' : 'text-text-high hover:bg-white/5 border border-transparent'}">
+                    <div class="flex items-center gap-2.5 truncate">
+                        <div class="w-7 h-7 rounded-full bg-accent-solid/20 text-accent-solid flex items-center justify-center text-xs shrink-0 font-bold">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                        <div class="flex flex-col truncate">
+                            <span class="text-xs sm:text-sm font-medium leading-tight truncate">Equipe Completa</span>
+                            <span class="text-[11px] text-text-muted leading-tight font-mono">${validRecordsCount} atendimentos • ${formatHoursMinutes(totalExtraMin)}</span>
+                        </div>
+                    </div>
+                    ${isAllSelected ? '<svg class="w-4 h-4 text-accent-solid shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>' : ''}
+                </button>
+                `;
+            }
+
+            if (agents.length > 0 && (!q || 'equipe completa'.includes(q))) {
+                html += '<div class="h-px bg-border-element/60 my-1 mx-2"></div>';
+            }
+
+            const filteredAgents = agents.filter(a => !q || a.toLowerCase().includes(q));
+
+            if (filteredAgents.length === 0 && q) {
+                html += '<div class="text-center py-4 text-xs text-text-muted">Nenhum atendente encontrado</div>';
+            } else {
+                filteredAgents.forEach(a => {
+                    const stats = agentStats[a] || { count: 0, extraMinutes: 0 };
+                    const isSelected = (select.value === a);
+                    const initial = a.trim().charAt(0).toUpperCase();
+
+                    html += `
+                    <button type="button" onclick="window.selectAdminAgent('${a.replace(/'/g, "\\'")}')" class="w-full text-left px-3 py-2 rounded-lg flex items-center justify-between gap-2 transition-all cursor-pointer ${isSelected ? 'bg-accent-solid/15 text-accent-solid font-semibold border border-accent-solid/30' : 'text-text-high hover:bg-white/5 border border-transparent'}">
+                        <div class="flex items-center gap-2.5 truncate">
+                            <div class="w-7 h-7 rounded-full bg-bg-app border border-border-element flex items-center justify-center text-xs font-bold text-text-high shrink-0 ${isSelected ? 'border-accent-solid text-accent-solid' : ''}">
+                                ${initial}
+                            </div>
+                            <div class="flex flex-col truncate">
+                                <span class="text-xs sm:text-sm font-medium leading-tight truncate">${a}</span>
+                                <span class="text-[11px] text-text-muted leading-tight font-mono">${stats.count} ${stats.count === 1 ? 'atendimento' : 'atendimentos'} • ${formatHoursMinutes(stats.extraMinutes)}</span>
+                            </div>
+                        </div>
+                        ${isSelected ? '<svg class="w-4 h-4 text-accent-solid shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>' : ''}
+                    </button>
+                    `;
+                });
+            }
+
+            optionsList.innerHTML = html;
+        };
+
+        renderDropdownList();
+
+        const searchInput = document.getElementById('adminAgentSearchInput');
+        if (searchInput) {
+            searchInput.value = '';
+            searchInput.oninput = (e) => {
+                renderDropdownList(e.target.value);
+            };
+        }
     }
 
-    function formatHoursMinutes(totalMin) {
-        const h = Math.floor(totalMin / 60);
-        const m = totalMin % 60;
-        return `${h}h ${String(m).padStart(2, '0')}m`;
-    }
+    window.selectAdminAgent = function(agentVal) {
+        const select = document.getElementById('adminAgentSelect');
+        if (select) {
+            select.value = agentVal;
+        }
+        const dropdownMenu = document.getElementById('adminAgentDropdownMenu');
+        const chevron = document.getElementById('adminAgentChevron');
+        if (dropdownMenu) dropdownMenu.classList.add('hidden');
+        if (chevron) chevron.classList.remove('rotate-180');
+
+        populateAgentSelect();
+        window.renderHorasExtras();
+    };
+
+    window.toggleAdminAgentDropdown = function(e) {
+        if (e) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+        const dropdownMenu = document.getElementById('adminAgentDropdownMenu');
+        const chevron = document.getElementById('adminAgentChevron');
+        if (!dropdownMenu) return;
+
+        const isHidden = dropdownMenu.classList.contains('hidden');
+        if (isHidden) {
+            dropdownMenu.classList.remove('hidden');
+            if (chevron) chevron.classList.add('rotate-180');
+            const searchInput = document.getElementById('adminAgentSearchInput');
+            if (searchInput) {
+                setTimeout(() => searchInput.focus(), 50);
+            }
+        } else {
+            dropdownMenu.classList.add('hidden');
+            if (chevron) chevron.classList.remove('rotate-180');
+        }
+    };
 
     window.setHorasShiftTab = function(shiftCode) {
         currentShiftFilter = shiftCode;
@@ -2750,11 +3212,14 @@ window.rejectPasswordRequest = async (id) => {
                             #${r.ticket}
                         </span>
 
-                        <!-- Protocolo: minimalista, 'Protocolo' e o número na frente -->
-                        <span class="font-mono text-xs text-text-muted flex items-center gap-1.5 bg-bg-app border border-border-element px-2.5 py-0.5 rounded-full">
+                        <!-- Protocolo: Clicável para copiar automaticamente com feedback visual -->
+                        <button type="button" onclick="window.copyProtocolo('${r.protocolo || ''}', event, this)" class="font-mono text-xs text-text-muted flex items-center gap-1.5 bg-bg-app border border-border-element hover:border-accent-solid/50 hover:bg-accent-solid/10 hover:text-accent-solid px-2.5 py-0.5 rounded-full transition-all cursor-pointer shadow-sm group/proto select-none" title="Clique para copiar protocolo: ${r.protocolo || ''}">
                             <span>Protocolo</span>
-                            <strong class="text-text-high font-semibold">${r.protocolo || '-'}</strong>
-                        </span>
+                            <strong class="text-text-high group-hover/proto:text-accent-solid font-semibold">${r.protocolo || '-'}</strong>
+                            <svg class="w-3 h-3 opacity-40 group-hover/proto:opacity-100 transition-opacity ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                        </button>
 
                         <!-- Tag de Minutos Extras além do horário -->
                         <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono font-bold">
@@ -3288,46 +3753,11 @@ window.rejectPasswordRequest = async (id) => {
                     extra_minutes: typeof r.extra_minutes === 'number' ? Math.round(r.extra_minutes) : 0
                 }));
 
-                let dbSynced = false;
-                try {
-                    // Limpa lote anterior no Supabase
-                    await fetch(`${SUPABASE_URL}/rest/v1/horas_extras?extra_minutes=gte.0`, {
-                        method: 'DELETE',
-                        headers: getAuthHeaders()
-                    });
+                const result = await syncRecordsWithSupabase(cleanRecords, file.name);
 
-                    // Insere o novo lote apurado no Supabase
-                    const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/horas_extras`, {
-                        method: 'POST',
-                        headers: getAuthHeaders(),
-                        body: JSON.stringify(cleanRecords)
-                    });
-
-                    if (insertRes.ok) {
-                        dbSynced = true;
-                    } else {
-                        console.warn('Resposta Supabase ao salvar horas_extras:', await insertRes.text());
-                    }
-                } catch(dbErr) {
-                    console.error('Falha de conexão com Supabase horas_extras:', dbErr);
-                }
-
-                const savedObj = {
-                    imported_at: new Date().toISOString(),
-                    source_file: file.name,
-                    total_records: cleanRecords.length,
-                    records: cleanRecords
-                };
-
-                localStorage.setItem('relatorio_horas_extras_custom', JSON.stringify(savedObj));
-                horasData = cleanRecords;
-                updateSourceText(`Planilha: ${file.name} (${cleanRecords.length} atendimentos apurados ${dbSynced ? '• Salvo no Banco' : ''})`);
-                populateAgentSelect();
-                window.renderHorasExtras();
-
-                const successMsg = dbSynced
-                    ? `Sucesso! A planilha "${file.name}" foi processada e salva no Banco de Dados com êxito.\n\nForam registrados ${cleanRecords.length} atendimentos elegíveis a hora extra e sincronizados para todos os usuários.`
-                    : `Sucesso! A planilha "${file.name}" foi processada com êxito.\n\nForam apurados ${cleanRecords.length} atendimentos elegíveis a hora extra.`;
+                const successMsg = result.inserted > 0
+                    ? `Sucesso! A planilha "${file.name}" foi processada.\n\n• ${result.inserted} novos atendimentos com hora extra foram adicionados ao Supabase.\n• ${result.ignored} atendimentos já existentes foram mantidos sem duplicar.`
+                    : `Planilha "${file.name}" processada!\n\nTodos os ${result.total} atendimentos elegíveis já estavam sincronizados no Banco de Dados. Nenhuma duplicata foi gerada.`;
 
                 window.showCustomAlert(successMsg);
             } catch(err) {
@@ -3340,7 +3770,10 @@ window.rejectPasswordRequest = async (id) => {
 
     document.addEventListener('DOMContentLoaded', () => {
         initLunchControls();
-        loadHorasData();
+        loadHorasData().then(() => {
+            // Sincroniza em segundo plano com a API Octadesk ao carregar a página
+            syncOctadeskHorasExtras(false);
+        });
 
         const searchInput = document.getElementById('horasSearchInput');
         if (searchInput) {
@@ -3448,6 +3881,27 @@ window.rejectPasswordRequest = async (id) => {
                 }
             });
         }
+
+        // Fechar dropdown de seleção de atendentes ao clicar fora ou pressionar Escape
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('adminAgentContainer');
+            const dropdownMenu = document.getElementById('adminAgentDropdownMenu');
+            const chevron = document.getElementById('adminAgentChevron');
+            if (container && !container.contains(e.target) && dropdownMenu && !dropdownMenu.classList.contains('hidden')) {
+                dropdownMenu.classList.add('hidden');
+                if (chevron) chevron.classList.remove('rotate-180');
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const dropdownMenu = document.getElementById('adminAgentDropdownMenu');
+                const chevron = document.getElementById('adminAgentChevron');
+                if (dropdownMenu && !dropdownMenu.classList.contains('hidden')) {
+                    dropdownMenu.classList.add('hidden');
+                    if (chevron) chevron.classList.remove('rotate-180');
+                }
+            }
+        });
     });
 })();
 
