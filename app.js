@@ -2757,7 +2757,7 @@ window.rejectPasswordRequest = async (id) => {
         };
     }
 
-    // Consumo Automático e Manual da API Octadesk
+    // Consumo Manual e Automático da API Octadesk via Servidor/Backend (Livre de bloqueio CORS)
     async function syncOctadeskHorasExtras(isManual = false) {
         const syncBtn = document.getElementById('btnSyncOctadesk');
         const syncIcon = document.getElementById('syncOctadeskIcon');
@@ -2765,46 +2765,53 @@ window.rejectPasswordRequest = async (id) => {
         if (syncBtn) syncBtn.disabled = true;
 
         try {
-            console.log('[Octadesk Sync] Consultando atendimentos encerrados na API...');
-            const url = `${OCTADESK_API_URL}/chat?filters[0][property]=status&filters[0][operator]=eq&filters[0][value]=closed&sort[property]=closedAt&sort[direction]=desc&limit=100`;
-            const res = await fetch(url, {
-                headers: {
-                    'x-api-key': OCTADESK_API_KEY
-                }
+            console.log('[Octadesk Sync] Disparando requisição à função /api/sync-octadesk...');
+            const res = await fetch('/api/sync-octadesk', {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
             });
 
             if (!res.ok) {
-                throw new Error(`Status ${res.status} ao conectar à Octadesk`);
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || `Falha na requisição (Status ${res.status})`);
             }
 
-            const chats = await res.json();
-            if (!Array.isArray(chats)) {
-                throw new Error('Formato inesperado de dados da API Octadesk');
-            }
+            const syncData = await res.json();
 
-            const rawItems = chats.map(convertOctadeskChatToRawItem).filter(Boolean);
-            const eligible = filterEligibleOvertime(rawItems);
-            const result = await syncRecordsWithSupabase(eligible, 'Octadesk API');
+            console.log('[Octadesk Sync Resultado]:', syncData);
 
-            console.log(`[Octadesk Sync] Concluído. Total elegíveis: ${result.total}, Inseridos: ${result.inserted}, Ignorados (já existentes): ${result.ignored}`);
+            // Recarrega os dados atualizados diretamente do Supabase
+            await loadHorasData();
+            window.renderHorasExtras();
 
             if (isManual) {
-                if (result.inserted > 0) {
-                    window.showCustomAlert(`Sincronização Octadesk concluída com sucesso!\n\n• ${result.inserted} novos atendimentos com hora extra adicionados ao Supabase.\n• ${result.ignored} atendimentos já existentes ignorados.`);
+                const inserted = syncData.inserted || 0;
+                const ignored = syncData.ignored || 0;
+                if (inserted > 0) {
+                    window.showCustomAlert(
+                        `Sincronização Octadesk concluída com sucesso!\n\n` +
+                        `• ${inserted} novos atendimentos com hora extra inseridos no Supabase.\n` +
+                        `• ${ignored} atendimentos já existentes ignorados (sem duplicatas).`
+                    );
                 } else {
-                    window.showCustomAlert(`Sincronização Octadesk concluída!\n\nTodos os atendimentos recentes elegíveis já estão sincronizados no Banco de Dados. Nenhuma duplicata encontrada.`);
+                    window.showCustomAlert(
+                        `Sincronização Octadesk concluída!\n\n` +
+                        `Todos os atendimentos recentes elegíveis já estão sincronizados no Banco de Dados.\n` +
+                        `Nenhuma duplicata inserida.`
+                    );
                 }
             }
         } catch(err) {
             console.error('[Octadesk Sync Error]:', err);
             if (isManual) {
-                window.showCustomAlert('Erro ao sincronizar com a Octadesk: ' + (err.message || 'Verifique a conexão.'));
+                window.showCustomAlert('Aviso de Sincronização:\n\n' + (err.message || 'Verifique a conexão.'));
             }
         } finally {
             if (syncIcon) syncIcon.classList.remove('animate-spin');
             if (syncBtn) syncBtn.disabled = false;
         }
     }
+
     window.syncOctadeskNow = function(e) {
         if (e) {
             e.preventDefault();
@@ -2813,12 +2820,12 @@ window.rejectPasswordRequest = async (id) => {
         syncOctadeskHorasExtras(true);
     };
 
-    // Sincronização periódica a cada 30 minutos
-    const THIRTY_MINUTES_MS = 30 * 60 * 1000;
+    // Sincronização automática em segundo plano a cada 1 hora (3600000 ms)
+    const ONE_HOUR_MS = 60 * 60 * 1000;
     setInterval(() => {
-        console.log('[Octadesk Sync] Disparando verificação periódica de 30 minutos...');
+        console.log('[Auto-Sync] Executando sincronização periódica de 1 em 1 hora...');
         syncOctadeskHorasExtras(false);
-    }, THIRTY_MINUTES_MS);
+    }, ONE_HOUR_MS);
 
     async function loadHorasData() {
         // 1. Prioridade: Buscar registros atualizados no banco de dados Supabase
