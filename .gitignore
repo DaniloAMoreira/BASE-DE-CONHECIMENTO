@@ -1,0 +1,28 @@
+# Variáveis de Ambiente e Segredos
+.env
+.env.local
+.env.*.local
+*.env
+informações de api e banco de dados.md
+
+# Dependências e Builds
+node_modules/
+.vercel/
+dist/
+build/
+
+# Caches e Logs
+__pycache__/
+*.pyc
+*.pyo
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema Operacional e IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

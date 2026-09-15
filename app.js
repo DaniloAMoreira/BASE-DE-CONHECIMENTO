@@ -2322,6 +2322,16 @@ window.rejectPasswordRequest = async (id) => {
         });
     };
 
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     function normalizeStr(str) {
         if (!str) return '';
         return String(str)
@@ -2383,20 +2393,16 @@ window.rejectPasswordRequest = async (id) => {
         return isNaN(parsed.getTime()) ? null : parsed;
     }
 
-    // Configurações de Conexão Supabase e Octadesk API
-    const SUPABASE_URL = 'https://jqllbwlfikckavipqtfr.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGxid2xmaWtja2F2aXBxdGZyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MjQ3NzMwNCwiZXhwIjoyMDk4MDUzMzA0fQ.pFfkF8M7kWsPEbNP22UISbsS6VBgBxy0cobkZ5v92e8';
-
-    const OCTADESK_API_URL = 'https://o206721-2cb.api004.octadesk.services';
-    const OCTADESK_API_KEY = '3f627d9a-59a0-4d90-b5c2-0f5d735a2084.f2f72996-f08d-4055-8ed4-919b83c6798b';
-
+    // Cabeçalhos para comunicação segura com Supabase utilizando a chave pública (anon)
     function getSupabaseHeaders() {
-        return {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
+        const token = sessionStorage.getItem('supabaseToken');
+        const headers = {
+            'apikey': SUPABASE_ANON_KEY,
             'Content-Type': 'application/json',
             'Prefer': 'return=representation'
         };
+        headers['Authorization'] = `Bearer ${token || SUPABASE_ANON_KEY}`;
+        return headers;
     }
 
     // Converte linhas brutas da planilha Excel para a estrutura intermediária de atendimento
@@ -2772,8 +2778,25 @@ window.rejectPasswordRequest = async (id) => {
             });
 
             if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.error || `Falha na requisição (Status ${res.status})`);
+                let errorDetails = `Status ${res.status}`;
+                try {
+                    const errData = await res.json();
+                    if (typeof errData === 'string') {
+                        errorDetails = errData;
+                    } else if (typeof errData?.error === 'string') {
+                        errorDetails = errData.error;
+                    } else if (errData?.error?.message) {
+                        errorDetails = errData.error.message;
+                    } else if (errData?.message) {
+                        errorDetails = errData.message;
+                    } else if (errData) {
+                        errorDetails = JSON.stringify(errData);
+                    }
+                } catch (_) {
+                    const text = await res.text().catch(() => '');
+                    if (text) errorDetails = text.slice(0, 100);
+                }
+                throw new Error(`Falha ao conectar com o serviço de sincronização (${errorDetails}). Ao publicar na Vercel, a rota /api/sync-octadesk responderá automaticamente.`);
             }
 
             const syncData = await res.json();
@@ -2804,7 +2827,8 @@ window.rejectPasswordRequest = async (id) => {
         } catch(err) {
             console.error('[Octadesk Sync Error]:', err);
             if (isManual) {
-                window.showCustomAlert('Aviso de Sincronização:\n\n' + (err.message || 'Verifique a conexão.'));
+                const msg = err && typeof err.message === 'string' ? err.message : String(err);
+                window.showCustomAlert(msg);
             }
         } finally {
             if (syncIcon) syncIcon.classList.remove('animate-spin');
@@ -3174,13 +3198,19 @@ window.rejectPasswordRequest = async (id) => {
         listContainer.innerHTML = filtered.map(r => {
             const cardKey = String(r.protocolo || r.ticket);
             const isInvalid = invalidCards.has(cardKey);
+            const safeSolicitante = escapeHtml(r.solicitante || r.organizacao || 'Não informado');
+            const safeTicket = escapeHtml(r.ticket || '');
+            const safeProtocolo = escapeHtml(r.protocolo || '-');
+            const safeResponsavel = escapeHtml(r.responsavel || '');
+            const safeCardKey = escapeHtml(cardKey).replace(/'/g, "\\'");
+            const safeProtoVal = escapeHtml(r.protocolo || '').replace(/'/g, "\\'");
 
             return `
             <div class="panel rounded-xl p-4 border transition-all flex flex-col gap-2 shadow-sm ${isInvalid ? 'border-dashed border-red-500/35 bg-red-950/15' : 'border-border-element hover:border-border-hover'}">
                 <!-- Parte Superior: Nome por extenso que vem no próprio Excel + Botão de Olho Aberto / Fechado -->
                 <div class="flex items-center justify-between gap-2">
                     <div class="text-xs font-bold truncate ${isInvalid ? 'line-through text-text-muted opacity-40' : 'text-text-high'}">
-                        ${r.solicitante || r.organizacao || 'Não informado'}
+                        ${safeSolicitante}
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
                         ${isInvalid ? `
@@ -3188,7 +3218,7 @@ window.rejectPasswordRequest = async (id) => {
                                 Desconsiderado
                             </span>
                         ` : ''}
-                        <button type="button" onclick="window.toggleCardInvalid('${cardKey}', event)" class="p-1.5 rounded-lg transition-all cursor-pointer shadow-sm flex items-center justify-center ${isInvalid ? 'bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 hover:scale-105 ring-1 ring-red-500/20' : 'text-text-muted hover:text-accent-solid hover:bg-white/5'}" title="${isInvalid ? 'Reativar atendimento' : 'Desconsiderar atendimento'}">
+                        <button type="button" onclick="window.toggleCardInvalid('${safeCardKey}', event)" class="p-1.5 rounded-lg transition-all cursor-pointer shadow-sm flex items-center justify-center ${isInvalid ? 'bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 hover:scale-105 ring-1 ring-red-500/20' : 'text-text-muted hover:text-accent-solid hover:bg-white/5'}" title="${isInvalid ? 'Reativar atendimento' : 'Desconsiderar atendimento'}">
                             ${isInvalid ? `
                                 <!-- Olho Fechado / Riscado bem aparente para clicar de novo -->
                                 <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -3216,13 +3246,13 @@ window.rejectPasswordRequest = async (id) => {
                             <svg class="w-4 h-4 text-accent-solid" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
                             </svg>
-                            #${r.ticket}
+                            #${safeTicket}
                         </span>
 
                         <!-- Protocolo: Clicável para copiar automaticamente com feedback visual -->
-                        <button type="button" onclick="window.copyProtocolo('${r.protocolo || ''}', event, this)" class="font-mono text-xs text-text-muted flex items-center gap-1.5 bg-bg-app border border-border-element hover:border-accent-solid/50 hover:bg-accent-solid/10 hover:text-accent-solid px-2.5 py-0.5 rounded-full transition-all cursor-pointer shadow-sm group/proto select-none" title="Clique para copiar protocolo: ${r.protocolo || ''}">
+                        <button type="button" onclick="window.copyProtocolo('${safeProtoVal}', event, this)" class="font-mono text-xs text-text-muted flex items-center gap-1.5 bg-bg-app border border-border-element hover:border-accent-solid/50 hover:bg-accent-solid/10 hover:text-accent-solid px-2.5 py-0.5 rounded-full transition-all cursor-pointer shadow-sm group/proto select-none" title="Clique para copiar protocolo: ${safeProtocolo}">
                             <span>Protocolo</span>
-                            <strong class="text-text-high group-hover/proto:text-accent-solid font-semibold">${r.protocolo || '-'}</strong>
+                            <strong class="text-text-high group-hover/proto:text-accent-solid font-semibold">${safeProtocolo}</strong>
                             <svg class="w-3 h-3 opacity-40 group-hover/proto:opacity-100 transition-opacity ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                             </svg>
@@ -3235,7 +3265,7 @@ window.rejectPasswordRequest = async (id) => {
 
                         ${isAdmin && activeAgent === 'all' ? `
                             <span class="text-xs px-2 py-0.5 rounded bg-bg-app text-text-muted border border-border-subtle">
-                                ${r.responsavel}
+                                ${safeResponsavel}
                             </span>
                         ` : ''}
 
