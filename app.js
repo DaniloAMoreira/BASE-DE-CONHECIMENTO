@@ -2547,26 +2547,7 @@ window.rejectPasswordRequest = async (id) => {
             }
         }
 
-        // 3. Fallback: arquivo estático ou dados padrões embutidos
-        try {
-            const res = await fetch('./horas_extras.json');
-            if (res.ok) {
-                const json = await res.json();
-                horasData = json.records || [];
-                updateSourceText('Fonte: Total de conversas-2026911-2158.xlsx (Base Padrão)');
-                populateAgentSelect();
-                return;
-            }
-        } catch(e) {
-            console.log('Fetch blocked or offline (file:// protocol), using embedded fallback:', e);
-        }
-
-        if (window.DEFAULT_HORAS_EXTRAS && window.DEFAULT_HORAS_EXTRAS.records) {
-            horasData = window.DEFAULT_HORAS_EXTRAS.records;
-            updateSourceText('Fonte: Total de conversas-2026911-2158.xlsx (Base Padrão)');
-        } else {
-            horasData = [];
-        }
+        horasData = [];
         populateAgentSelect();
     }
     window.loadHorasData = loadHorasData;
