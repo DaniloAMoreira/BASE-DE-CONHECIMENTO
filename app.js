@@ -2277,61 +2277,6 @@ window.rejectPasswordRequest = async (id) => {
         window.renderHorasExtras();
     };
 
-    window.copyProtocolo = function(protocolo, event, element) {
-        if (event) {
-            event.stopPropagation();
-            event.preventDefault();
-        }
-        if (!protocolo || protocolo === '-') return;
-
-        const strProto = String(protocolo).trim();
-
-        const performCopy = () => {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                return navigator.clipboard.writeText(strProto);
-            }
-            const ta = document.createElement('textarea');
-            ta.value = strProto;
-            ta.style.position = 'fixed';
-            ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            return Promise.resolve();
-        };
-
-        performCopy().then(() => {
-            if (element) {
-                const originalHtml = element.innerHTML;
-                element.innerHTML = `
-                    <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <span class="text-emerald-400 font-semibold text-xs">Copiado!</span>
-                `;
-                element.classList.add('border-emerald-500/50', 'bg-emerald-500/10');
-
-                setTimeout(() => {
-                    element.innerHTML = originalHtml;
-                    element.classList.remove('border-emerald-500/50', 'bg-emerald-500/10');
-                }, 1500);
-            }
-        }).catch(err => {
-            console.error('Falha ao copiar protocolo:', err);
-        });
-    };
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    }
-
     function normalizeStr(str) {
         if (!str) return '';
         return String(str)
@@ -2393,20 +2338,7 @@ window.rejectPasswordRequest = async (id) => {
         return isNaN(parsed.getTime()) ? null : parsed;
     }
 
-    // Cabeçalhos para comunicação segura com Supabase utilizando a chave pública (anon)
-    function getSupabaseHeaders() {
-        const token = sessionStorage.getItem('supabaseToken');
-        const headers = {
-            'apikey': SUPABASE_ANON_KEY,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
-        };
-        headers['Authorization'] = `Bearer ${token || SUPABASE_ANON_KEY}`;
-        return headers;
-    }
-
-    // Converte linhas brutas da planilha Excel para a estrutura intermediária de atendimento
-    function rawItemsFromExcel(rawRows) {
+    function calculateOvertimeRecords(rawRows) {
         if (!rawRows || !rawRows.length) return [];
         const headerRow = rawRows[0].map(c => String(c || '').toLowerCase().trim());
         const findCol = (terms, fallback) => {
@@ -2436,7 +2368,7 @@ window.rejectPasswordRequest = async (id) => {
         const colMensagem = findCol(['primeira mensagem do cliente', 'descrição do atendimento', 'descricao do atendimento', 'assunto do ticket', 'assunto', 'mensagem'], 21);
 
         const pad = (n) => String(n).padStart(2, '0');
-        const items = [];
+        const byAgentDay = {};
 
         for (let i = 1; i < rawRows.length; i++) {
             const r = rawRows[i];
@@ -2465,7 +2397,7 @@ window.rejectPasswordRequest = async (id) => {
                 ticketVal = String(r[colId] || '').trim();
             }
 
-            items.push({
+            const rawItem = {
                 protocolo: String(r[colId] || '').trim(),
                 ticket: ticketVal,
                 responsavel: resp,
@@ -2487,101 +2419,15 @@ window.rejectPasswordRequest = async (id) => {
                 _timeMin: timeMin,
                 _hour: hour,
                 _dow: dt.getDay()
-            });
-        }
-        return items;
-    }
+            };
 
-    // Converte objeto de chat da API da Octadesk para a mesma estrutura intermediária
-    function convertOctadeskChatToRawItem(chat) {
-        if (!chat) return null;
-        const resp = chat.agent?.name ? String(chat.agent.name).trim() : '';
-        if (!resp || resp === '-' || resp.toLowerCase() === 'none') return null;
-
-        const encerramentoRaw = chat.closedAt || chat.bot?.closedAt;
-        if (!encerramentoRaw) return null;
-
-        const dt = new Date(encerramentoRaw);
-        if (isNaN(dt.getTime())) return null;
-
-        const pad = (n) => String(n).padStart(2, '0');
-        const hour = dt.getHours();
-        const minute = dt.getMinutes();
-        const second = dt.getSeconds();
-        const timeMin = hour * 60 + minute + (second / 60);
-
-        const date_iso = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
-        const date_str = `${pad(dt.getDate())}/${pad(dt.getMonth() + 1)}/${dt.getFullYear()}`;
-        const time_str = `${pad(hour)}:${pad(minute)}:${pad(second)}`;
-
-        const dtEntrada = chat.createdAt ? new Date(chat.createdAt) : null;
-        const entradaStr = (dtEntrada && !isNaN(dtEntrada.getTime()))
-            ? `${pad(dtEntrada.getDate())}/${pad(dtEntrada.getMonth() + 1)}/${dtEntrada.getFullYear()} ${pad(dtEntrada.getHours())}:${pad(dtEntrada.getMinutes())}:${pad(dtEntrada.getSeconds())}`
-            : `${date_str} ${time_str}`;
-        const encerramentoStr = `${date_str} ${time_str}`;
-
-        let esperaStr = '-';
-        if (chat.assignedToAgentDate && chat.createdAt) {
-            const diffMs = new Date(chat.assignedToAgentDate) - new Date(chat.createdAt);
-            if (diffMs > 0) {
-                const sec = Math.floor((diffMs / 1000) % 60);
-                const min = Math.floor((diffMs / (1000 * 60)) % 60);
-                const hrs = Math.floor(diffMs / (1000 * 60 * 60));
-                esperaStr = `${hrs}:${pad(min)}:${pad(sec)}`;
-            }
-        }
-
-        let duracaoStr = '-';
-        if (chat.closedAt && chat.assignedToAgentDate) {
-            const diffMs = new Date(chat.closedAt) - new Date(chat.assignedToAgentDate);
-            if (diffMs > 0) {
-                const sec = Math.floor((diffMs / 1000) % 60);
-                const min = Math.floor((diffMs / (1000 * 60)) % 60);
-                const hrs = Math.floor(diffMs / (1000 * 60 * 60));
-                duracaoStr = `${hrs}:${pad(min)}:${pad(sec)}`;
-            }
-        }
-
-        const phoneContact = chat.contact?.phoneContacts?.[0];
-        const phoneStr = phoneContact ? ((phoneContact.countryCode ? '+' + phoneContact.countryCode : '') + (phoneContact.number || '')) : '';
-        const protocolVal = String(chat.number || chat.id || '').trim();
-
-        return {
-            protocolo: protocolVal,
-            ticket: protocolVal,
-            responsavel: resp,
-            solicitante: String(chat.contact?.name || '').trim(),
-            email: String(chat.contact?.email || '').trim(),
-            telefone: phoneStr,
-            organizacao: String(chat.contact?.organization?.name || 'Octachat').trim(),
-            status_conversa: 'Realizada',
-            entrada: entradaStr,
-            encerramento: encerramentoStr,
-            espera: esperaStr,
-            duracao: duracaoStr,
-            mensagem: chat.summary || (chat.lastMessageDate ? 'Atendimento via Chat' : 'Conversa encerrada'),
-            timestamp: dt.toISOString(),
-            date_iso,
-            date_str,
-            time_str,
-            _dt: dt.getTime(),
-            _timeMin: timeMin,
-            _hour: hour,
-            _dow: dt.getDay()
-        };
-    }
-
-    // Motor de Elegibilidade de Horas Extras (Regras de Negócio e Apuração do Último Atendimento do Dia)
-    function filterEligibleOvertime(rawItems) {
-        if (!rawItems || !rawItems.length) return [];
-
-        const byAgentDay = {};
-        for (const item of rawItems) {
-            const k = `${item.responsavel}|${item.date_iso}`;
+            // Agrupamento estrito por atendente e data: DOIS DIAS NUNCA SE REPETEM!
+            const k = `${resp}|${date_iso}`;
             if (!byAgentDay[k]) byAgentDay[k] = [];
-            byAgentDay[k].push(item);
+            byAgentDay[k].push(rawItem);
         }
 
+        // Para cada dia do atendente: avalia APENAS o último atendimento (a hora de saída)
         const finalRecords = [];
         for (const k in byAgentDay) {
             const items = byAgentDay[k];
@@ -2659,203 +2505,11 @@ window.rejectPasswordRequest = async (id) => {
         return finalRecords;
     }
 
-    // Função de compatibilidade mantida para chamadas legadas
-    function calculateOvertimeRecords(rawRows) {
-        const items = rawItemsFromExcel(rawRows);
-        return filterEligibleOvertime(items);
-    }
-
-    // Sincronização Unificada com Supabase (Deduplicação Inteligente: Se igual, ignora; se novo, insere)
-    async function syncRecordsWithSupabase(candidateRecords, sourceName = '') {
-        if (!candidateRecords || !candidateRecords.length) {
-            return { total: 0, inserted: 0, ignored: 0 };
-        }
-
-        // 1. Busca registros atuais no Supabase para comparação
-        let existing = [];
-        try {
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/horas_extras?select=id,protocolo,responsavel,date_iso`, {
-                headers: getSupabaseHeaders()
-            });
-            if (res.ok) {
-                existing = await res.json();
-            }
-        } catch(e) {
-            console.warn('Erro ao consultar Supabase para deduplicação:', e);
-        }
-
-        const existingProtocols = new Set((existing || []).map(r => String(r.protocolo || '').trim()));
-        const existingAgentDays = new Set((existing || []).map(r => `${r.responsavel}|${r.date_iso}`));
-
-        // 2. Filtra apenas o que é novo (se igual, ignora)
-        const toInsert = [];
-        let ignoredCount = 0;
-
-        for (const r of candidateRecords) {
-            const proto = String(r.protocolo || '').trim();
-            const agentDay = `${r.responsavel}|${r.date_iso}`;
-
-            if (proto && existingProtocols.has(proto)) {
-                ignoredCount++;
-                continue;
-            }
-            if (agentDay && existingAgentDays.has(agentDay)) {
-                ignoredCount++;
-                continue;
-            }
-
-            toInsert.push({
-                protocolo: proto,
-                ticket: String(r.ticket || proto),
-                responsavel: String(r.responsavel || ''),
-                solicitante: String(r.solicitante || ''),
-                email: String(r.email || ''),
-                telefone: String(r.telefone || ''),
-                organizacao: String(r.organizacao || ''),
-                status_conversa: String(r.status_conversa || 'Realizada'),
-                entrada: String(r.entrada || ''),
-                encerramento: String(r.encerramento || ''),
-                espera: String(r.espera || '-'),
-                duracao: String(r.duracao || '-'),
-                mensagem: String(r.mensagem || ''),
-                timestamp: r.timestamp || new Date().toISOString(),
-                date_iso: r.date_iso,
-                date_str: r.date_str,
-                time_str: r.time_str,
-                shift_type: r.shift_type,
-                shift_code: r.shift_code,
-                standard_time: r.standard_time,
-                extra_minutes: Math.round(r.extra_minutes || 0)
-            });
-
-            if (proto) existingProtocols.add(proto);
-            if (agentDay) existingAgentDays.add(agentDay);
-        }
-
-        // 3. Insere no Supabase os registros novos
-        let insertedCount = 0;
-        if (toInsert.length > 0) {
-            try {
-                const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/horas_extras`, {
-                    method: 'POST',
-                    headers: getSupabaseHeaders(),
-                    body: JSON.stringify(toInsert)
-                });
-                if (insertRes.ok) {
-                    insertedCount = toInsert.length;
-                    console.log(`[Supabase] Inseridos ${insertedCount} novos atendimentos de horas extras.`);
-                } else {
-                    console.error('Falha ao inserir no Supabase:', await insertRes.text());
-                }
-            } catch(e) {
-                console.error('Erro de rede ao salvar novos registros:', e);
-            }
-        }
-
-        // 4. Recarrega o banco de dados completo para a memória e atualiza interface
-        await loadHorasData();
-        window.renderHorasExtras();
-
-        return {
-            total: candidateRecords.length,
-            inserted: insertedCount,
-            ignored: ignoredCount
-        };
-    }
-
-    // Consumo Manual e Automático da API Octadesk via Servidor/Backend (Livre de bloqueio CORS)
-    async function syncOctadeskHorasExtras(isManual = false) {
-        const syncBtn = document.getElementById('btnSyncOctadesk');
-        const syncIcon = document.getElementById('syncOctadeskIcon');
-        if (syncIcon) syncIcon.classList.add('animate-spin');
-        if (syncBtn) syncBtn.disabled = true;
-
-        try {
-            console.log('[Octadesk Sync] Disparando requisição à função /api/sync-octadesk...');
-            const res = await fetch('/api/sync-octadesk', {
-                method: 'POST',
-                headers: { 'Accept': 'application/json' }
-            });
-
-            if (!res.ok) {
-                let errorDetails = `Status ${res.status}`;
-                try {
-                    const errData = await res.json();
-                    if (typeof errData === 'string') {
-                        errorDetails = errData;
-                    } else if (typeof errData?.error === 'string') {
-                        errorDetails = errData.error;
-                    } else if (errData?.error?.message) {
-                        errorDetails = errData.error.message;
-                    } else if (errData?.message) {
-                        errorDetails = errData.message;
-                    } else if (errData) {
-                        errorDetails = JSON.stringify(errData);
-                    }
-                } catch (_) {
-                    const text = await res.text().catch(() => '');
-                    if (text) errorDetails = text.slice(0, 100);
-                }
-                throw new Error(`Falha ao conectar com o serviço de sincronização (${errorDetails}). Ao publicar na Vercel, a rota /api/sync-octadesk responderá automaticamente.`);
-            }
-
-            const syncData = await res.json();
-
-            console.log('[Octadesk Sync Resultado]:', syncData);
-
-            // Recarrega os dados atualizados diretamente do Supabase
-            await loadHorasData();
-            window.renderHorasExtras();
-
-            if (isManual) {
-                const inserted = syncData.inserted || 0;
-                const ignored = syncData.ignored || 0;
-                if (inserted > 0) {
-                    window.showCustomAlert(
-                        `Sincronização Octadesk concluída com sucesso!\n\n` +
-                        `• ${inserted} novos atendimentos com hora extra inseridos no Supabase.\n` +
-                        `• ${ignored} atendimentos já existentes ignorados (sem duplicatas).`
-                    );
-                } else {
-                    window.showCustomAlert(
-                        `Sincronização Octadesk concluída!\n\n` +
-                        `Todos os atendimentos recentes elegíveis já estão sincronizados no Banco de Dados.\n` +
-                        `Nenhuma duplicata inserida.`
-                    );
-                }
-            }
-        } catch(err) {
-            console.error('[Octadesk Sync Error]:', err);
-            if (isManual) {
-                const msg = err && typeof err.message === 'string' ? err.message : String(err);
-                window.showCustomAlert(msg);
-            }
-        } finally {
-            if (syncIcon) syncIcon.classList.remove('animate-spin');
-            if (syncBtn) syncBtn.disabled = false;
-        }
-    }
-
-    window.syncOctadeskNow = function(e) {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        syncOctadeskHorasExtras(true);
-    };
-
-    // Sincronização automática em segundo plano a cada 1 hora (3600000 ms)
-    const ONE_HOUR_MS = 60 * 60 * 1000;
-    setInterval(() => {
-        console.log('[Auto-Sync] Executando sincronização periódica de 1 em 1 hora...');
-        syncOctadeskHorasExtras(false);
-    }, ONE_HOUR_MS);
-
     async function loadHorasData() {
         // 1. Prioridade: Buscar registros atualizados no banco de dados Supabase
         try {
             const res = await fetch(`${SUPABASE_URL}/rest/v1/horas_extras?select=*&order=timestamp.desc`, {
-                headers: getSupabaseHeaders()
+                headers: getAuthHeaders()
             });
             if (res.ok) {
                 const data = await res.json();
@@ -2873,7 +2527,7 @@ window.rejectPasswordRequest = async (id) => {
                 }
             }
         } catch(e) {
-            console.warn('Conexão ao Supabase horas_extras indisponível, recorrendo ao cache:', e);
+            console.log('Conexão ao Supabase horas_extras indisponível, recorrendo ao cache:', e);
         }
 
         // 2. Segunda prioridade: Cache no localStorage
@@ -2903,40 +2557,11 @@ window.rejectPasswordRequest = async (id) => {
         if (el) el.textContent = text;
     }
 
-    function formatHoursMinutes(totalMin) {
-        const h = Math.floor(totalMin / 60);
-        const m = totalMin % 60;
-        return `${h}h ${String(m).padStart(2, '0')}m`;
-    }
-
     function populateAgentSelect() {
         const select = document.getElementById('adminAgentSelect');
-        const optionsList = document.getElementById('adminAgentOptionsList');
-        const currentNameEl = document.getElementById('adminAgentCurrentName');
-        const currentAvatarEl = document.getElementById('adminAgentCurrentAvatar');
         if (!select) return;
-
-        // Calcular estatísticas por atendente
-        const agentStats = {};
-        let totalExtraMin = 0;
-        let validRecordsCount = 0;
-
-        horasData.forEach(r => {
-            const resp = r.responsavel;
-            if (!resp) return;
-            validRecordsCount++;
-            totalExtraMin += (r.extra_minutes || 0);
-            if (!agentStats[resp]) {
-                agentStats[resp] = { count: 0, extraMinutes: 0 };
-            }
-            agentStats[resp].count++;
-            agentStats[resp].extraMinutes += (r.extra_minutes || 0);
-        });
-
-        const agents = Object.keys(agentStats).sort();
+        const agents = Array.from(new Set(horasData.map(r => r.responsavel).filter(Boolean))).sort();
         const currentVal = select.value || 'all';
-
-        // Atualiza o select oculto para compatibilidade com o resto do código
         select.innerHTML = '<option value="all">Equipe Completa (Todos os Atendentes)</option>';
         agents.forEach(a => {
             const opt = document.createElement('option');
@@ -2945,131 +2570,13 @@ window.rejectPasswordRequest = async (id) => {
             select.appendChild(opt);
         });
         select.value = currentVal;
-
-        // Atualiza o botão gatilho do dropdown customizado
-        const updateTriggerDisplay = (val) => {
-            if (!currentNameEl || !currentAvatarEl) return;
-            if (val === 'all') {
-                currentNameEl.innerHTML = `<span class="font-semibold text-text-high">Equipe Completa</span> <span class="text-xs text-text-muted font-normal ml-1">(${validRecordsCount})</span>`;
-                currentAvatarEl.className = 'w-7 h-7 rounded-full bg-accent-solid/20 text-accent-solid border border-accent-solid/30 flex items-center justify-center text-xs font-bold shrink-0';
-                currentAvatarEl.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>`;
-            } else {
-                const stats = agentStats[val] || { count: 0, extraMinutes: 0 };
-                const initial = val.trim().charAt(0).toUpperCase();
-                currentNameEl.innerHTML = `<span class="font-semibold text-text-high truncate">${val}</span> <span class="text-xs text-text-muted font-normal ml-1 whitespace-nowrap">(${stats.count} • ${formatHoursMinutes(stats.extraMinutes)})</span>`;
-                currentAvatarEl.className = 'w-7 h-7 rounded-full bg-gradient-to-br from-accent-solid to-accent-solid-hover text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-sm';
-                currentAvatarEl.textContent = initial;
-            }
-        };
-
-        updateTriggerDisplay(currentVal);
-
-        if (!optionsList) return;
-
-        // Renderiza as opções customizadas
-        const renderDropdownList = (query = '') => {
-            const q = query.toLowerCase().trim();
-            let html = '';
-
-            const isAllSelected = (select.value === 'all');
-            if (!q || 'equipe completa todos os atendentes'.includes(q)) {
-                html += `
-                <button type="button" onclick="window.selectAdminAgent('all')" class="w-full text-left px-3 py-2 rounded-lg flex items-center justify-between gap-2 transition-all cursor-pointer ${isAllSelected ? 'bg-accent-solid/15 text-accent-solid font-semibold border border-accent-solid/30' : 'text-text-high hover:bg-white/5 border border-transparent'}">
-                    <div class="flex items-center gap-2.5 truncate">
-                        <div class="w-7 h-7 rounded-full bg-accent-solid/20 text-accent-solid flex items-center justify-center text-xs shrink-0 font-bold">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        </div>
-                        <div class="flex flex-col truncate">
-                            <span class="text-xs sm:text-sm font-medium leading-tight truncate">Equipe Completa</span>
-                            <span class="text-[11px] text-text-muted leading-tight font-mono">${validRecordsCount} atendimentos • ${formatHoursMinutes(totalExtraMin)}</span>
-                        </div>
-                    </div>
-                    ${isAllSelected ? '<svg class="w-4 h-4 text-accent-solid shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>' : ''}
-                </button>
-                `;
-            }
-
-            if (agents.length > 0 && (!q || 'equipe completa'.includes(q))) {
-                html += '<div class="h-px bg-border-element/60 my-1 mx-2"></div>';
-            }
-
-            const filteredAgents = agents.filter(a => !q || a.toLowerCase().includes(q));
-
-            if (filteredAgents.length === 0 && q) {
-                html += '<div class="text-center py-4 text-xs text-text-muted">Nenhum atendente encontrado</div>';
-            } else {
-                filteredAgents.forEach(a => {
-                    const stats = agentStats[a] || { count: 0, extraMinutes: 0 };
-                    const isSelected = (select.value === a);
-                    const initial = a.trim().charAt(0).toUpperCase();
-
-                    html += `
-                    <button type="button" onclick="window.selectAdminAgent('${a.replace(/'/g, "\\'")}')" class="w-full text-left px-3 py-2 rounded-lg flex items-center justify-between gap-2 transition-all cursor-pointer ${isSelected ? 'bg-accent-solid/15 text-accent-solid font-semibold border border-accent-solid/30' : 'text-text-high hover:bg-white/5 border border-transparent'}">
-                        <div class="flex items-center gap-2.5 truncate">
-                            <div class="w-7 h-7 rounded-full bg-bg-app border border-border-element flex items-center justify-center text-xs font-bold text-text-high shrink-0 ${isSelected ? 'border-accent-solid text-accent-solid' : ''}">
-                                ${initial}
-                            </div>
-                            <div class="flex flex-col truncate">
-                                <span class="text-xs sm:text-sm font-medium leading-tight truncate">${a}</span>
-                                <span class="text-[11px] text-text-muted leading-tight font-mono">${stats.count} ${stats.count === 1 ? 'atendimento' : 'atendimentos'} • ${formatHoursMinutes(stats.extraMinutes)}</span>
-                            </div>
-                        </div>
-                        ${isSelected ? '<svg class="w-4 h-4 text-accent-solid shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>' : ''}
-                    </button>
-                    `;
-                });
-            }
-
-            optionsList.innerHTML = html;
-        };
-
-        renderDropdownList();
-
-        const searchInput = document.getElementById('adminAgentSearchInput');
-        if (searchInput) {
-            searchInput.value = '';
-            searchInput.oninput = (e) => {
-                renderDropdownList(e.target.value);
-            };
-        }
     }
 
-    window.selectAdminAgent = function(agentVal) {
-        const select = document.getElementById('adminAgentSelect');
-        if (select) {
-            select.value = agentVal;
-        }
-        const dropdownMenu = document.getElementById('adminAgentDropdownMenu');
-        const chevron = document.getElementById('adminAgentChevron');
-        if (dropdownMenu) dropdownMenu.classList.add('hidden');
-        if (chevron) chevron.classList.remove('rotate-180');
-
-        populateAgentSelect();
-        window.renderHorasExtras();
-    };
-
-    window.toggleAdminAgentDropdown = function(e) {
-        if (e) {
-            e.stopPropagation();
-            e.preventDefault();
-        }
-        const dropdownMenu = document.getElementById('adminAgentDropdownMenu');
-        const chevron = document.getElementById('adminAgentChevron');
-        if (!dropdownMenu) return;
-
-        const isHidden = dropdownMenu.classList.contains('hidden');
-        if (isHidden) {
-            dropdownMenu.classList.remove('hidden');
-            if (chevron) chevron.classList.add('rotate-180');
-            const searchInput = document.getElementById('adminAgentSearchInput');
-            if (searchInput) {
-                setTimeout(() => searchInput.focus(), 50);
-            }
-        } else {
-            dropdownMenu.classList.add('hidden');
-            if (chevron) chevron.classList.remove('rotate-180');
-        }
-    };
+    function formatHoursMinutes(totalMin) {
+        const h = Math.floor(totalMin / 60);
+        const m = totalMin % 60;
+        return `${h}h ${String(m).padStart(2, '0')}m`;
+    }
 
     window.setHorasShiftTab = function(shiftCode) {
         currentShiftFilter = shiftCode;
@@ -3198,19 +2705,13 @@ window.rejectPasswordRequest = async (id) => {
         listContainer.innerHTML = filtered.map(r => {
             const cardKey = String(r.protocolo || r.ticket);
             const isInvalid = invalidCards.has(cardKey);
-            const safeSolicitante = escapeHtml(r.solicitante || r.organizacao || 'Não informado');
-            const safeTicket = escapeHtml(r.ticket || '');
-            const safeProtocolo = escapeHtml(r.protocolo || '-');
-            const safeResponsavel = escapeHtml(r.responsavel || '');
-            const safeCardKey = escapeHtml(cardKey).replace(/'/g, "\\'");
-            const safeProtoVal = escapeHtml(r.protocolo || '').replace(/'/g, "\\'");
 
             return `
             <div class="panel rounded-xl p-4 border transition-all flex flex-col gap-2 shadow-sm ${isInvalid ? 'border-dashed border-red-500/35 bg-red-950/15' : 'border-border-element hover:border-border-hover'}">
                 <!-- Parte Superior: Nome por extenso que vem no próprio Excel + Botão de Olho Aberto / Fechado -->
                 <div class="flex items-center justify-between gap-2">
                     <div class="text-xs font-bold truncate ${isInvalid ? 'line-through text-text-muted opacity-40' : 'text-text-high'}">
-                        ${safeSolicitante}
+                        ${r.solicitante || r.organizacao || 'Não informado'}
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
                         ${isInvalid ? `
@@ -3218,7 +2719,7 @@ window.rejectPasswordRequest = async (id) => {
                                 Desconsiderado
                             </span>
                         ` : ''}
-                        <button type="button" onclick="window.toggleCardInvalid('${safeCardKey}', event)" class="p-1.5 rounded-lg transition-all cursor-pointer shadow-sm flex items-center justify-center ${isInvalid ? 'bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 hover:scale-105 ring-1 ring-red-500/20' : 'text-text-muted hover:text-accent-solid hover:bg-white/5'}" title="${isInvalid ? 'Reativar atendimento' : 'Desconsiderar atendimento'}">
+                        <button type="button" onclick="window.toggleCardInvalid('${cardKey}', event)" class="p-1.5 rounded-lg transition-all cursor-pointer shadow-sm flex items-center justify-center ${isInvalid ? 'bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 hover:scale-105 ring-1 ring-red-500/20' : 'text-text-muted hover:text-accent-solid hover:bg-white/5'}" title="${isInvalid ? 'Reativar atendimento' : 'Desconsiderar atendimento'}">
                             ${isInvalid ? `
                                 <!-- Olho Fechado / Riscado bem aparente para clicar de novo -->
                                 <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -3246,17 +2747,14 @@ window.rejectPasswordRequest = async (id) => {
                             <svg class="w-4 h-4 text-accent-solid" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
                             </svg>
-                            #${safeTicket}
+                            #${r.ticket}
                         </span>
 
-                        <!-- Protocolo: Clicável para copiar automaticamente com feedback visual -->
-                        <button type="button" onclick="window.copyProtocolo('${safeProtoVal}', event, this)" class="font-mono text-xs text-text-muted flex items-center gap-1.5 bg-bg-app border border-border-element hover:border-accent-solid/50 hover:bg-accent-solid/10 hover:text-accent-solid px-2.5 py-0.5 rounded-full transition-all cursor-pointer shadow-sm group/proto select-none" title="Clique para copiar protocolo: ${safeProtocolo}">
+                        <!-- Protocolo: minimalista, 'Protocolo' e o número na frente -->
+                        <span class="font-mono text-xs text-text-muted flex items-center gap-1.5 bg-bg-app border border-border-element px-2.5 py-0.5 rounded-full">
                             <span>Protocolo</span>
-                            <strong class="text-text-high group-hover/proto:text-accent-solid font-semibold">${safeProtocolo}</strong>
-                            <svg class="w-3 h-3 opacity-40 group-hover/proto:opacity-100 transition-opacity ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                            </svg>
-                        </button>
+                            <strong class="text-text-high font-semibold">${r.protocolo || '-'}</strong>
+                        </span>
 
                         <!-- Tag de Minutos Extras além do horário -->
                         <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono font-bold">
@@ -3265,7 +2763,7 @@ window.rejectPasswordRequest = async (id) => {
 
                         ${isAdmin && activeAgent === 'all' ? `
                             <span class="text-xs px-2 py-0.5 rounded bg-bg-app text-text-muted border border-border-subtle">
-                                ${safeResponsavel}
+                                ${r.responsavel}
                             </span>
                         ` : ''}
 
@@ -3790,11 +3288,46 @@ window.rejectPasswordRequest = async (id) => {
                     extra_minutes: typeof r.extra_minutes === 'number' ? Math.round(r.extra_minutes) : 0
                 }));
 
-                const result = await syncRecordsWithSupabase(cleanRecords, file.name);
+                let dbSynced = false;
+                try {
+                    // Limpa lote anterior no Supabase
+                    await fetch(`${SUPABASE_URL}/rest/v1/horas_extras?extra_minutes=gte.0`, {
+                        method: 'DELETE',
+                        headers: getAuthHeaders()
+                    });
 
-                const successMsg = result.inserted > 0
-                    ? `Sucesso! A planilha "${file.name}" foi processada.\n\n• ${result.inserted} novos atendimentos com hora extra foram adicionados ao Supabase.\n• ${result.ignored} atendimentos já existentes foram mantidos sem duplicar.`
-                    : `Planilha "${file.name}" processada!\n\nTodos os ${result.total} atendimentos elegíveis já estavam sincronizados no Banco de Dados. Nenhuma duplicata foi gerada.`;
+                    // Insere o novo lote apurado no Supabase
+                    const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/horas_extras`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify(cleanRecords)
+                    });
+
+                    if (insertRes.ok) {
+                        dbSynced = true;
+                    } else {
+                        console.warn('Resposta Supabase ao salvar horas_extras:', await insertRes.text());
+                    }
+                } catch(dbErr) {
+                    console.error('Falha de conexão com Supabase horas_extras:', dbErr);
+                }
+
+                const savedObj = {
+                    imported_at: new Date().toISOString(),
+                    source_file: file.name,
+                    total_records: cleanRecords.length,
+                    records: cleanRecords
+                };
+
+                localStorage.setItem('relatorio_horas_extras_custom', JSON.stringify(savedObj));
+                horasData = cleanRecords;
+                updateSourceText(`Planilha: ${file.name} (${cleanRecords.length} atendimentos apurados ${dbSynced ? '• Salvo no Banco' : ''})`);
+                populateAgentSelect();
+                window.renderHorasExtras();
+
+                const successMsg = dbSynced
+                    ? `Sucesso! A planilha "${file.name}" foi processada e salva no Banco de Dados com êxito.\n\nForam registrados ${cleanRecords.length} atendimentos elegíveis a hora extra e sincronizados para todos os usuários.`
+                    : `Sucesso! A planilha "${file.name}" foi processada com êxito.\n\nForam apurados ${cleanRecords.length} atendimentos elegíveis a hora extra.`;
 
                 window.showCustomAlert(successMsg);
             } catch(err) {
@@ -3807,10 +3340,7 @@ window.rejectPasswordRequest = async (id) => {
 
     document.addEventListener('DOMContentLoaded', () => {
         initLunchControls();
-        loadHorasData().then(() => {
-            // Sincroniza em segundo plano com a API Octadesk ao carregar a página
-            syncOctadeskHorasExtras(false);
-        });
+        loadHorasData();
 
         const searchInput = document.getElementById('horasSearchInput');
         if (searchInput) {
@@ -3918,27 +3448,6 @@ window.rejectPasswordRequest = async (id) => {
                 }
             });
         }
-
-        // Fechar dropdown de seleção de atendentes ao clicar fora ou pressionar Escape
-        document.addEventListener('click', (e) => {
-            const container = document.getElementById('adminAgentContainer');
-            const dropdownMenu = document.getElementById('adminAgentDropdownMenu');
-            const chevron = document.getElementById('adminAgentChevron');
-            if (container && !container.contains(e.target) && dropdownMenu && !dropdownMenu.classList.contains('hidden')) {
-                dropdownMenu.classList.add('hidden');
-                if (chevron) chevron.classList.remove('rotate-180');
-            }
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const dropdownMenu = document.getElementById('adminAgentDropdownMenu');
-                const chevron = document.getElementById('adminAgentChevron');
-                if (dropdownMenu && !dropdownMenu.classList.contains('hidden')) {
-                    dropdownMenu.classList.add('hidden');
-                    if (chevron) chevron.classList.remove('rotate-180');
-                }
-            }
-        });
     });
 })();
 
