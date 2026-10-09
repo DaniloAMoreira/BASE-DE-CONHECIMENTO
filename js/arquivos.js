@@ -8,13 +8,19 @@
 // Ao salvar um documento o formulário fecha e o envio segue em segundo plano: um card com
 // barra de progresso aparece na lista (ou a barra aparece no card existente, ao trocar o documento).
 const { $, registerActions, openModal, closeModal, showConfirm } = App.ui;
-const { isVisitor } = App.api;
+const { isVisitor, currentUser } = App.api;
 const { FILES_MAX_UPLOAD_BYTES } = App.config;
 const { isDriveConfigured, listFiles, updateTitle, deleteFile, startUpload, sendChunks } = App.drive;
 const { setupAutocomplete } = App.search;
 const { buildCard } = App.cards;
 const { icon } = App.icons;
 const { escapeHtml, highlightMatch, normalizeString, safeHttpUrl, driveDirectDownloadUrl } = App.utils;
+
+// Última lista recebida, guardada neste navegador: a aba abre na hora com ela enquanto o Google responde
+// (cada chamada ao Apps Script leva de ~1 s a mais de 6 s). É apagada ao sair da conta.
+const CACHE_KEY = 'arquivosCache';
+const CACHE_VERSION = 1;
+const CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 let files = [];
 let uploads = [];       // envios em andamento ou que falharam (ainda não viraram arquivo na lista)
@@ -59,6 +65,39 @@ function normalizeFiles(list) {
 }
 
 const findFile = (id) => files.find((file) => file.id === id);
+
+// ---------- cache da lista ----------
+const currentEmail = () => (currentUser()?.email || '').toLowerCase();
+
+function readCache() {
+    try {
+        const cache = JSON.parse(localStorage.getItem(CACHE_KEY));
+        const valid = cache && cache.v === CACHE_VERSION && cache.email === currentEmail()
+            && Array.isArray(cache.files) && Date.now() - cache.savedAt < CACHE_MAX_AGE_MS;
+        return valid ? cache : null;
+    } catch {
+        return null;
+    }
+}
+
+function writeCache() {
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ v: CACHE_VERSION, email: currentEmail(), savedAt: Date.now(), canWrite, files }));
+    } catch { /* storage indisponível ou cheio: segue sem cache */ }
+}
+
+function clearCache() {
+    try { localStorage.removeItem(CACHE_KEY); } catch { /* sem storage */ }
+}
+
+/** Linha discreta acima da lista: "Atualizando…" ou aviso de que a lista mostrada pode estar desatualizada. */
+function setSyncStatus(message = '', { retry = false } = {}) {
+    els.syncStatus.hidden = !message;
+    els.syncStatus.classList.toggle('hidden', !message);
+    els.syncStatus.innerHTML = message
+        ? `${escapeHtml(message)}${retry ? ' <button type="button" data-action="reload-arquivos" class="underline text-accent-solid hover:opacity-80">Tentar novamente</button>' : ''}`
+        : '';
+}
 const findUpload = (id) => uploads.find((item) => item.id === id);
 const fullName = (file) => (file.ext ? `${file.title}.${file.ext}` : file.title);
 
@@ -230,17 +269,31 @@ function updateAddButton() {
 
 // ---------- carregamento ----------
 async function loadArquivos({ quiet = false } = {}) {
-    if (!quiet) els.container.classList.add('loading');
-    if (!isLoaded && isDriveConfigured()) {
+    // Primeira carga da sessão: se há uma lista salva, mostra já e atualiza em segundo plano.
+    const cached = !isLoaded && isDriveConfigured() ? readCache() : null;
+    if (cached) {
+        files = cached.files;
+        canWrite = Boolean(cached.canWrite) && !isVisitor();
+        suggestions = [...new Set(files.map((file) => file.title))];
+        isLoaded = true;
+        loadState = 'ready';
+        updateAddButton();
+        applySearch();
+        setSyncStatus('Atualizando a lista…');
+    } else if (!isLoaded && isDriveConfigured()) {
         loadState = 'loading';
         updateAddButton();
-        els.container.innerHTML = '<div class="text-center text-text-muted py-10">Carregando arquivos do Google Drive…</div>';
+        els.container.innerHTML = '<div class="text-center text-text-muted py-10">Carregando arquivos do Google Drive…<br><span class="text-xs">A primeira carga pode levar alguns segundos.</span></div>';
+    } else if (!quiet) {
+        setSyncStatus('Atualizando a lista…');
     }
+
     try {
         if (isDriveConfigured()) {
             const data = await listFiles();
             files = normalizeFiles(data.files);
             canWrite = Boolean(data.canWrite) && !isVisitor();
+            writeCache();
         } else {
             files = [];
             canWrite = false;
@@ -250,12 +303,18 @@ async function loadArquivos({ quiet = false } = {}) {
         loadState = 'ready';
         updateAddButton();
         applySearch();
+        setSyncStatus('');
     } catch (error) {
         console.error('Erro ao carregar arquivos', error);
-        isLoaded = false;
+        if (isLoaded) {
+            // Já há uma lista na tela (do cache): mantém e só avisa que não deu para atualizar.
+            setSyncStatus(`Não foi possível atualizar (${error.message}). Mostrando a última lista salva.`, { retry: true });
+            return;
+        }
         canWrite = false;
         loadState = 'error';
         updateAddButton();
+        setSyncStatus('');
         els.container.innerHTML = `
             <div class="text-center text-text-muted py-10">
                 <p>Não foi possível carregar a lista de arquivos.</p>
@@ -263,8 +322,6 @@ async function loadArquivos({ quiet = false } = {}) {
                 <button type="button" data-action="reload-arquivos"
                         class="mt-4 px-4 py-2 bg-bg-panel border border-border-element text-text-high rounded-lg hover:bg-bg-solid-hover transition-colors text-sm">Tentar novamente</button>
             </div>`;
-    } finally {
-        els.container.classList.remove('loading');
     }
 }
 
@@ -277,6 +334,8 @@ function resetArquivos() {
     isLoaded = false;
     canWrite = false;
     loadState = 'idle';
+    clearCache();
+    setSyncStatus('');
     els.container.replaceChildren();
     els.input.value = '';
     updateAddButton();
@@ -291,6 +350,7 @@ function applyServerFile(info) {
     files.sort((a, b) => a.title.localeCompare(b.title, 'pt-BR', { sensitivity: 'base' }));
     suggestions = [...new Set(files.map((item) => item.title))];
     isLoaded = true;
+    writeCache();
 }
 
 // ---------- envio em segundo plano ----------
@@ -417,6 +477,7 @@ async function removeArquivo(button) {
         await deleteFile(file.id);
         files = files.filter((item) => item.id !== file.id);
         suggestions = [...new Set(files.map((item) => item.title))];
+        writeCache();
         applySearch();
     } finally {
         button.disabled = false;
@@ -428,6 +489,7 @@ function initArquivos() {
     Object.assign(els, {
         input: $('arquivosSearchInput'),
         container: $('arquivosContainer'),
+        syncStatus: $('arquivosSyncStatus'),
         addWrap: $('arquivosAddWrap'),
         addButton: $('openArquivoModalBtn'),
         title: $('arquivoTitle'),
