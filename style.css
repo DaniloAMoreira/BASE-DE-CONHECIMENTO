@@ -1,316 +1,295 @@
-        :root {
-            /* DARK MODE (Vivid) - Indigo Neutrals & Blue Accents */
-            --bg-app: #060a13;
-            --bg-subtle: #0c1527;
-            --bg-panel: #14254b;
-            --bg-panel-hover: #1b3266;
-            --bg-panel-active: #1e293b;
-            
-            --border-subtle: #1f3870;
-            --border-element: #2b4d99;
-            --border-hover: #3b66c4;
-            
-            --bg-solid: #3e63dd;
-            --bg-solid-hover: #5472e4;
-            
-            --text-muted: #a3b8e0;
-            --text-high: #ffffff;
+/* ==========================================================================
+   Tema
+   O tema escuro é o padrão (:root); o claro é ativado por <html data-theme="light">.
+   ========================================================================== */
+:root {
+    /* DARK MODE (Vivid) - Indigo Neutrals & Blue Accents */
+    --bg-app: #060a13;
+    --bg-subtle: #0c1527;
+    --bg-panel: #14254b;
+    --bg-panel-hover: #1b3266;
+    --bg-panel-active: #1e293b;
 
-            --accent-app: #0b161a;
-            --accent-subtle: #101b20;
-            --accent-panel: #082c36;
-            --accent-panel-hover: #003848;
-            --accent-panel-active: #004558;
-            
-            --accent-border-subtle: #045468;
-            --accent-border-element: #12677e;
-            --accent-border-hover: #11809c;
-            
-            --accent-solid: #00a2c7;
-            --accent-solid-hover: #23afd0;
-            
-            --accent-text-muted: #4ccce6;
-            --accent-text-high: #b6ecf7;
-        }
+    --border-subtle: #1f3870;
+    --border-element: #2b4d99;
+    --border-hover: #3b66c4;
 
-        body[data-theme="light"] {
-            /* LIGHT MODE - Slate Neutrals & Blue Accents */
-            --bg-app: #fcfcfd;
-            --bg-subtle: #f9f9fb;
-            --bg-panel: #f0f0f3;
-            --bg-panel-hover: #e8e8ec;
-            --bg-panel-active: #e0e1e6;
-            
-            --border-subtle: #d9d9e0;
-            --border-element: #cdced6;
-            --border-hover: #b9bbc6;
-            
-            --bg-solid: #8b8d98;
-            --bg-solid-hover: #80838d;
-            
-            --text-muted: #60646c;
-            --text-high: #1c2024;
+    --bg-solid: #3e63dd;
+    --bg-solid-hover: #5472e4;
 
-            --accent-app: #fbfdff;
-            --accent-subtle: #f4faff;
-            --accent-panel: #e6f4fe;
-            --accent-panel-hover: #d5efff;
-            --accent-panel-active: #c2e5ff;
-            
-            --accent-border-subtle: #acd8fc;
-            --accent-border-element: #8ec8f6;
-            --accent-border-hover: #5eb1ef;
-            
-            --accent-solid: #0090ff;
-            --accent-solid-hover: #0588f0;
-            
-            --accent-text-muted: #0d74ce;
-            --accent-text-high: #0d74ce; 
-        }
+    --text-muted: #a3b8e0;
+    --text-high: #ffffff;
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-app);
-            color: var(--text-high);
-            overflow-x: hidden;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
+    --accent-app: #0b161a;
+    --accent-subtle: #101b20;
+    --accent-panel: #082c36;
+    --accent-panel-hover: #003848;
+    --accent-panel-active: #004558;
 
-        #searchInput {
-            color: var(--text-high);
-            background-color: var(--color-search-bg);
-            border: 1px solid var(--color-search-border);
-        }
+    --accent-border-subtle: #045468;
+    --accent-border-element: #12677e;
+    --accent-border-hover: #11809c;
 
-        #searchInput::placeholder {
-            color: var(--text-muted);
-        }
+    --accent-solid: #00a2c7;
+    --accent-solid-hover: #23afd0;
 
-        .search-icon {
-            color: var(--text-muted);
-        }
+    --accent-text-muted: #4ccce6;
+    --accent-text-high: #b6ecf7;
 
-        h1.text-accent-solid,
-        .category-header h3 {
-            color: var(--text-high);
-        }
+    /* Campos de busca "vidro" e sugestões */
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-bg-focus: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-border-strong: rgba(255, 255, 255, 0.2);
+    --glass-border-focus: rgba(255, 255, 255, 0.3);
+    --suggestion-bg: var(--bg-subtle);
+    --suggestion-hover: rgba(255, 255, 255, 0.06);
+}
 
-        body[data-theme="light"] #searchInput {
-            background-color: #FFFFFF;
-            border: 1px solid #D1D5DB;
-            color: var(--text-high);
-        }
+:root[data-theme="light"] {
+    /* LIGHT MODE - Slate Neutrals & Blue Accents */
+    --bg-app: #fcfcfd;
+    --bg-subtle: #f9f9fb;
+    --bg-panel: #f0f0f3;
+    --bg-panel-hover: #e8e8ec;
+    --bg-panel-active: #e0e1e6;
 
-        body[data-theme="light"] #searchInput::placeholder,
-        body[data-theme="light"] .search-icon {
-            color: var(--text-muted);
-        }
+    --border-subtle: #d9d9e0;
+    --border-element: #cdced6;
+    --border-hover: #b9bbc6;
 
-        body[data-theme="light"] h1.text-accent-solid,
-        body[data-theme="light"] .category-header h3 {
-            color: var(--accent-solid);
-        }
+    --bg-solid: #8b8d98;
+    --bg-solid-hover: #80838d;
 
-        #webgl-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
+    --text-muted: #60646c;
+    --text-high: #1c2024;
 
-        .panel {
-            background: color-mix(in srgb, var(--bg-panel) 85%, transparent);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--border-subtle);
-            box-shadow: 0 8px 32px 0 rgba(10, 15, 31, 0.37);
-            border-radius: 0.75rem;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
+    --accent-app: #fbfdff;
+    --accent-subtle: #f4faff;
+    --accent-panel: #e6f4fe;
+    --accent-panel-hover: #d5efff;
+    --accent-panel-active: #c2e5ff;
 
-        .subject-list {
-            display: grid;
-            grid-template-rows: 0fr;
-            transition: grid-template-rows 0.5s ease-in-out;
-        }
+    --accent-border-subtle: #acd8fc;
+    --accent-border-element: #8ec8f6;
+    --accent-border-hover: #5eb1ef;
 
-        .subject-list>div {
-            overflow: hidden;
-        }
+    --accent-solid: #0090ff;
+    --accent-solid-hover: #0588f0;
 
-        .subject-list.expanded {
-            grid-template-rows: 1fr;
-        }
+    --accent-text-muted: #0d74ce;
+    --accent-text-high: #0d74ce;
 
-        .rotate-180 {
-            transform: rotate(180deg);
-        }
+    --glass-bg: #ffffff;
+    --glass-bg-focus: #ffffff;
+    --glass-border: #d1d5db;
+    --glass-border-strong: #d1d5db;
+    --glass-border-focus: #9ca3af;
+    --suggestion-bg: #ffffff;
+    --suggestion-hover: rgba(0, 144, 255, 0.08);
+}
 
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
+/* ==========================================================================
+   Base
+   ========================================================================== */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-app);
+    color: var(--text-high);
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
 
-        ::-webkit-scrollbar-track {
-            background: var(--bg-app);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--bg-solid);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-solid);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease forwards;
-        }
-
-        .glow-on-hover {
-            transition: box-shadow 0.3s ease, transform 0.3s ease;
-        }
-
-        .glow-on-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 15px 2px var(--accent-solid);
-        }
-
-        .loading {
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        /* ESTILOS PARA SUGESTÕES QUE EMPURRAM O CONTEÚDO */
-        #cmdSuggestionsContainer, #baseSuggestionsContainer {
-            display: grid;
-            grid-template-rows: 0fr;
-            transition: grid-template-rows 0.3s ease-in-out;
-            background: var(--color-surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: 0.5rem;
-            overflow: hidden;
-        }
-
-        #cmdSuggestionsContainer.expanded, #baseSuggestionsContainer.expanded {
-            grid-template-rows: 1fr;
-            margin-bottom: 1rem;
-        }
-
-        #cmdSuggestionsContainer > div, #baseSuggestionsContainer > div {
-            min-height: 0;
-        }
-
-        .suggestion-item {
-            padding: 0.6rem 1rem;
-            cursor: pointer;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-
-        .suggestion-item:not(:last-child) {
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
-        .suggestion-item:hover,
-        .suggestion-item.active {
-            background-color: var(--color-search-bg);
-            color: var(--text-high);
-        }
-
-        /* ANIMAÇÃO PARA ÍCONE NEURAL */
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(0.9);
-                opacity: 0.7;
-            }
-
-            50% {
-                transform: scale(1.1);
-                opacity: 1;
-            }
-        }
-
-        .neural-dot {
-            transform-origin: center;
-            animation: pulse 2s infinite ease-in-out;
-        }
-
-        .neural-dot-1 {
-            animation-delay: 0s;
-        }
-
-        .neural-dot-2 {
-            animation-delay: 0.3s;
-        }
-
-        .neural-dot-3 {
-            animation-delay: 0.6s;
-        }
-
-        /* ESTILOS PARA ABAS */
-        .tab-active {
-            color: var(--text-high);
-            border-bottom: 2px solid var(--accent-solid);
-        }
-
-        body[data-theme="light"] .tab-active {
-            color: var(--accent-solid);
-        }
-
-        .tab-inactive {
-            color: var(--text-muted);
-            border-bottom: 2px solid transparent;
-        }
-
-        .tab-inactive:hover {
-            color: var(--text-high);
-        }
-
-        body[data-theme="light"] .tab-inactive:hover {
-            color: var(--accent-solid);
-        }
-
-/* Ocultar barra de rolagem globalmente para evitar "pulos" na resolucao */
+/* Barras de rolagem ocultas em todo o app (evita "pulos" de layout ao mudar a resolução). */
 ::-webkit-scrollbar {
     display: none;
     width: 0;
     height: 0;
 }
+
 * {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
 
+.panel {
+    background: color-mix(in srgb, var(--bg-panel) 85%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 8px 32px 0 rgba(10, 15, 31, 0.37);
+    border-radius: 0.75rem;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
 
-/* Premium Glassmorphism for Search Inputs */
+.category-header h3 {
+    color: var(--text-high);
+}
+
+:root[data-theme="light"] .category-header h3 {
+    color: var(--accent-solid);
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
+}
+
+.loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.glow-on-hover {
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.glow-on-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px 2px var(--accent-solid);
+}
+
+/* ==========================================================================
+   Base de Conhecimento: lista de assuntos que expande/recolhe
+   ========================================================================== */
+.subject-list {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.5s ease-in-out;
+}
+
+.subject-list>div {
+    overflow: hidden;
+}
+
+.subject-list.expanded {
+    grid-template-rows: 1fr;
+}
+
+/* ==========================================================================
+   Busca: campo "vidro" e sugestões (empurram o conteúdo para baixo)
+   ========================================================================== */
 .glass-input {
-    background: rgba(255, 255, 255, 0.03) !important;
+    background: var(--glass-bg) !important;
     backdrop-filter: blur(6px) !important;
     -webkit-backdrop-filter: blur(6px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-top: 1px solid var(--glass-border-strong) !important;
+    border-left: 1px solid var(--glass-border-strong) !important;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
 }
+
 .glass-input:focus {
-    background: rgba(255, 255, 255, 0.08) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    background: var(--glass-bg-focus) !important;
+    border: 1px solid var(--glass-border-focus) !important;
+}
+
+#cmdSuggestionsContainer,
+#baseSuggestionsContainer,
+#arquivosSuggestionsContainer {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease-in-out;
+    background: var(--suggestion-bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+#cmdSuggestionsContainer.expanded,
+#baseSuggestionsContainer.expanded,
+#arquivosSuggestionsContainer.expanded {
+    grid-template-rows: 1fr;
+    margin-bottom: 1rem;
+}
+
+#cmdSuggestionsContainer>div,
+#baseSuggestionsContainer>div,
+#arquivosSuggestionsContainer>div {
+    min-height: 0;
+}
+
+.suggestion-item {
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.suggestion-item:not(:last-child) {
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.suggestion-item:hover,
+.suggestion-item.active {
+    background-color: var(--suggestion-hover);
+    color: var(--text-high);
+}
+
+/* ==========================================================================
+   Ícone neural (sugestões)
+   ========================================================================== */
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(0.9);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+.neural-dot {
+    transform-origin: center;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+.neural-dot-1 {
+    animation-delay: 0s;
+}
+
+.neural-dot-2 {
+    animation-delay: 0.3s;
+}
+
+.neural-dot-3 {
+    animation-delay: 0.6s;
+}
+
+/* ==========================================================================
+   Navegação principal (abas)
+   ========================================================================== */
+.tab-active {
+    color: var(--text-high);
+    border-bottom: 2px solid var(--accent-solid);
+}
+
+:root[data-theme="light"] .tab-active {
+    color: var(--accent-solid);
+}
+
+.tab-inactive {
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+}
+
+.tab-inactive:hover {
+    color: var(--text-high);
+}
+
+:root[data-theme="light"] .tab-inactive:hover {
+    color: var(--accent-solid);
+}
+
+/* Quem prefere menos movimento não recebe animações decorativas. */
+@media (prefers-reduced-motion: reduce) {
+
+    .neural-dot,
+    .animate-fade-in {
+        animation: none;
+    }
 }

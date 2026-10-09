@@ -5,11 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="dark light">
+    <!-- Ferramenta interna: não deve aparecer em buscadores. -->
+    <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/png" href="./favicon.png">
-    <title>Comandos de Banco de Dados</title>
+    <title>Base de Conhecimento</title>
+    <!-- Aplica o tema salvo antes da primeira pintura (evita piscar o tema escuro). -->
+    <script>
+        try { document.documentElement.dataset.theme = localStorage.getItem('themePreference') === 'light' ? 'light' : 'dark'; }
+        catch (e) { document.documentElement.dataset.theme = 'dark'; }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-tailwind.config = {
+        tailwind.config = {
             theme: {
                 extend: {
                     colors: {
@@ -25,7 +32,7 @@ tailwind.config = {
                         'bg-solid-hover': 'var(--bg-solid-hover)',
                         'text-muted': 'var(--text-muted)',
                         'text-high': 'var(--text-high)',
-                        
+
                         'accent-app': 'var(--accent-app)',
                         'accent-subtle': 'var(--accent-subtle)',
                         'accent-panel': 'var(--accent-panel)',
@@ -42,154 +49,205 @@ tailwind.config = {
                 }
             }
         };
-</script>
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/diff@5.3.0/dist/diff.min.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
-    <script src="xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
-    <script src="exceljs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" defer></script>
-    <link href="style.css?v=4" rel="stylesheet">
+    <link href="style.css?v=8" rel="stylesheet">
 </head>
 
-<body class="antialiased text-text-high-high bg-bg-app">
+<body class="antialiased text-text-high bg-bg-app">
 
     <canvas id="site-synapses-canvas" class="fixed inset-0 pointer-events-none opacity-80 z-0"></canvas>
 
     <!-- LOGIN OVERLAY -->
     <div id="login-overlay" class="fixed inset-0 z-[100] flex flex-row overflow-hidden bg-[#0f172a]">
-        
+
         <!-- Left Side (Canvas and Logo) -->
         <div class="hidden md:flex flex-col w-2/3 h-full relative items-center justify-center">
-            <!-- Canvas de Sinapses -->
             <canvas id="synapses-canvas" class="absolute inset-0 pointer-events-none opacity-80 z-0"></canvas>
-                     <!-- Container principal centralizado -->
             <div class="relative z-10 flex items-center justify-center w-full h-full min-h-[500px] p-8">
-                <!-- Imagem Unificada do Gemini -->
-                <img src="teste_imagem_limpa.png" alt="Logo e Texto" class="w-[40rem] h-auto object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] animate-[pulse_5s_infinite_ease-in-out] pointer-events-none" style="opacity: 0.95; clip-path: inset(20px);">
+                <img src="logo-login.png" alt="Logo e Texto"
+                    class="w-[40rem] h-auto object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] animate-[pulse_5s_infinite_ease-in-out] pointer-events-none"
+                    style="opacity: 0.95; clip-path: inset(20px);">
             </div>
         </div>
-        
+
         <!-- Right Side (Form Sidebar) -->
-        <div class="w-full md:w-1/3 h-full bg-white flex flex-col justify-center px-12 shadow-[-20px_0_60px_-15px_rgba(0,0,0,0.5)] z-20 relative">
+        <div
+            class="w-full md:w-1/3 h-full bg-white flex flex-col justify-center px-12 shadow-[-20px_0_60px_-15px_rgba(0,0,0,0.5)] z-20 relative">
             <div class="text-center mb-12">
                 <h1 class="text-4xl font-bold text-slate-800 mb-3">Login</h1>
                 <p class="text-slate-500 font-medium text-lg">Faça login na sua conta</p>
             </div>
-            
+
             <form id="login-form" class="space-y-6">
                 <div>
                     <label for="login-user" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Usuário</label>
-                    <input type="text" id="login-user" placeholder="Seu nome"
+                    <input type="text" id="login-user" placeholder="Seu nome" autocomplete="username"
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-solid/50 focus:border-accent-solid transition-all font-medium text-base">
                 </div>
                 <div>
-                    <label for="login-password" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Senha</label>
+                    <label for="login-password"
+                        class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Senha</label>
                     <input type="password" id="login-password" required placeholder="••••••••"
+                        autocomplete="current-password"
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-solid/50 focus:border-accent-solid transition-all font-medium text-base">
                 </div>
-                
-                <div id="login-error" class="hidden text-red-500 bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-center font-medium">
+
+                <div id="login-error" role="alert"
+                    class="hidden text-red-500 bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-center font-medium">
                     Usuário ou senha incorretos.
                 </div>
 
                 <button type="submit" id="login-btn"
-                    class="w-full bg-slate-900 text-white font-semibold rounded-2xl px-4 py-4 hover:bg-slate-800 hover:shadow-lg focus:outline-none transition-all duration-300 flex justify-center items-center mt-10">
+                    class="w-full bg-slate-900 text-white font-semibold rounded-2xl px-4 py-4 hover:bg-slate-800 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-solid transition-all duration-300 flex justify-center items-center mt-10 disabled:opacity-70">
                     <span>ENTRAR</span>
-                    <svg id="login-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-current hidden ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg id="login-spinner" class="animate-spin h-5 w-5 text-current hidden ml-2"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
                     </svg>
                 </button>
                 <div class="mt-4 text-center flex flex-col space-y-3">
-                    <button type="button" id="forgot-password-link" class="text-sm text-slate-500 hover:text-slate-800 transition-colors font-medium">Esqueci minha senha</button>
+                    <button type="button" id="forgot-password-link"
+                        class="text-sm text-slate-500 hover:text-slate-800 transition-colors font-medium">Esqueci minha
+                        senha</button>
                 </div>
             </form>
-            
+
             <!-- Formulário Esqueci a Senha -->
             <form id="forgot-password-form" class="space-y-6 hidden">
                 <div class="text-center mb-6">
-                    <p class="text-slate-600 font-medium text-sm">Digite o seu nome de usuário e a nova senha desejada. Um pedido será enviado ao administrador.</p>
+                    <p class="text-slate-600 font-medium text-sm">Digite o seu nome de usuário e a nova senha desejada.
+                        Um pedido será enviado ao administrador.</p>
                 </div>
                 <div>
-                    <label for="forgot-user" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Usuário</label>
-                    <input type="text" id="forgot-user" required placeholder="Seu nome"
+                    <label for="forgot-user"
+                        class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Usuário</label>
+                    <input type="text" id="forgot-user" required placeholder="Seu nome" autocomplete="username"
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-solid/50 focus:border-accent-solid transition-all font-medium text-base">
                 </div>
                 <div>
-                    <label for="forgot-new-password" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Nova Senha</label>
+                    <label for="forgot-new-password" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Nova
+                        Senha</label>
                     <input type="password" id="forgot-new-password" required placeholder="••••••••" minlength="6"
+                        autocomplete="new-password"
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-solid/50 focus:border-accent-solid transition-all font-medium text-base">
                 </div>
                 <div>
-                    <label for="forgot-confirm-password" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Confirmar Nova Senha</label>
+                    <label for="forgot-confirm-password"
+                        class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Confirmar Nova Senha</label>
                     <input type="password" id="forgot-confirm-password" required placeholder="••••••••" minlength="6"
+                        autocomplete="new-password"
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-solid/50 focus:border-accent-solid transition-all font-medium text-base">
                 </div>
-                
-                <div id="forgot-error" class="hidden text-red-500 bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-center font-medium"></div>
-                <div id="forgot-success" class="hidden text-green-600 bg-green-50 border border-green-100 rounded-xl p-3 text-sm text-center font-medium">Pedido enviado! Aguardando o administrador aprovar.</div>
+
+                <div id="forgot-error" role="alert"
+                    class="hidden text-red-500 bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-center font-medium">
+                </div>
+                <div id="forgot-success" role="status"
+                    class="hidden text-green-600 bg-green-50 border border-green-100 rounded-xl p-3 text-sm text-center font-medium">
+                    Pedido enviado! Aguardando o administrador aprovar.</div>
 
                 <div class="flex flex-col space-y-3 mt-8">
                     <button type="submit" id="forgot-btn"
-                        class="w-full bg-slate-900 text-white font-semibold rounded-2xl px-4 py-4 hover:bg-slate-800 hover:shadow-lg focus:outline-none transition-all duration-300 flex justify-center items-center">
+                        class="w-full bg-slate-900 text-white font-semibold rounded-2xl px-4 py-4 hover:bg-slate-800 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-solid transition-all duration-300 flex justify-center items-center disabled:opacity-70">
                         <span>SOLICITAR ALTERAÇÃO</span>
-                        <svg id="forgot-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-current hidden ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg id="forgot-spinner" class="animate-spin h-5 w-5 text-current hidden ml-2"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
                         </svg>
                     </button>
-                    <button type="button" id="back-to-login-btn" class="text-sm text-slate-500 hover:text-slate-800 transition-colors font-medium py-2">Voltar ao Login</button>
+                    <button type="button" id="back-to-login-btn"
+                        class="text-sm text-slate-500 hover:text-slate-800 transition-colors font-medium py-2">Voltar ao
+                        Login</button>
                 </div>
             </form>
         </div>
     </div>
-    
-    
+    <!-- Esconde o login de imediato quando já existe sessão (evita piscar a tela de login). -->
+    <script>
+        try { if (sessionStorage.getItem('supabaseToken')) document.getElementById('login-overlay').style.display = 'none'; } catch (e) { }
+    </script>
 
     <div id="main-content" class="relative z-10 hidden opacity-0 transition-opacity duration-500">
         <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
             <div class="absolute top-4 right-4 sm:top-6 sm:right-6 lg:top-8 lg:right-8 z-50 flex items-center gap-4">
-                
+
                 <!-- USER DROPDOWN MENU -->
                 <div id="user-menu-container" class="relative hidden">
-                    <button id="user-info-badge" class="flex items-center gap-3 bg-bg-panel border border-border-element rounded-full py-1.5 pl-2 pr-4 shadow-sm hover:border-border-hover transition-colors focus:outline-none" onclick="document.getElementById('user-dropdown').classList.toggle('hidden')">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-accent-solid to-accent-solid-hover flex items-center justify-center text-white font-bold text-sm" id="user-avatar">
+                    <button id="user-info-badge" type="button" aria-haspopup="true" aria-expanded="false"
+                        class="flex items-center gap-3 bg-bg-panel border border-border-element rounded-full py-1.5 pl-2 pr-4 shadow-sm hover:border-border-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-solid">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-accent-solid to-accent-solid-hover flex items-center justify-center text-white font-bold text-sm"
+                            id="user-avatar">
                             U
                         </div>
                         <span class="text-sm font-medium text-text-high" id="user-name-display">User</span>
-                        <svg class="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        <svg class="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
                     </button>
-                    
-                    <div id="user-dropdown" class="absolute -right-2 mt-2 w-40 bg-bg-panel border border-border-element rounded-xl shadow-lg py-2 hidden flex flex-col z-[60]">
-                        <button id="theme-toggle-btn" class="w-full px-4 py-2 text-left text-sm text-text-high hover:bg-accent-solid/10 hover:text-accent-solid transition-colors flex items-center gap-2">
-                            <svg id="theme-icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+
+                    <div id="user-dropdown"
+                        class="absolute -right-2 mt-2 w-40 bg-bg-panel border border-border-element rounded-xl shadow-lg py-2 hidden flex flex-col z-[60]">
+                        <button id="theme-toggle-btn" type="button"
+                            class="w-full px-4 py-2 text-left text-sm text-text-high hover:bg-accent-solid/10 hover:text-accent-solid transition-colors flex items-center gap-2">
+                            <svg id="theme-icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                                </path>
                             </svg>
-                            <svg id="theme-icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            <svg id="theme-icon-moon" class="w-4 h-4" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                                </path>
                             </svg>
                             <span id="theme-toggle-text">Mudar Tema</span>
                         </button>
-                        
-                        <button id="openTrashModalBtn" class="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-2 hidden">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    Lixeira
-                </button>
-                <button id="openPasswordRequestsBtn" class="w-full px-4 py-2 text-left text-sm text-accent hover:bg-accent/10 transition-colors flex items-center gap-2 hidden">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                    Solicitações de Senha
-                </button>
+
+                        <button id="openTrashModalBtn" type="button" data-action="open-trash"
+                            class="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-2 hidden">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                </path>
+                            </svg>
+                            Lixeira
+                        </button>
+                        <button id="openPasswordRequestsBtn" type="button" data-action="open-password-requests"
+                            class="w-full px-4 py-2 text-left text-sm text-accent-solid hover:bg-accent-solid/10 transition-colors flex items-center gap-2 hidden">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
+                                </path>
+                            </svg>
+                            Solicitações de Senha
+                        </button>
 
                         <div class="w-full h-px bg-border-element my-1"></div>
 
-                        <button id="logout-btn" class="w-full px-4 py-2 text-left text-sm text-text-high hover:bg-red-500/10 hover:text-red-500 transition-colors flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        <button id="logout-btn" type="button"
+                            class="w-full px-4 py-2 text-left text-sm text-text-high hover:bg-red-500/10 hover:text-red-500 transition-colors flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
                             </svg>
                             Sair
                         </button>
@@ -197,191 +255,251 @@ tailwind.config = {
                 </div>
             </div>
             <div>
-                
-<div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6 pb-2 px-2 sm:px-8">
-    <button id="nav-base-tab" class="text-xl sm:text-2xl lg:text-3xl font-bold pb-1 tab-inactive transition-colors cursor-pointer focus:outline-none">Base de Conhecimento</button>
-    <button id="nav-comandos-tab" class="text-xl sm:text-2xl lg:text-3xl font-bold pb-1 tab-active transition-colors cursor-pointer focus:outline-none">Comandos SQL</button>
-    <button id="nav-horas-tab" class="text-xl sm:text-2xl lg:text-3xl font-bold pb-1 tab-inactive transition-colors cursor-pointer focus:outline-none">Horas Extras</button>
-</div>
 
-<div id="view-comandos">
-<header class="mb-6">
-                    <div class="relative flex gap-6 mb-6 px-1 w-max">
-                        <button id="tabFilterAll" onclick="window.setFilterTab('all')" class="relative z-10 pb-3 text-sm font-semibold text-accent-solid transition-colors">Todos os Comandos</button>
-                        <button id="tabFilterMine" onclick="window.setFilterTab('mine')" class="relative z-10 pb-3 text-sm font-semibold text-text-muted hover:text-text-high transition-colors">Meus Comandos</button>
-                        <div id="tabIndicator" class="absolute bottom-0 left-0 h-0.5 bg-accent-solid transition-all duration-300 pointer-events-none" style="width: 0px; transform: translateX(0px); transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);"></div>
-                    </div>
+                <div role="tablist" aria-label="Seções"
+                    class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6 pb-2 px-2 sm:px-8 pt-14 sm:pt-0">
+                    <button id="nav-base-tab" type="button" role="tab" aria-selected="false"
+                        class="text-xl sm:text-2xl lg:text-3xl font-bold pb-1 tab-inactive transition-colors cursor-pointer focus:outline-none">Base
+                        de Conhecimento</button>
+                    <button id="nav-comandos-tab" type="button" role="tab" aria-selected="true"
+                        class="text-xl sm:text-2xl lg:text-3xl font-bold pb-1 tab-active transition-colors cursor-pointer focus:outline-none">Comandos
+                        SQL</button>
+                    <button id="nav-arquivos-tab" type="button" role="tab" aria-selected="false"
+                        class="text-xl sm:text-2xl lg:text-3xl font-bold pb-1 tab-inactive transition-colors cursor-pointer focus:outline-none">Arquivos</button>
+                </div>
 
-                    <div class="relative flex gap-2 w-full items-center">
-                        <div class="relative flex-grow">
-                            <input type="text" id="cmdSearchInput" placeholder="Pesquisar por categorias e comandos..."
-                                class="glass-input w-full rounded-xl pl-10 pr-4 py-3 text-text-high transition-all duration-300 placeholder:text-text-muted focus:outline-none"
-                                autocomplete="off">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
+                <!-- COMANDOS SQL -->
+                <div id="view-comandos">
+                    <header class="mb-6">
+                        <div class="relative flex gap-6 mb-6 px-1 w-max">
+                            <button id="tabFilterAll" type="button" data-action="filter-commands" data-filter="all"
+                                class="relative z-10 pb-3 text-sm font-semibold text-accent-solid transition-colors">Todos
+                                os Comandos</button>
+                            <button id="tabFilterMine" type="button" data-action="filter-commands" data-filter="mine"
+                                class="relative z-10 pb-3 text-sm font-semibold text-text-muted hover:text-text-high transition-colors">Meus
+                                Comandos</button>
+                            <div id="tabIndicator"
+                                class="absolute bottom-0 left-0 h-0.5 bg-accent-solid transition-all duration-300 pointer-events-none"
+                                style="width: 0px; transform: translateX(0px); transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);">
                             </div>
                         </div>
-                        
-                        <div class="relative flex gap-2">
-                            <button id="openAddModalBtn" class="bg-accent-solid text-white p-3 rounded-lg hover:opacity-90 transition-opacity" title="Adicionar Comando">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="cmdSuggestionsContainer" class="mt-1"></div>
-                </header>
-                <main id="categoriesContainer" class="space-y-3"></main>
-</div>
-<div id="view-base" class="hidden">
-<header class="mb-6">
-                    <div class="relative flex gap-6 mb-6 px-1 w-max invisible pointer-events-none select-none">
-                        <button class="relative z-10 pb-3 text-sm font-semibold">Spacer</button>
-                    </div>
-                    
-                    <div class="relative flex gap-2 w-full items-center">
-                        <div class="relative flex-grow">
-                            <input type="text" id="baseSearchInput" placeholder="Pesquisar por categorias e assuntos..."
-                                class="glass-input w-full rounded-xl pl-10 pr-4 py-3 text-text-high transition-all duration-300 placeholder:text-text-muted focus:outline-none"
-                                autocomplete="off">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
+
+                        <div class="relative flex gap-2 w-full items-center">
+                            <div class="relative flex-grow">
+                                <input type="text" id="cmdSearchInput" aria-label="Pesquisar comandos"
+                                    placeholder="Pesquisar por categorias e comandos..."
+                                    class="glass-input w-full rounded-xl pl-10 pr-4 py-3 text-text-high transition-all duration-300 placeholder:text-text-muted focus:outline-none"
+                                    autocomplete="off">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div class="relative flex gap-2">
+                                <button id="openAddModalBtn" type="button"
+                                    class="bg-accent-solid text-white p-3 rounded-lg hover:opacity-90 transition-opacity"
+                                    title="Adicionar Comando" aria-label="Adicionar Comando">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
-                        <div class="relative flex gap-2 invisible pointer-events-none select-none">
-                            <button class="p-3 rounded-lg">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            </button>
+                        <div id="cmdSuggestionsContainer" class="mt-1"></div>
+                    </header>
+                    <main id="categoriesContainer" class="space-y-3"></main>
+                </div>
+
+                <!-- BASE DE CONHECIMENTO -->
+                <div id="view-base" class="hidden">
+                    <header class="mb-6">
+                        <div class="relative flex gap-6 mb-6 px-1 w-max invisible pointer-events-none select-none"
+                            aria-hidden="true">
+                            <button type="button" tabindex="-1"
+                                class="relative z-10 pb-3 text-sm font-semibold">Spacer</button>
                         </div>
-                    </div>
-                    <div id="baseSuggestionsContainer" class="mt-1"></div>
-                </header>
-                <main id="baseCategoriesContainer" class="space-y-3"></main>
-</div>
-<div id="view-horas" class="hidden">
-    <header class="mb-6">
-        <!-- Sub-tabs: Todos | Saída (18h) | Plantão (19h) | Fim de Semana -->
-        <div class="relative flex flex-wrap gap-4 sm:gap-6 mb-4 px-1 w-full items-center justify-between">
-            <div class="flex gap-4 sm:gap-6 items-center flex-wrap pt-1">
-                <button id="horasTabAll" onclick="window.setHorasShiftTab('all')" class="relative z-10 pb-3 text-sm font-semibold text-accent-solid transition-colors cursor-pointer border-b-2 border-accent-solid">Todos os Atendimentos</button>
-                <button id="horasTabExp18" onclick="window.setHorasShiftTab('expediente_18')" class="relative z-10 pb-3 text-sm font-semibold text-text-muted hover:text-text-high transition-colors cursor-pointer border-b-2 border-transparent">Saída (18h)</button>
-                <button id="horasTabPlantao19" onclick="window.setHorasShiftTab('plantao_19')" class="relative z-10 pb-3 text-sm font-semibold text-text-muted hover:text-text-high transition-colors cursor-pointer border-b-2 border-transparent">Plantão (19h)</button>
-                <button id="horasTabWeekend" onclick="window.setHorasShiftTab('weekend')" class="relative z-10 pb-3 text-sm font-semibold text-text-muted hover:text-text-high transition-colors cursor-pointer border-b-2 border-transparent">Fim de Semana</button>
-            </div>
-            
-            <!-- Coluna Direita: Total de Horas e Exportação -->
-            <div class="flex items-center gap-2.5">
-                <div id="horasSummaryBadge" class="text-xs font-semibold px-3.5 py-2 rounded-lg bg-bg-panel border border-border-element text-text-high flex items-center gap-2 shadow-sm">
-                    <span id="horasCountText">0 atendimentos</span>
-                    <span class="text-border-element">•</span>
-                    <span id="horasTimeText" class="text-orange-400 font-mono font-bold text-sm" style="color: #f97316;">0h 00m</span>
+
+                        <div class="relative flex gap-2 w-full items-center">
+                            <div class="relative flex-grow">
+                                <input type="text" id="baseSearchInput" aria-label="Pesquisar na base de conhecimento"
+                                    placeholder="Pesquisar por categorias e assuntos..."
+                                    class="glass-input w-full rounded-xl pl-10 pr-4 py-3 text-text-high transition-all duration-300 placeholder:text-text-muted focus:outline-none"
+                                    autocomplete="off">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="relative flex gap-2 invisible pointer-events-none select-none"
+                                aria-hidden="true">
+                                <button type="button" tabindex="-1" class="p-3 rounded-lg">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="baseSuggestionsContainer" class="mt-1"></div>
+                    </header>
+                    <main id="baseCategoriesContainer" class="space-y-3"></main>
                 </div>
-                <button type="button" id="btnExportarHorasExcel" onclick="window.exportHorasExtrasToExcel()" class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer hover:shadow hover:scale-[1.02]" title="Exportar atendimentos ativos para planilha Excel (.xlsx)">
-                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    <span>Exportar Excel</span>
-                </button>
-            </div>
-        </div>
 
-        <div class="relative flex gap-2 w-full items-center">
-            <div class="relative flex-grow">
-                <input type="text" id="horasSearchInput" placeholder="Pesquisar por ticket, assunto ou solicitante..."
-                    class="glass-input w-full rounded-xl pl-10 pr-4 py-3 text-text-high transition-all duration-300 placeholder:text-text-muted focus:outline-none"
-                    autocomplete="off">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
+                <!-- ARQUIVOS -->
+                <div id="view-arquivos" class="hidden">
+                    <header class="mb-6">
+                        <div class="relative flex gap-6 mb-6 px-1 w-max invisible pointer-events-none select-none"
+                            aria-hidden="true">
+                            <button type="button" tabindex="-1"
+                                class="relative z-10 pb-3 text-sm font-semibold">Spacer</button>
+                        </div>
+
+                        <div class="relative flex gap-2 w-full items-center">
+                            <div class="relative flex-grow">
+                                <input type="text" id="arquivosSearchInput" aria-label="Pesquisar arquivos"
+                                    placeholder="Pesquisar arquivos..."
+                                    class="glass-input w-full rounded-xl pl-10 pr-4 py-3 text-text-high transition-all duration-300 placeholder:text-text-muted focus:outline-none"
+                                    autocomplete="off">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <!-- "+" aparece só para quem pode cadastrar arquivos -->
+                            <div id="arquivosAddWrap" class="relative flex gap-2 invisible pointer-events-none"
+                                aria-hidden="true">
+                                <button id="openArquivoModalBtn" type="button" tabindex="-1"
+                                    class="bg-accent-solid text-white p-3 rounded-lg hover:opacity-90 transition-opacity"
+                                    title="Adicionar Arquivo" aria-label="Adicionar Arquivo">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="arquivosSuggestionsContainer" class="mt-1"></div>
+                    </header>
+                    <main id="arquivosContainer" class="space-y-3"></main>
                 </div>
-            </div>
-
-            <!-- Admin Select Agent (Shown only for Admin) -->
-            <div id="adminAgentContainer" class="hidden relative">
-                <select id="adminAgentSelect" class="glass-input rounded-xl px-4 py-3 text-sm font-semibold text-text-high bg-bg-panel border border-border-element focus:outline-none focus:ring-1 focus:ring-accent-solid cursor-pointer">
-                    <option value="all">Equipe Completa</option>
-                </select>
-            </div>
-            
-            <!-- Import Button (Upload Planilha Excel Base - Apenas Admin) -->
-            <div id="adminUploadContainer" class="hidden relative flex gap-2">
-                <input type="file" id="horasFileInput" accept=".xlsx,.xls,.csv" class="hidden" onchange="window.handleHorasFileInput && window.handleHorasFileInput(event)">
-                <button type="button" id="btnImportarExcel" onclick="document.getElementById('horasFileInput').click()" class="bg-accent-solid text-white p-3 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1.5 text-sm font-semibold cursor-pointer" title="Importar Planilha Excel (.xlsx, .csv)">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Tickets List (Matches categoriesContainer space-y-3) -->
-    <main id="horasTicketsList" class="space-y-3"></main>
-</div>
             </div>
         </div>
     </div>
 
-    <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
+    <!-- Modal de informação (descrição dos comandos, erros de carregamento) -->
+    <div id="infoModal" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
         <div class="panel w-full max-w-4xl p-6 flex flex-col max-h-[90vh]">
             <h3 id="infoModalTitle" class="text-lg font-semibold mb-4 text-accent-solid shrink-0">Informação</h3>
 
-            <div class="overflow-y-auto mb-6 flex-grow custom-scrollbar bg-bg-panel rounded-lg">
-                <p id="infoMessage" class="w-full h-full p-4 m-0"></p>
+            <div class="overflow-y-auto mb-6 flex-grow bg-bg-panel rounded-lg">
+                <div id="infoMessage" class="w-full h-full p-4 m-0"></div>
             </div>
 
             <div class="flex justify-end shrink-0">
-                <button id="infoOkBtn" class="px-6 py-2 bg-accent-solid hover:opacity-90 text-white rounded-lg transition-opacity">OK</button>
+                <button id="infoOkBtn" type="button" data-modal-close
+                    class="px-6 py-2 bg-accent-solid hover:opacity-90 text-white rounded-lg transition-opacity">OK</button>
             </div>
         </div>
     </div>
 
-    <!-- JS libraries with defer -->
+    <!-- Modal Adicionar / Editar Arquivo (envia direto para a pasta do Google Drive) -->
+    <div id="arquivoModal" role="dialog" aria-modal="true" aria-labelledby="arquivoModalTitle"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
+        <div class="panel w-full max-w-lg p-6 flex flex-col max-h-[90vh] shadow-2xl">
+            <h3 id="arquivoModalTitle" class="text-xl font-semibold mb-4 text-accent-solid">Adicionar Arquivo</h3>
 
-    <!-- Modal Adicionar Comando -->
-    <div id="reasonModal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] hidden p-4">
+            <div class="space-y-4 mb-6 overflow-y-auto flex-grow pr-1">
+                <div>
+                    <label for="arquivoTitle" class="block text-sm font-medium text-text-muted mb-1">Título</label>
+                    <input type="text" id="arquivoTitle" maxlength="120" autocomplete="off"
+                        placeholder="Ex: Modelo de importação de produtos"
+                        class="w-full rounded-lg px-3 py-2 bg-bg-panel border border-border-element text-text-high focus:outline-none focus:ring-2 focus:ring-accent-solid">
+                </div>
+                <div>
+                    <label for="arquivoFile" class="block text-sm font-medium text-text-muted mb-1">Documento</label>
+                    <input type="file" id="arquivoFile"
+                        class="w-full text-sm text-text-high file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-accent-solid file:text-white file:cursor-pointer">
+                    <p id="arquivoFileHint" class="mt-1.5 text-xs text-text-muted"></p>
+                </div>
+                <p id="arquivoError" role="alert" class="hidden text-sm text-red-400"></p>
+            </div>
+
+            <div class="flex justify-end gap-3 shrink-0 pt-4 border-t border-border-subtle">
+                <button id="arquivoCancelBtn" type="button" data-modal-close
+                    class="px-4 py-2 bg-bg-panel border border-border-element text-text-high rounded-lg hover:bg-bg-solid-hover transition-all disabled:opacity-60">Cancelar</button>
+                <button id="arquivoSaveBtn" type="button"
+                    class="px-4 py-2 bg-accent-solid hover:opacity-90 text-white rounded-lg transition-all shadow-md disabled:opacity-60">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Motivo da Alteração -->
+    <div id="reasonModal" role="dialog" aria-modal="true" aria-labelledby="reasonModalTitle"
+        class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] hidden p-4">
         <div class="bg-bg-panel border border-border-subtle rounded-xl w-full max-w-md shadow-2xl flex flex-col">
             <div class="flex items-center justify-between p-4 border-b border-border-element bg-black/20 rounded-t-xl">
-                <h3 class="text-base font-bold text-text-high">Motivo da Alteração</h3>
-                <button type="button" id="reasonCancelTopBtn" class="text-text-muted hover:text-white transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <h3 id="reasonModalTitle" class="text-base font-bold text-text-high">Motivo da Alteração</h3>
+                <button type="button" id="reasonCancelTopBtn" aria-label="Fechar"
+                    class="text-text-muted hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
                 </button>
             </div>
             <div class="p-5">
-                <p class="text-sm text-text-muted mb-4">Por que está sendo feita essa alteração? <span class="text-red-400">*</span></p>
-                <textarea id="reasonInput" rows="3" class="w-full rounded-md px-3 py-2 bg-[color:var(--bg-app)] border border-border-element text-text-high focus:outline-none focus:ring-1 focus:ring-accent font-sans text-sm resize-none custom-scrollbar" placeholder="Descreva o motivo..."></textarea>
+                <label for="reasonInput" class="block text-sm text-text-muted mb-4">Por que está sendo feita essa
+                    alteração? <span class="text-red-400">*</span></label>
+                <textarea id="reasonInput" rows="3"
+                    class="w-full rounded-md px-3 py-2 bg-[color:var(--bg-app)] border border-border-element text-text-high focus:outline-none focus:ring-1 focus:ring-accent-solid font-sans text-sm resize-none"
+                    placeholder="Descreva o motivo..."></textarea>
             </div>
             <div class="flex justify-end gap-3 p-4 border-t border-border-element bg-black/10 rounded-b-xl">
-                <button type="button" id="reasonCancelBtn" class="px-4 py-2 text-sm font-medium rounded-md text-text-muted hover:text-white hover:bg-white/5 transition-colors border border-transparent">
+                <button type="button" id="reasonCancelBtn" data-modal-close
+                    class="px-4 py-2 text-sm font-medium rounded-md text-text-muted hover:text-white hover:bg-white/5 transition-colors border border-transparent">
                     Sair
                 </button>
-                <button type="button" id="reasonOkBtn" class="px-5 py-2 text-sm font-medium rounded-md text-white bg-accent-solid hover:bg-opacity-90 transition-all border border-transparent shadow-lg shadow-accent-solid/20">
+                <button type="button" id="reasonOkBtn"
+                    class="px-5 py-2 text-sm font-medium rounded-md text-white bg-accent-solid hover:bg-opacity-90 transition-all border border-transparent shadow-lg shadow-accent-solid/20">
                     OK
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
+    <!-- Modal Adicionar / Editar Comando -->
+    <div id="addModal" role="dialog" aria-modal="true" aria-labelledby="addModalTitle"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4 sm:p-6">
         <div class="panel w-full max-w-5xl p-6 flex flex-col max-h-[90vh] shadow-2xl">
-            <h3 class="text-xl font-semibold mb-4 text-accent-solid">Adicionar Novo Comando</h3>
-            
-            <div class="space-y-4 mb-6 overflow-y-auto custom-scrollbar pr-2 flex-grow">
+            <h3 id="addModalTitle" class="text-xl font-semibold mb-4 text-accent-solid">Adicionar Novo Comando</h3>
+
+            <div class="space-y-4 mb-6 overflow-y-auto pr-2 flex-grow">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="sm:col-span-2">
-                        <label class="block text-sm font-medium text-text-muted mb-1">Título do Comando</label>
-                        <input type="text" id="commandTitleInput" placeholder="Ex: Update LC Sistemas..." class="w-full rounded-lg px-3 py-2 bg-bg-panel border border-border-element text-text-high focus:outline-none focus:ring-2 focus:ring-accent">
+                        <label for="commandTitleInput" class="block text-sm font-medium text-text-muted mb-1">Título do
+                            Comando</label>
+                        <input type="text" id="commandTitleInput" placeholder="Ex: Update LC Sistemas..."
+                            class="w-full rounded-lg px-3 py-2 bg-bg-panel border border-border-element text-text-high focus:outline-none focus:ring-2 focus:ring-accent-solid">
                     </div>
                     <div class="sm:col-span-1">
-                        <label class="block text-sm font-medium text-text-muted mb-1">Visibilidade</label>
-                        <select id="commandVisibilityInput" class="w-full rounded-lg px-3 py-2 bg-[color:var(--bg-app)] border border-border-element text-text-high focus:outline-none focus:ring-2 focus:ring-accent">
+                        <label for="commandVisibilityInput"
+                            class="block text-sm font-medium text-text-muted mb-1">Visibilidade</label>
+                        <select id="commandVisibilityInput"
+                            class="w-full rounded-lg px-3 py-2 bg-[color:var(--bg-app)] border border-border-element text-text-high focus:outline-none focus:ring-2 focus:ring-accent-solid">
                             <option value="public">Público</option>
                             <option value="private">Privado</option>
                         </select>
@@ -389,124 +507,166 @@ tailwind.config = {
                 </div>
 
                 <div>
-                    
                     <div class="flex flex-col sm:flex-row gap-4">
                         <div class="flex flex-col gap-2 w-full sm:w-1/3 md:w-1/4">
-                            <button type="button" onclick="addNewModalSubCommand()" class="w-full py-2 bg-accent-solid/20 border border-accent-border-element text-accent-solid rounded-lg hover:bg-accent-solid-hover hover:text-white transition-all flex justify-center items-center font-bold text-xl shrink-0 hover:shadow-lg hover:-translate-y-0.5 glow-on-hover" title="Adicionar Aba">
+                            <button type="button" data-action="add-modal-tab"
+                                class="w-full py-2 bg-accent-solid/20 border border-accent-border-element text-accent-solid rounded-lg hover:bg-accent-solid-hover hover:text-white transition-all flex justify-center items-center font-bold text-xl shrink-0 hover:shadow-lg hover:-translate-y-0.5 glow-on-hover"
+                                title="Adicionar Aba" aria-label="Adicionar Aba">
                                 +
                             </button>
-                            <div id="modalTabsContainer" class="flex flex-col gap-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-                                <!-- Tabs rendered via JS -->
+                            <div id="modalTabsContainer"
+                                class="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1">
+                                <!-- Abas renderizadas via JS -->
                             </div>
                         </div>
-                        
-                        <div class="flex-grow p-4 bg-black/20 border border-border-subtle rounded-lg relative min-h-[260px] flex flex-col" id="modalContentContainer" style="min-width: 0;">
-                            <!-- Content rendered via JS -->
+
+                        <div class="flex-grow p-4 bg-black/20 border border-border-subtle rounded-lg relative min-h-[260px] flex flex-col"
+                            id="modalContentContainer" style="min-width: 0;">
+                            <!-- Conteúdo renderizado via JS -->
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="flex justify-end gap-3 shrink-0 pt-4 border-t border-border-subtle">
-                <button id="cancelAddBtn" class="px-4 py-2 bg-bg-panel border border-border-element text-text-high rounded-lg hover:bg-bg-solid-hover transition-all hover:shadow-md hover:-translate-y-0.5">Cancelar</button>
-                <button id="saveCommandBtn" class="px-4 py-2 bg-accent-solid hover:opacity-90 text-white rounded-lg transition-all shadow-md hover:shadow-lg hover:shadow-accent/40 hover:-translate-y-0.5 glow-on-hover">Salvar Comando</button>
+                <button id="cancelAddBtn" type="button" data-modal-close
+                    class="px-4 py-2 bg-bg-panel border border-border-element text-text-high rounded-lg hover:bg-bg-solid-hover transition-all hover:shadow-md hover:-translate-y-0.5">Cancelar</button>
+                <button id="saveCommandBtn" type="button"
+                    class="px-4 py-2 bg-accent-solid hover:opacity-90 text-white rounded-lg transition-all shadow-md hover:shadow-lg hover:shadow-accent-solid/40 hover:-translate-y-0.5 glow-on-hover">Salvar
+                    Comando</button>
             </div>
         </div>
     </div>
 
-
-    <!-- Confirm Delete Modal -->
-    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
+    <!-- Confirmar exclusão de comando -->
+    <div id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
         <div class="panel w-full max-w-sm p-6 rounded-xl flex flex-col items-center text-center">
             <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mb-4 text-red-500">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                    </path>
+                </svg>
             </div>
-            <h3 class="text-xl font-semibold mb-2 text-text-high">Excluir Comando?</h3>
-            <p class="text-text-muted text-sm mb-6">Tem certeza que deseja excluir este comando? Esta ação não pode ser desfeita.</p>
+            <h3 id="deleteModalTitle" class="text-xl font-semibold mb-2 text-text-high">Excluir Comando?</h3>
+            <p class="text-text-muted text-sm mb-6">Tem certeza que deseja excluir este comando? Ele vai para a lixeira
+                (só o administrador pode restaurá-lo) e é apagado de vez após 2 dias.</p>
             <div class="flex justify-center gap-3 w-full">
-                <button id="cancelDeleteBtn" class="flex-1 px-4 py-2 bg-bg-panel border border-border-subtle text-text-high rounded-lg hover:bg-bg-solid-hover transition-colors">Cancelar</button>
-                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-lg">Sim, Excluir</button>
+                <button id="cancelDeleteBtn" type="button" data-modal-close
+                    class="flex-1 px-4 py-2 bg-bg-panel border border-border-subtle text-text-high rounded-lg hover:bg-bg-solid-hover transition-colors">Cancelar</button>
+                <button id="confirmDeleteBtn" type="button"
+                    class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-lg">Sim,
+                    Excluir</button>
             </div>
         </div>
     </div>
 
-    <!-- Trash Modal -->
-    <div id="trashModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
+    <!-- Lixeira -->
+    <div id="trashModal" role="dialog" aria-modal="true" aria-labelledby="trashModalTitle"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
         <div class="panel w-full max-w-2xl h-[80vh] p-0 rounded-xl flex flex-col overflow-hidden">
             <div class="flex items-center justify-between p-6 border-b border-border-subtle bg-bg-panel shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-500">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                            </path>
+                        </svg>
                     </div>
                     <div>
-                        <h3 class="text-xl font-semibold text-text-high">Lixeira</h3>
+                        <h3 id="trashModalTitle" class="text-xl font-semibold text-text-high">Lixeira</h3>
                         <p class="text-sm text-text-muted">Comandos excluídos nos últimos 2 dias</p>
                     </div>
                 </div>
-                <button id="closeTrashBtn" class="text-text-muted hover:text-text-high p-2 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <button type="button" data-action="close-modal" data-modal="trashModal" data-modal-close
+                    aria-label="Fechar" class="text-text-muted hover:text-text-high p-2 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
                 </button>
             </div>
-            
-            <div class="p-6 overflow-y-auto bg-bg-app flex-1 custom-scrollbar">
-                <div id="trashList" class="space-y-4">
-                    <!-- Deleted commands will be injected here -->
-                </div>
+
+            <div class="p-6 overflow-y-auto bg-bg-app flex-1">
+                <div id="trashList" class="space-y-4"></div>
             </div>
         </div>
     </div>
 
-    <!-- Password Requests Modal -->
-    <div id="passwordRequestsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
-        <div class="panel w-full max-w-2xl h-[80vh] p-0 rounded-xl flex flex-col overflow-hidden border border-accent/20">
+    <!-- Solicitações de senha -->
+    <div id="passwordRequestsModal" role="dialog" aria-modal="true" aria-labelledby="passwordRequestsTitle"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
+        <div
+            class="panel w-full max-w-2xl h-[80vh] p-0 rounded-xl flex flex-col overflow-hidden border border-accent-solid/20">
             <div class="flex items-center justify-between p-6 border-b border-border-subtle bg-bg-panel shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                    <div
+                        class="w-10 h-10 rounded-full bg-accent-solid/20 flex items-center justify-center text-accent-solid">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
+                            </path>
+                        </svg>
                     </div>
                     <div>
-                        <h3 class="text-xl font-semibold text-text-high">Solicitações de Senha</h3>
+                        <h3 id="passwordRequestsTitle" class="text-xl font-semibold text-text-high">Solicitações de
+                            Senha</h3>
                         <p class="text-sm text-text-muted">Gerencie os pedidos de troca de senha</p>
                     </div>
                 </div>
-                <button id="closePasswordRequestsBtn" class="text-text-muted hover:text-text-high p-2 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <button type="button" data-action="close-modal" data-modal="passwordRequestsModal" data-modal-close
+                    aria-label="Fechar" class="text-text-muted hover:text-text-high p-2 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
                 </button>
             </div>
-            
-            <div class="p-6 overflow-y-auto bg-bg-app flex-1 custom-scrollbar">
-                <div id="passwordRequestsList" class="space-y-4">
-                    <!-- Requests will be injected here -->
-                </div>
+
+            <div class="p-6 overflow-y-auto bg-bg-app flex-1">
+                <div id="passwordRequestsList" class="space-y-4"></div>
             </div>
         </div>
     </div>
-    <!-- Modal Custom Alert -->
-    <div id="alertModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[100] transition-opacity duration-300 opacity-0">
-        <div class="bg-bg-panel border border-border-element p-6 rounded-lg shadow-2xl max-w-sm w-full transform scale-95 transition-transform duration-300">
+
+    <!-- Alerta personalizado -->
+    <div id="alertModal" role="alertdialog" aria-modal="true" aria-labelledby="alertModalTitle"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[100] transition-opacity duration-300 opacity-0">
+        <div
+            class="bg-bg-panel border border-border-element p-6 rounded-lg shadow-2xl max-w-sm w-full transform scale-95 transition-transform duration-300">
             <div class="flex items-start mb-4">
                 <div class="flex-shrink-0">
-                    <svg class="h-6 w-6 text-accent-solid" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg class="h-6 w-6 text-accent-solid" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <div class="ml-3">
                     <h3 class="text-lg font-medium text-text-high" id="alertModalTitle">Aviso</h3>
-                    <div class="mt-2 text-sm text-text-muted" id="alertModalMessage"></div>
+                    <div class="mt-2 text-sm text-text-muted whitespace-pre-wrap" id="alertModalMessage"></div>
                 </div>
             </div>
             <div class="mt-4 flex justify-end">
-                <button type="button" id="alertModalBtn" class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-accent-solid border border-transparent rounded-md hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-solid">OK</button>
+                <button type="button" id="alertModalBtn" data-modal-close
+                    class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-accent-solid border border-transparent rounded-md hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-solid">OK</button>
             </div>
         </div>
     </div>
-    <!-- Modal Custom Confirm -->
-    <div id="confirmModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[100] transition-opacity duration-300 opacity-0">
-        <div class="bg-bg-panel border border-border-element p-6 rounded-lg shadow-2xl max-w-sm w-full transform scale-95 transition-transform duration-300">
+
+    <!-- Confirmação personalizada -->
+    <div id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmModalTitle"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[100] transition-opacity duration-300 opacity-0">
+        <div
+            class="bg-bg-panel border border-border-element p-6 rounded-lg shadow-2xl max-w-sm w-full transform scale-95 transition-transform duration-300">
             <div class="flex items-start mb-4">
                 <div class="flex-shrink-0">
-                    <svg class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    <svg class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                 </div>
                 <div class="ml-3">
@@ -515,120 +675,76 @@ tailwind.config = {
                 </div>
             </div>
             <div class="mt-6 flex justify-end gap-3">
-                <button type="button" id="confirmModalCancelBtn" class="inline-flex justify-center px-4 py-2 text-sm font-medium text-text-high bg-bg-panel border border-border-element rounded-md hover:bg-bg-solid-hover focus:outline-none transition-colors">Cancelar</button>
-                <button type="button" id="confirmModalOkBtn" class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-accent-solid border border-transparent rounded-md hover:opacity-90 focus:outline-none transition-colors">OK</button>
+                <button type="button" id="confirmModalCancelBtn" data-modal-close
+                    class="inline-flex justify-center px-4 py-2 text-sm font-medium text-text-high bg-bg-panel border border-border-element rounded-md hover:bg-bg-solid-hover focus:outline-none transition-colors">Cancelar</button>
+                <button type="button" id="confirmModalOkBtn"
+                    class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-accent-solid border border-transparent rounded-md hover:opacity-90 focus:outline-none transition-colors">OK</button>
             </div>
         </div>
     </div>
-    <!-- History Modal -->
-    <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
+
+    <!-- Histórico de alterações -->
+    <div id="historyModal" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
         <div class="panel w-full max-w-4xl p-6 rounded-xl flex flex-col h-[80vh]">
             <div class="flex justify-between items-center mb-4 shrink-0">
-                <h3 class="text-xl font-semibold text-text-high flex items-center gap-2">
-                    <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h3 id="historyModalTitle" class="text-xl font-semibold text-text-high flex items-center gap-2">
+                    <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
                     Histórico de Alterações: <span id="historyCommandName" class="text-accent-solid ml-1"></span>
                 </h3>
-                <button onclick="document.getElementById('historyModal').classList.add('hidden')" class="text-text-muted hover:text-red-500 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <button type="button" data-action="close-modal" data-modal="historyModal" data-modal-close
+                    aria-label="Fechar" class="text-text-muted hover:text-red-500 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
                 </button>
             </div>
-            
+
             <div id="historyLoading" class="hidden flex-grow flex flex-col items-center justify-center text-text-muted">
-                <svg class="animate-spin h-10 w-10 text-accent-solid mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg class="animate-spin h-10 w-10 text-accent-solid mb-4" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24" aria-hidden="true">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
                 </svg>
                 <p>Carregando histórico...</p>
             </div>
-            
+
             <div id="historyEmpty" class="hidden flex-grow flex flex-col items-center justify-center text-text-muted">
-                <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
+                    </path>
+                </svg>
                 <p>Nenhuma alteração registrada para este comando.</p>
             </div>
-            
-            <div id="historyListContainer" class="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-4">
-                <!-- History Items go here -->
-            </div>
+
+            <div id="historyListContainer" class="flex-grow overflow-y-auto pr-2 space-y-4"></div>
         </div>
     </div>
 
-    <!-- Modal Detalhes do Atendimento de Hora Extra -->
-    <div id="horasTicketModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] hidden p-4 sm:p-6">
-        <div class="panel w-full max-w-3xl p-6 rounded-xl flex flex-col max-h-[85vh] shadow-2xl">
-            <!-- Modal Header -->
-            <div class="flex justify-between items-center pb-3 mb-4 border-b border-border-element shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-lg bg-accent-solid/10 text-accent-solid flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold text-text-high flex items-center gap-2 flex-wrap">
-                            <span>Ticket #<span id="modalTicketNumero" class="text-accent-solid">-</span></span>
-                            <span class="text-xs px-2 py-0.5 rounded bg-bg-app border border-border-element text-text-muted font-mono">Protocolo: <strong id="modalTicketProtocolo" class="text-text-high font-semibold">-</strong></span>
-                            <span id="modalTicketExtraBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25 font-mono font-bold">+0 min</span>
-                        </h3>
-                        <p id="modalTicketTurno" class="text-xs text-text-muted mt-0.5">Turno • Horário</p>
-                    </div>
-                </div>
-                <button type="button" onclick="document.getElementById('horasTicketModal').classList.add('hidden')" class="text-text-muted hover:text-red-500 transition-colors p-1.5 rounded-md hover:bg-white/5">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-
-            <!-- Modal Content (Scrollable) -->
-            <div class="space-y-4 overflow-y-auto custom-scrollbar flex-grow pr-1">
-                <!-- Info Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div class="bg-bg-panel border border-border-element p-3 rounded-lg">
-                        <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">Atendente Responsável</span>
-                        <span id="modalTicketResponsavel" class="text-sm font-semibold text-text-high mt-0.5 block">-</span>
-                    </div>
-                    <div class="bg-bg-panel border border-border-element p-3 rounded-lg">
-                        <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">Solicitante</span>
-                        <span id="modalTicketSolicitante" class="text-sm font-semibold text-text-high mt-0.5 block">-</span>
-                        <span id="modalTicketOrganizacao" class="text-xs text-text-muted mt-0.5 block"></span>
-                    </div>
-                    <div class="bg-bg-panel border border-border-element p-3 rounded-lg">
-                        <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">Data e Horário de Abertura</span>
-                        <span id="modalTicketEntrada" class="text-sm font-mono text-text-high mt-0.5 block">-</span>
-                    </div>
-                    <div class="bg-bg-panel border border-border-element p-3 rounded-lg">
-                        <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">Horário de Encerramento</span>
-                        <span id="modalTicketEncerramento" class="text-sm font-mono text-amber-400 font-bold mt-0.5 block">-</span>
-                    </div>
-                </div>
-
-                <!-- Duração e Tempo de Espera -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div class="bg-bg-panel border border-border-element p-3 rounded-lg">
-                        <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">Duração do Atendimento</span>
-                        <span id="modalTicketDuracao" class="text-xs font-mono text-text-high mt-0.5 block">-</span>
-                    </div>
-                    <div class="bg-bg-panel border border-border-element p-3 rounded-lg">
-                        <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">Tempo de Espera</span>
-                        <span id="modalTicketEspera" class="text-xs font-mono text-text-high mt-0.5 block">-</span>
-                    </div>
-                </div>
-
-                <!-- Primeira Mensagem / Assunto -->
-                <div class="bg-bg-panel border border-border-element p-3.5 rounded-lg">
-                    <span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider block mb-1.5">Primeira Mensagem / Descrição do Atendimento</span>
-                    <div id="modalTicketDescricao" class="text-sm text-text-high whitespace-pre-wrap font-sans leading-relaxed max-h-48 overflow-y-auto custom-scrollbar p-1">-</div>
-                </div>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="pt-4 mt-2 border-t border-border-element flex justify-end shrink-0">
-                <button type="button" onclick="document.getElementById('horasTicketModal').classList.add('hidden')" class="px-5 py-2 bg-accent-solid hover:opacity-90 text-white rounded-lg text-sm font-semibold transition-opacity">
-                    Fechar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script src="app.js" defer></script>
+    <script src="js/config.js?v=12" defer></script>
+    <script src="js/utils.js?v=12" defer></script>
+    <script src="js/icons.js?v=12" defer></script>
+    <script src="js/api.js?v=12" defer></script>
+    <script src="js/ui.js?v=12" defer></script>
+    <script src="js/search.js?v=12" defer></script>
+    <script src="js/cards.js?v=12" defer></script>
+    <script src="js/background.js?v=12" defer></script>
+    <script src="js/drive.js?v=12" defer></script>
+    <script src="js/base.js?v=12" defer></script>
+    <script src="js/comandos.js?v=12" defer></script>
+    <script src="js/arquivos.js?v=12" defer></script>
+    <script src="js/admin.js?v=12" defer></script>
+    <script src="js/auth.js?v=12" defer></script>
+    <script src="js/main.js?v=12" defer></script>
 </body>
 
 </html>

@@ -1,0 +1,9 @@
+# Backups e dumps do banco nunca vão para o repositório
+backup_*.sql
+*.dump
+
+# Ferramentas / sistema
+.claude/
+node_modules/
+.DS_Store
+Thumbs.db
