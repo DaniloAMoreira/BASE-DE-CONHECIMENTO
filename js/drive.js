@@ -6,7 +6,7 @@ const { FILES_API_URL, FILES_CHUNK_BYTES, FILES_MAX_CHUNK_BYTES } = App.config;
 const { getAccessToken, refreshSession, expireSession } = App.api;
 
 const REQUIRED_SCRIPT_VERSION = 3; // precisa ser igual a SCRIPT_VERSION no Code.gs publicado no Apps Script
-const MAX_ATTEMPTS = 4;
+const MAX_ATTEMPTS = 6;
 const FAST_CHUNK_MS = 25000;       // bloco que demora mais que isto não justifica aumentar os próximos
 // Erros em que repetir a mesma chamada não adianta.
 const NO_RETRY = new Set(['unauthorized', 'forbidden', 'bad_request', 'too_large', 'duplicate', 'upload_expired']);
@@ -50,7 +50,8 @@ function transport(payload, { signal, onUploadProgress } = {}) {
 
 /** Resumo legível de uma resposta que não é JSON (normalmente uma página de erro do Google). */
 function describeUnexpected(text) {
-    const plain = String(text).replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    const plain = String(text).replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]*>/g, ' ')
+        .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
     return plain ? plain.slice(0, 160) : 'resposta vazia';
 }
 
@@ -65,7 +66,9 @@ async function post(payload, { canRetry = true, signal, onUploadProgress } = {})
         data = JSON.parse(text);
     } catch {
         console.error('Resposta inesperada do servidor de arquivos:', text);
-        throw new Error(`O servidor de arquivos respondeu algo inesperado (${describeUnexpected(text)}). Confira se o Apps Script foi implantado como "Qualquer pessoa" e na versão mais recente.`);
+        const unexpected = new Error(`O servidor de arquivos respondeu algo inesperado (${describeUnexpected(text)}). Confira se o Apps Script foi implantado como "Qualquer pessoa" e na versão mais recente. Se acontecer de vez em quando, tente em uma janela anônima: extensões ou antivírus podem interferir.`);
+        unexpected.code = 'unexpected_response';
+        throw unexpected;
     }
 
     if (data.ok) return data;
@@ -80,9 +83,25 @@ async function post(payload, { canRetry = true, signal, onUploadProgress } = {})
     throw error;
 }
 
+/**
+ * Repete automaticamente chamadas que podem ser repetidas sem problema (listar, consultar/abrir o envio, trocar título) quando o Google
+ * responde algo que não é JSON ou a rede falha: o endereço temporário da resposta às vezes expira ou é consumido.
+ */
+async function postRetrying(payload, options = {}, attempts = 3) {
+    for (let attempt = 1; ; attempt++) {
+        try {
+            return await post(payload, options);
+        } catch (error) {
+            const transient = error.code === 'unexpected_response' || error instanceof TypeError;
+            if (!transient || attempt >= attempts || options.signal?.aborted) throw error;
+            await sleep(800 * attempt);
+        }
+    }
+}
+
 /** { files: [{ id, title, ext, size, url, native, created, updated }], canWrite } */
 const listFiles = async () => {
-    const data = await post({ action: 'list' });
+    const data = await postRetrying({ action: 'list' });
     if ((data.version || 0) < REQUIRED_SCRIPT_VERSION) {
         const error = new Error('O script do Google Drive publicado está desatualizado. No Apps Script, cole o novo Code.gs, salve e use Implantar → Gerenciar implantações → ✏️ → Versão: Nova versão → Implantar.');
         error.code = 'outdated';
@@ -92,7 +111,7 @@ const listFiles = async () => {
 };
 
 /** Troca só o título do arquivo (o link de download continua o mesmo). */
-const updateTitle = ({ fileId, title }) => post({ action: 'update', fileId, title });
+const updateTitle = ({ fileId, title }) => postRetrying({ action: 'update', fileId, title });
 
 const deleteFile = (fileId) => post({ action: 'delete', fileId });
 
@@ -100,7 +119,7 @@ const deleteFile = (fileId) => post({ action: 'delete', fileId });
  * Abre um envio no Drive. Com `fileId` troca o conteúdo de um arquivo existente (mantendo o link).
  * Devolve { uploadId }. Erros de título repetido, tamanho etc. já aparecem aqui, antes de enviar bytes.
  */
-const startUpload = ({ title, file, fileId }, { signal } = {}) => post({
+const startUpload = ({ title, file, fileId }, { signal } = {}) => postRetrying({
     action: 'uploadStart',
     title,
     fileName: file.name,
@@ -139,7 +158,7 @@ async function sendChunks({ uploadId, file, resume = false, onProgress = () => {
     let ceiling = FILES_MAX_CHUNK_BYTES;
 
     const resync = async () => {
-        const status = await post({ action: 'uploadStatus', uploadId }, { signal });
+        const status = await postRetrying({ action: 'uploadStatus', uploadId }, { signal });
         if (status.done) return status;
         offset = status.received;
         return null;
@@ -180,7 +199,7 @@ async function sendChunks({ uploadId, file, resume = false, onProgress = () => {
                 await sleep(500);
             } else {
                 if (++failures >= MAX_ATTEMPTS) throw error;
-                await sleep(1000 * failures);
+                await sleep(Math.min(1500 * failures, 8000));
             }
             try {
                 const finished = await resync();
