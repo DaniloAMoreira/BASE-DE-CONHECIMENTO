@@ -19,33 +19,15 @@ const abortError = () => new DOMException('Envio cancelado', 'AbortError');
 /**
  * Faz a chamada HTTP e devolve o texto da resposta. Todas as chamadas são POST em text/plain
  * (requisição "simples": o navegador não faz preflight CORS, que o Apps Script não suporta).
- * Com `onUploadProgress` usa XMLHttpRequest, porque o fetch não informa quanto do corpo já saiu.
+ * Não registrar listeners de upload (XMLHttpRequest.upload.*): isso força o preflight e o Google recusa.
  */
-function transport(payload, { signal, onUploadProgress } = {}) {
-    const body = JSON.stringify({ ...payload, token: getAccessToken() });
-
-    if (!onUploadProgress) {
-        return fetch(FILES_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body,
-            signal
-        }).then((res) => res.text());
-    }
-
-    return new Promise((resolve, reject) => {
-        if (signal?.aborted) return reject(abortError());
-        const xhr = new XMLHttpRequest();
-        signal?.addEventListener('abort', () => xhr.abort(), { once: true });
-        xhr.open('POST', FILES_API_URL);
-        xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
-        xhr.upload.onprogress = (event) => { if (event.lengthComputable) onUploadProgress(event.loaded / event.total); };
-        xhr.upload.onload = () => onUploadProgress(1);
-        xhr.onload = () => resolve(xhr.responseText);
-        xhr.onerror = () => reject(new TypeError('Falha de rede durante o envio.'));
-        xhr.onabort = () => reject(abortError());
-        xhr.send(body);
-    });
+function transport(payload, { signal } = {}) {
+    return fetch(FILES_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ ...payload, token: getAccessToken() }),
+        signal
+    }).then((res) => res.text());
 }
 
 /** Resumo legível de uma resposta que não é JSON (normalmente uma página de erro do Google). */
@@ -55,12 +37,12 @@ function describeUnexpected(text) {
     return plain ? plain.slice(0, 160) : 'resposta vazia';
 }
 
-async function post(payload, { canRetry = true, signal, onUploadProgress } = {}) {
+async function post(payload, { canRetry = true, signal } = {}) {
     if (!isDriveConfigured()) {
         throw new Error('O Google Drive ainda não foi conectado. Publique o script do Google Drive e preencha FILES_API_URL em js/config.js (guia ARQUIVOS-DRIVE.md).');
     }
 
-    const text = await transport(payload, { signal, onUploadProgress });
+    const text = await transport(payload, { signal });
     let data;
     try {
         data = JSON.parse(text);
@@ -75,7 +57,7 @@ async function post(payload, { canRetry = true, signal, onUploadProgress } = {})
 
     if (data.error === 'unauthorized') {
         // O login pode ter vencido no meio de um envio longo: renova e repete uma vez.
-        if (canRetry && await refreshSession()) return post(payload, { canRetry: false, signal, onUploadProgress });
+        if (canRetry && await refreshSession()) return post(payload, { canRetry: false, signal });
         expireSession();
     }
     const error = new Error(data.message || 'Erro no servidor de arquivos.');
@@ -142,8 +124,6 @@ function blobToBase64(blob) {
  * Envia o arquivo em blocos, com novas tentativas e retomada: se a rede cair, pergunta ao Drive
  * quanto já chegou e continua dali.
  *
- * - `onProgress({ sent, finalizing })` é chamado enquanto os bytes saem (não só a cada bloco);
- *   `finalizing` indica que o último bloco já foi todo enviado e só falta o Drive confirmar.
  * - Os blocos começam pequenos (FILES_CHUNK_BYTES) e dobram enquanto passam rápido, até
  *   FILES_MAX_CHUNK_BYTES: menos chamadas ao Apps Script em arquivos grandes. Se um bloco maior
  *   falhar, volta ao último tamanho que funcionou e não tenta passar dele de novo.
@@ -151,7 +131,7 @@ function blobToBase64(blob) {
  *
  * Devolve os dados do arquivo criado.
  */
-async function sendChunks({ uploadId, file, resume = false, onProgress = () => {}, signal }) {
+async function sendChunks({ uploadId, file, resume = false, signal }) {
     let offset = 0;
     let failures = 0;
     let chunk = FILES_CHUNK_BYTES;
@@ -167,7 +147,6 @@ async function sendChunks({ uploadId, file, resume = false, onProgress = () => {
     if (resume) {
         const finished = await resync();
         if (finished) return finished.file;
-        onProgress({ sent: offset });
     }
 
     while (offset < file.size) {
@@ -177,18 +156,11 @@ async function sendChunks({ uploadId, file, resume = false, onProgress = () => {
         const startedAt = Date.now();
         try {
             const data = await blobToBase64(file.slice(offset, end));
-            const reply = await post({ action: 'uploadChunk', uploadId, offset, data }, {
-                signal,
-                onUploadProgress: (fraction) => onProgress({ sent: offset + fraction * size, finalizing: end >= file.size && fraction >= 1 })
-            });
-            if (reply.done) {
-                onProgress({ sent: file.size });
-                return reply.file;
-            }
+            const reply = await post({ action: 'uploadChunk', uploadId, offset, data }, { signal });
+            if (reply.done) return reply.file;
             failures = reply.received > offset ? 0 : failures + 1; // sem avanço = tentativa perdida
             if (failures >= MAX_ATTEMPTS) throw new Error('O Drive não está aceitando o envio. Tente novamente.');
             offset = reply.received;
-            onProgress({ sent: offset });
             if (Date.now() - startedAt < FAST_CHUNK_MS && chunk < ceiling) chunk = Math.min(chunk * 2, ceiling);
         } catch (error) {
             if (error.name === 'AbortError' || NO_RETRY.has(error.code)) throw error;
@@ -204,7 +176,6 @@ async function sendChunks({ uploadId, file, resume = false, onProgress = () => {
             try {
                 const finished = await resync();
                 if (finished) return finished.file;
-                onProgress({ sent: offset });
             } catch (statusError) {
                 if (statusError.name === 'AbortError' || NO_RETRY.has(statusError.code)) throw statusError;
             }

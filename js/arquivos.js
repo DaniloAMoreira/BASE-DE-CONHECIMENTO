@@ -5,8 +5,9 @@
 // Os documentos ficam numa pasta do Google Drive; cadastrar, trocar e excluir pelo site
 // acontece direto nessa pasta (backend: script Code.gs publicado no Google Apps Script).
 //
-// Ao salvar um documento o formulário fecha e o envio segue em segundo plano: um card com
-// barra de progresso aparece na lista (ou a barra aparece no card existente, ao trocar o documento).
+// Ao salvar um documento o formulário fecha e o envio segue em segundo plano: um card "Pendente" aparece
+// na lista (ou o aviso aparece no card existente, ao trocar o documento). Enquanto houver envio pendente o
+// site consulta a lista do Drive de tempos em tempos e, quando o arquivo aparece lá, o card vira normal.
 const { $, registerActions, openModal, closeModal, showConfirm } = App.ui;
 const { isVisitor, currentUser } = App.api;
 const { FILES_MAX_UPLOAD_BYTES } = App.config;
@@ -21,10 +22,13 @@ const { escapeHtml, highlightMatch, normalizeString, safeHttpUrl, driveDirectDow
 const CACHE_KEY = 'arquivosCache';
 const CACHE_VERSION = 1;
 const CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const PENDING_POLL_MS = 7000; // de quanto em quanto tempo consulta o Drive enquanto há envio pendente
 
 let files = [];
 let uploads = [];       // envios em andamento ou que falharam (ainda não viraram arquivo na lista)
 let uploadSeq = 0;
+let pollTimer = null;
+let polling = false;
 let suggestions = [];
 let isLoaded = false;
 let canWrite = false;
@@ -57,6 +61,7 @@ function normalizeFiles(list) {
             ext: String(file.ext ?? ''),
             size: Number.isFinite(file.size) ? file.size : null,
             created: file.created,
+            updated: file.updated ?? null,
             isNative,
             // Link direto de download, sem a tela de aviso de vírus do Drive (documentos nativos do Google só abrem no Drive).
             url: isNative ? safeHttpUrl(file.url) : driveDirectDownloadUrl(String(file.id))
@@ -101,22 +106,17 @@ function setSyncStatus(message = '', { retry = false } = {}) {
 const findUpload = (id) => uploads.find((item) => item.id === id);
 const fullName = (file) => (file.ext ? `${file.title}.${file.ext}` : file.title);
 
-// ---------- barra de progresso do envio ----------
-// 100% só existe quando o card vira arquivo; até lá a barra para em 99%.
-const percentOf = (item) => (item.file.size > 0 ? Math.min(99, Math.floor((item.sent / item.file.size) * 100)) : 0);
+// ---------- envios pendentes ----------
+const pendingLabel = (item) => (item.status === 'error' ? `Falhou: ${item.error}` : 'Enviando para o Google Drive… sai de "Pendente" sozinho quando chegar.');
 
-function progressLabel(item) {
-    if (item.status === 'error') return `Falhou: ${item.error}`;
-    if (item.status === 'starting') return 'Iniciando o envio…';
-    if (item.finalizing) return 'Finalizando no Drive…';
-    return `Enviando… ${percentOf(item)}% • ${formatBytes(item.sent)} de ${formatBytes(item.file.size)}`;
-}
+const PENDING_BADGE = '<span class="ml-2 align-middle text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">Pendente</span>';
 
-/** Camada translúcida que "enche" o cabeçalho do card conforme o envio avança. */
-function progressOverlay(item) {
-    // Cor inline: o Tailwind não aplica "/30" de opacidade em cores definidas por variável CSS.
-    const color = item.status === 'error' ? 'rgba(239, 68, 68, 0.25)' : 'color-mix(in srgb, var(--accent-solid) 30%, transparent)';
-    return `<div data-upload-bar="${item.id}" class="absolute inset-y-0 left-0 transition-[width] duration-500 ease-out pointer-events-none" style="width: ${percentOf(item)}%; background: ${color}"></div>`;
+/** Faixa translúcida atrás do cabeçalho do card: pulsa enquanto pendente, fica vermelha se falhou. */
+function pendingOverlay(item) {
+    // Cor inline: o Tailwind não aplica "/20" de opacidade em cores definidas por variável CSS.
+    return item.status === 'error'
+        ? '<div class="absolute inset-0 pointer-events-none" style="background: rgba(239, 68, 68, 0.15)"></div>'
+        : '<div class="absolute inset-0 pointer-events-none animate-pulse" style="background: color-mix(in srgb, var(--accent-solid) 18%, transparent)"></div>';
 }
 
 function uploadButtons(item) {
@@ -135,21 +135,15 @@ function renderPendingCard(item) {
     element.innerHTML = `
         <div class="panel border ${failed ? 'border-red-500/40' : 'border-border-subtle'} rounded-md mb-3 bg-white/5 overflow-hidden" data-upload-card="${item.id}">
             <div class="relative flex items-center justify-between gap-3 p-3">
-                ${progressOverlay(item)}
+                ${pendingOverlay(item)}
                 <div class="relative z-10 min-w-0 flex flex-col">
-                    <span class="font-semibold text-text-high truncate">${escapeHtml(item.title)}</span>
-                    <span data-upload-label="${item.id}" class="text-[11px] font-mono ${failed ? 'text-red-400' : 'text-text-muted'}">${escapeHtml(progressLabel(item))}</span>
+                    <span class="font-semibold text-text-high truncate">${escapeHtml(item.title)}${failed ? '' : PENDING_BADGE}</span>
+                    <span class="text-[11px] font-mono ${failed ? 'text-red-400' : 'text-text-muted'}">${escapeHtml(pendingLabel(item))}</span>
                 </div>
                 <div class="relative z-10 flex items-center gap-2 shrink-0">${uploadButtons(item)}</div>
             </div>
         </div>`;
     return element;
-}
-
-/** Atualiza só a barra e o texto (sem redesenhar a lista) a cada bloco enviado. */
-function updateProgressDom(item) {
-    document.querySelectorAll(`[data-upload-bar="${item.id}"]`).forEach((bar) => { bar.style.width = `${percentOf(item)}%`; });
-    document.querySelectorAll(`[data-upload-label="${item.id}"]`).forEach((label) => { label.textContent = progressLabel(item); });
 }
 
 // ---------- renderização ----------
@@ -188,7 +182,9 @@ function renderCard(file, term) {
         ? `<span class="ml-2 align-middle text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-bg-panel border border-border-element text-text-muted">${escapeHtml(file.ext)}</span>`
         : '';
     const uploadNote = uploading
-        ? `<span data-upload-label="${uploading.id}" class="ml-2 text-[11px] font-mono font-normal ${uploading.status === 'error' ? 'text-red-400' : 'text-text-muted'}">${escapeHtml(progressLabel(uploading))}</span>`
+        ? (uploading.status === 'error'
+            ? `<span class="ml-2 text-[11px] font-mono font-normal text-red-400">${escapeHtml(pendingLabel(uploading))}</span>`
+            : PENDING_BADGE)
         : '';
 
     let actionsHtml = '';
@@ -212,7 +208,7 @@ function renderCard(file, term) {
     return buildCard({
         titleHtml: highlightMatch(file.title, term) + badge + uploadNote,
         actionsHtml,
-        overlayHtml: uploading ? progressOverlay(uploading) : '',
+        overlayHtml: uploading ? pendingOverlay(uploading) : '',
         expanded: term.length > 0,
         hideTabs: true,
         tabs: [{ labelHtml: '', panelHtml: renderPanel(file) }]
@@ -329,6 +325,7 @@ async function loadArquivos({ quiet = false } = {}) {
 function resetArquivos() {
     uploads.forEach((item) => item.controller?.abort());
     uploads = [];
+    stopPollingIfIdle();
     files = [];
     suggestions = [];
     isLoaded = false;
@@ -354,43 +351,96 @@ function applyServerFile(info) {
 }
 
 // ---------- envio em segundo plano ----------
+const listSignature = (list) => list.map((file) => `${file.id}|${file.title}|${file.updated}|${file.size}`).join(';');
+
+/** O arquivo deste envio já aparece na lista do Drive? (arquivo novo: título que não existia antes; troca de documento: arquivo mudou) */
+function appearedIn(item, fresh) {
+    if (item.fileId) {
+        const file = fresh.find((candidate) => candidate.id === item.fileId);
+        return Boolean(file) && (file.updated !== item.baselineUpdated || file.size !== item.baselineSize);
+    }
+    const wanted = item.title.toLowerCase();
+    return fresh.some((file) => !item.baselineIds.has(file.id) && file.title.toLowerCase() === wanted);
+}
+
 /**
- * Abre o envio no Drive (se ainda não abriu), manda os blocos e, ao terminar, troca o card "de envio"
- * pelo card do arquivo usando a resposta do servidor (sem nova listagem, que levaria vários segundos).
+ * Consulta a lista no Drive e dá como concluídos os envios cujo arquivo já apareceu lá.
+ * Serve de rede de segurança: às vezes o arquivo chega no Drive mas a resposta do Google se perde no caminho.
+ */
+async function refreshAndMatchUploads() {
+    const data = await listFiles();
+    const fresh = normalizeFiles(data.files);
+    const finished = uploads.filter((item) => appearedIn(item, fresh));
+    const changed = listSignature(fresh) !== listSignature(files);
+
+    files = fresh;
+    canWrite = Boolean(data.canWrite) && !isVisitor();
+    suggestions = [...new Set(files.map((file) => file.title))];
+    isLoaded = true;
+    writeCache();
+
+    finished.forEach((item) => item.controller?.abort());
+    uploads = uploads.filter((item) => !finished.includes(item));
+    if (changed || finished.length > 0) applySearch();
+    stopPollingIfIdle();
+    return finished;
+}
+
+async function pollUploads() {
+    if (polling) return;
+    if (!uploads.some((item) => item.status === 'uploading')) return stopPollingIfIdle();
+    polling = true;
+    try {
+        await refreshAndMatchUploads();
+    } catch (error) {
+        console.warn('Consulta da lista falhou; tenta de novo na próxima rodada.', error);
+    } finally {
+        polling = false;
+    }
+}
+
+function startPolling() {
+    if (!pollTimer) pollTimer = setInterval(pollUploads, PENDING_POLL_MS);
+}
+
+function stopPollingIfIdle() {
+    if (pollTimer && !uploads.some((item) => item.status === 'uploading')) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+    }
+}
+
+/**
+ * Abre o envio no Drive (se ainda não abriu) e manda os blocos em segundo plano. O card fica "Pendente"
+ * e vira arquivo normal quando o servidor confirma OU quando a consulta periódica vê o arquivo na lista.
  */
 async function runUpload(item, { resume = false } = {}) {
     item.error = '';
-    item.finalizing = false;
-    item.status = item.uploadId ? 'uploading' : 'starting';
+    item.status = 'uploading';
     item.controller = new AbortController();
     applySearch();
+    startPolling();
 
     try {
         if (!item.uploadId) {
             ({ uploadId: item.uploadId } = await startUpload({ title: item.title, file: item.file, fileId: item.fileId }, { signal: item.controller.signal }));
-            item.status = 'uploading';
-            updateProgressDom(item);
         }
-        const created = await sendChunks({
-            uploadId: item.uploadId,
-            file: item.file,
-            resume,
-            signal: item.controller.signal,
-            onProgress: ({ sent, finalizing = false }) => {
-                item.sent = sent;
-                item.finalizing = finalizing;
-                updateProgressDom(item);
-            }
-        });
+        const created = await sendChunks({ uploadId: item.uploadId, file: item.file, resume, signal: item.controller.signal });
         uploads = uploads.filter((other) => other !== item);
         applyServerFile(created);
         applySearch();
+        stopPollingIfIdle();
     } catch (error) {
-        if (error.name === 'AbortError') return; // cancelado pelo usuário: o card já foi removido
+        if (error.name === 'AbortError') return; // cancelado, ou a consulta já viu o arquivo no Drive
         console.error('Falha no envio', error);
+        // Antes de dar como falho, confere a lista: o arquivo pode ter chegado e só a resposta se perdeu.
+        try {
+            if ((await refreshAndMatchUploads()).includes(item)) return;
+        } catch { /* sem resposta da lista: segue para o erro */ }
         item.status = 'error';
         item.error = error.message;
         applySearch();
+        stopPollingIfIdle();
     }
 }
 
@@ -407,7 +457,7 @@ function openFormModal(file = null) {
     els.file.value = '';
     els.fileHint.textContent = file
         ? `Documento atual: ${fullName(file)}. Escolha outro só se quiser substituí-lo (o link de download continua o mesmo).`
-        : `Escolha o documento do seu computador (até ${formatBytes(FILES_MAX_UPLOAD_BYTES)}). O envio continua em segundo plano, com barra de progresso na lista.`;
+        : `Escolha o documento do seu computador (até ${formatBytes(FILES_MAX_UPLOAD_BYTES)}). O envio continua em segundo plano: o card fica como Pendente até o arquivo chegar ao Drive.`;
     showFormError('');
     openModal('arquivoModal');
     els.title.focus();
@@ -439,7 +489,7 @@ async function saveArquivo() {
     showFormError('');
 
     if (!file) {
-        // Só o título mudou: uma chamada rápida, sem barra de progresso.
+        // Só o título mudou: uma chamada rápida.
         setSaving(true, 'Salvando…');
         try {
             if (title !== current.title) applyServerFile((await updateTitle({ fileId: current.id, title })).file);
@@ -453,9 +503,12 @@ async function saveArquivo() {
         return;
     }
 
-    // Documento novo: o formulário fecha na hora e o card de envio aparece no topo, já com a barra.
+    // Documento novo: o formulário fecha na hora e o card "Pendente" aparece no topo da lista.
     // O envio é aberto no Drive em segundo plano; qualquer erro (ex.: título repetido) aparece no próprio card.
-    const item = { id: `u${++uploadSeq}`, uploadId: null, title, file, fileId: current?.id ?? null, sent: 0, finalizing: false, status: 'starting', error: '', controller: null };
+    const item = {
+        id: `u${++uploadSeq}`, uploadId: null, title, file, fileId: current?.id ?? null, status: 'uploading', error: '', controller: null,
+        baselineIds: new Set(files.map((existing) => existing.id)), baselineUpdated: current?.updated ?? null, baselineSize: current?.size ?? null
+    };
     uploads.unshift(item);
     closeModal('arquivoModal');
     runUpload(item);
@@ -520,6 +573,7 @@ function initArquivos() {
             item.controller?.abort();
             uploads = uploads.filter((other) => other !== item);
             applySearch();
+            stopPollingIfIdle();
         },
         'retry-upload': (button) => {
             const item = findUpload(button.dataset.id);
